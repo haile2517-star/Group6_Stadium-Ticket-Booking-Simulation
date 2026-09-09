@@ -41,20 +41,24 @@ Actor	Vai trò
 Ticket Seller (Organizer)	Người tổ chức trận đấu, quản lý thông tin & giá vé
 Ticket Buyer (Fan)	Người mua vé xem trận đấu
 System Admin (Tester/Admin)	Người sinh dữ liệu, chạy mô phỏng và xem báo cáo benchmark
+
 1️⃣ Seller Operations — Quản lý trận đấu
 Nhập thông tin trận đấu & thiết lập giá vé (Fill Match Info & Set Ticket Pricing)
 Chỉnh sửa thông tin trận đấu (Edit Match Information)
 Hủy trận đấu (Cancel Match Event)
+
 2️⃣ Buyer Operations — Luồng đặt vé cốt lõi
 Đăng ký & đăng nhập (Register & Login)
 Xem danh sách trận đấu & giá vé (View Matches & Pricing)
 Xem sơ đồ ghế (View Seat Map)
 Đặt vé, 1–4 ghế/lần (Book Tickets)
 Xem vé đã mua (View Purchased Tickets)
+
 3️⃣ Booking Execution — Xử lý ở tầng backend
 Kiểm tra tình trạng ghế còn trống (Check Seat Availability)
 Cập nhật trạng thái & version của ghế (Update Seat Status & Version)
 Lưu vé và bản ghi giao dịch (Save Ticket & Transaction Record)
+
 4️⃣ Admin & Simulation Management — Sinh dữ liệu & mô phỏng
 Sinh dữ liệu hệ thống dạng CSV, tối thiểu 10.000 dòng (Generate System CSV Data)
 Chạy công cụ mô phỏng đồng thời, benchmark 4 cơ chế khóa (Run Concurrency Simulator)

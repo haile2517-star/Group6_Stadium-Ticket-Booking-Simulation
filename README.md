@@ -1,2 +1,8 @@
-Danh sách thành viên nhóm 6: Huỳnh Hoàng Siêu (Leader), Lê Chấn Huy, Nguyễn Tuấn Kiệt, Đinh Trọng Nam, Võ Thành Nguyên, Phạm Vũ Gia Văn.
+🎫 Stadium Ticket Booking Simulation
+Danh sách thành viên nhóm 6: 
+Huỳnh Hoàng Siêu (Leader), MSSV: QE210005
+Lê Chấn Huy, MSSV:
+Nguyễn Tuấn Kiệt, MSSV:
+Đinh Trọng Nam MSSV:
+Phạm Vũ Gia Văn. MSSV:
 

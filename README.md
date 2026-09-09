@@ -1,12 +1,11 @@
 🎫 Stadium Ticket Booking Simulation
 Danh sách thành viên nhóm 6: 
-Huỳnh Hoàng Siêu (Leader), MSSV: QE210005
-Lê Chấn Huy, MSSV:
-Nguyễn Tuấn Kiệt, MSSV:
-Đinh Trọng Nam MSSV:
-Phạm Vũ Gia Văn. MSSV:
+Huỳnh Hoàng Siêu (Leader). MSSV: QE210005
+Lê Chấn Huy. MSSV: QE210078
+Nguyễn Tuấn Kiệt. MSSV: QE190093
+Đinh Trọng Nam. MSSV: QE200103
+Phạm Vũ Gia Văn. MSSV: QE210046
 
-Hệ thống mô phỏng bán vé trực tuyến cho các trận đấu bóng đá tại sân vận động, tập trung giải quyết bài toán đồng bộ hóa dữ liệu khi có hàng nghìn người dùng đặt vé cùng lúc.
 
 📌 Bối cảnh dự án
 Hệ thống mô phỏng bán vé trực tuyến cho các trận đấu bóng đá tại sân vận động, tập trung giải quyết bài toán đồng bộ hóa dữ liệu khi có hàng nghìn người dùng đặt vé cùng lúc.

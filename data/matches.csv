@@ -1,0 +1,6 @@
+matchId,organizerId,stadiumId,matchTitle,teamA,teamB,startTime,endTime,status
+MTH01,ORG01,STD01,Vong loai World Cup: Viet Nam vs Thai Lan,Viet Nam,Thai Lan,2026-10-10 19:30:00,2026-10-10 21:30:00,SCHEDULED
+MTH02,ORG02,STD02,V-League Vong 15: Ha Noi FC vs HAGL,Ha Noi FC,HAGL,2026-10-15 19:15:00,2026-10-15 21:15:00,SCHEDULED
+MTH03,ORG03,STD01,Cup Quoc Gia: The Cong Viettel vs CAHN,The Cong Viettel,CAHN,2026-10-20 19:00:00,2026-10-20 21:00:00,SCHEDULED
+MTH04,ORG01,STD01,Giao huu Quoc te: U23 Viet Nam vs U23 Han Quoc,U23 Viet Nam,U23 Han Quoc,2026-11-05 18:30:00,2026-11-05 20:30:00,SCHEDULED
+MTH05,ORG01,STD03,Giao huu: Viet Nam vs Malaysia,Viet Nam,Malaysia,2026-09-01 19:00:00,2026-09-01 21:00:00,FINISHED

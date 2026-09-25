@@ -1,0 +1,7 @@
+organizerId,username,passwordHash,orgName,email,phone,status
+ORG01,vff_official,hash_vff_2026,Lien doan Bong da Viet Nam (VFF),contact@vff.org.vn,02438453234,ACTIVE
+ORG02,hanoifc_admin,hash_hanoi_2026,Cong ty CP The thao Ha Noi T&T,admin@hanoifc.com.vn,02437345678,ACTIVE
+ORG03,viettel_fc,hash_viettel_2026,Trung tam The thao Viettel,support@viettelfc.vn,02462556789,ACTIVE
+ORG04,hagl_fc,hash_hagl_2026,CLB Bong da Hoang Anh Gia Lai,info@haglfc.vn,02693824567,ACTIVE
+ORG05,vietfootball,hash_vietfb_2026,VietFootball Joint Stock Company,admin@vietfootball.vn,0901234567,PENDING
+ORG06,saigon_events,hash_saigon_2026,Sai Gon Sports & Entertainment Corp,events@saigon.vn,02839123456,PENDING

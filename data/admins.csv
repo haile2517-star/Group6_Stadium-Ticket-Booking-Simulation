@@ -1,0 +1,3 @@
+adminId,username,passwordHash,fullName,email,phone,status
+ADM01,admin,hash_admin_2026,System Administrator,admin@stadium.vn,0909999999,ACTIVE
+ADM02,superadmin,hash_super_2026,Head Administrator,superadmin@stadium.vn,0908888888,ACTIVE

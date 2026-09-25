@@ -1,0 +1,7 @@
+sectionId,stadiumId,sectionName,sectionType,totalRows,seatsPerRow
+SEC_STD01_A,STD01,Khan dai A - VIP,VIP,50,60
+SEC_STD01_B,STD01,Khan dai B - Tieu chuan,STANDARD,50,60
+SEC_STD01_C,STD01,Khan dai C - Pho thong,ECONOMY,50,50
+SEC_STD01_D,STD01,Khan dai D - Dung,STANDING,50,50
+SEC_STD02_A,STD02,Khan dai A - VIP,VIP,20,40
+SEC_STD02_B,STD02,Khan dai B - Tieu chuan,STANDARD,20,40

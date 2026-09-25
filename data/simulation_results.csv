@@ -1,0 +1,5 @@
+resultId,mechanism,threadCount,totalRequests,successCount,failedCount,doubleBookingCount,throughput,doubleBookingRate,executionTimeMs
+SIM001,NO_LOCK,100,500,450,50,38,125.4,7.6,3987
+SIM002,FILE_LOCK,100,500,412,88,0,45.2,0.0,11062
+SIM003,SYNCHRONIZED,100,500,430,70,0,88.6,0.0,5643
+SIM004,OPTIMISTIC,100,500,425,75,0,105.8,0.0,4726

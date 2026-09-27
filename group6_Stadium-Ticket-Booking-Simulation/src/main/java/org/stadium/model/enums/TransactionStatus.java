@@ -1,8 +1,8 @@
 package org.stadium.model.enums;
 
 public enum TransactionStatus {
-    AVAILABLE,
-    BOOKED,
+    PENDING,
+    SUCCESS,
+    FAILED,
     CANCELLED
-    
 }

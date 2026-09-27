@@ -53,9 +53,9 @@ public class Ticket extends BaseEntity {
         this.seatId = parts[2];
         this.TransactionId = parts[3];
         this.fanId = parts[4];
-        this.price = parts[5].isEmpty() ? 0.0 : Double.parseDouble(parts[5]);
+        this.price = (parts[5].isEmpty() ? 0.0 : Double.parseDouble(parts[5]));
         this.bookingDate = parts[6];
-        this.status = parts[7].isEmpty() ? null : TicketStatus.valueOf(parts[7]);
+        this.status = (parts[7].isEmpty() ? null : TicketStatus.valueOf(parts[7]));
     }
 
 

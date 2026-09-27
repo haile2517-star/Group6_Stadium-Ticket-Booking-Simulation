@@ -56,3 +56,10 @@ Class Diagram  >  README.md  >  File CSV thực tế  >  Suy luận của AI
 ```
 
 Nếu có mâu thuẫn giữa các nguồn, AI phải hỏi Leader để xác nhận — không tự quyết định.
+---
+
+## QUY TẮC 4: TỰ ĐỘNG CẬP NHẬT NGỮ CẢNH TỪ OBSIDIAN & DỰ ÁN
+Mỗi khi bắt đầu một phiên làm việc mới, AI PHẢI TỰ ĐỘNG thực hiện các việc sau mà không cần người dùng nhắc nhở (kéo thả file):
+1. **Liên kết với Obsidian:** Dùng công cụ call_mcp_tool gọi server Obsidian để quét cấu trúc thư mục, tự động đọc các file "Task" (tiến độ) và "Logs" (kinh nghiệm) để biết hiện tại team đang làm tới đâu, các lỗi nào đã từng gặp phải để tránh lặp lại.
+2. **Hiểu toàn bộ Project:** Dùng công cụ list_dir để quét danh sách các file hiện có trong thư mục group6_Stadium-Ticket-Booking-Simulation/src và đọc file README.md để lấy bức tranh tổng thể về các file trong dự án một cách tự động.
+

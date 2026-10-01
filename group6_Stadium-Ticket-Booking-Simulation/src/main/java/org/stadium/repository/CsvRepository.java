@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public abstract class CsvRepository<T extends BaseEntity> {
-    protected String filePath;
-    protected List<T> items = new ArrayList<>();
+    private String filePath;
+    private List<T> items = new ArrayList<>();
 
     public CsvRepository(String filePath) {
         this.filePath = filePath;

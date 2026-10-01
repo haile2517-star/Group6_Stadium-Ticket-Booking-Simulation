@@ -9,7 +9,7 @@ public class Fan extends Account {
 
     @Override
     public String getId() {
-        return accountId;
+        return getAccountId();
     }
 
     public String getFullName() {
@@ -23,27 +23,27 @@ public class Fan extends Account {
     @Override
     public String toCsvLine() {
         return String.join(",",
-                accountId,
-                username,
-                passwordHash,
+                getAccountId(),
+                getUsername(),
+                getPasswordHash(),
                 fullName,
-                email,
-                phone,
+                getEmail(),
+                getPhone(),
                 fanType,
-                status.name());
+                getStatus().name());
     }
 
     @Override
     public void fromCsvLine(String line) {
         String[] parts = line.split(",", -1);
-        this.accountId = parts[0].trim();
-        this.username = parts[1].trim();
-        this.passwordHash = parts[2].trim();
+        setAccountId(parts[0].trim());
+        setUsername(parts[1].trim());
+        setPasswordHash(parts[2].trim());
         this.fullName = parts[3].trim();
-        this.email = parts[4].trim();
-        this.phone = parts[5].trim();
+        setEmail(parts[4].trim());
+        setPhone(parts[5].trim());
         this.fanType = parts[6].trim();
-        this.status = AccountStatus.valueOf(parts[7].trim());
+        setStatus(AccountStatus.valueOf(parts[7].trim()));
     }
 
     public void setFullName(String fullName) {
@@ -57,13 +57,13 @@ public class Fan extends Account {
     @Override
     public String toString() {
         return "Fan{" +
-                "fanId='" + accountId + '\'' +
-                ", username='" + username + '\'' +
+                "fanId='" + getAccountId() + '\'' +
+                ", username='" + getUsername() + '\'' +
                 ", fullName='" + fullName + '\'' +
                 ", fanType='" + fanType + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", status=" + status +
+                ", email='" + getEmail() + '\'' +
+                ", phone='" + getPhone() + '\'' +
+                ", status=" + getStatus() +
                 '}';
     }
 }

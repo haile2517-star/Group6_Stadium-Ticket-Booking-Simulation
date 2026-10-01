@@ -1,8 +1,6 @@
 package org.stadium.model;
 
 import java.util.Locale;
-import org.stadium.model.enums.AccountStatus;
-import org.stadium.model.enums.UserRole;
 
 public class AccountSearchCriteria {
     private String keyword;
@@ -48,7 +46,7 @@ public class AccountSearchCriteria {
                         && username.toLowerCase(Locale.ROOT).contains(searchTerm));
                 
         if (account instanceof Fan) {
-            String fullname = ((Fan) account).getFullName();
+            String fullName = ((Fan) account).getFullName();
             keywordMatches = keywordMatches
                     || (fullName != null
                         && fullName.toLowerCase(Locale.ROOT).contains(searchTerm));

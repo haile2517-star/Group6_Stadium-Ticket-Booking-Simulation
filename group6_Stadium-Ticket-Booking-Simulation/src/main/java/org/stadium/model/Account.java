@@ -2,12 +2,12 @@ package org.stadium.model;
 
 public abstract class Account extends BaseEntity {
 
-    protected String accountId;
-    protected String username;
-    protected String passwordHash;
-    protected String email;
-    protected String phone;
-    protected AccountStatus status;
+    private String accountId;
+    private String username;
+    private String passwordHash;
+    private String email;
+    private String phone;
+    private AccountStatus status;
 
     @Override
     public String getId() {

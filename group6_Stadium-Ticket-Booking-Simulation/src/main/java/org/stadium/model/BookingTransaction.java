@@ -42,20 +42,18 @@ public class BookingTransaction extends BaseEntity {
     }
     @Override 
     public String toCsvLine(){
-      
-        return transactionId + "," + fanId + "," + matchId + "," + (transactionDate != null ? transactionDate:"") + "," +  totalAmount + "," + ticketCount+ "," + (status != null ? status.name() : "");
+        return transactionId + "," + fanId + "," + matchId + "," + totalAmount + "," + ticketCount + "," + (transactionDate != null ? transactionDate : "") + "," + (status != null ? status.name() : "");
     }
     @Override
     public void fromCsvLine(String line) {
         String[] parts = line.split(",", -1);
-        this.transactionId = parts[0];
-        this.fanId = parts[1];
-        this.matchId = parts[2];
-        this.transactionDate = parts[3];
-        this.totalAmount = (parts[4] == null || parts[4].trim().isEmpty()) ? 0.0 : Double.parseDouble(parts[4].trim());
-        this.ticketCount = (parts[5] == null || parts[5].trim().isEmpty()) ? 0 : Integer.parseInt(parts[5].trim());
+        this.transactionId = parts[0].trim();
+        this.fanId = parts[1].trim();
+        this.matchId = parts[2].trim();
+        this.totalAmount = (parts[3] == null || parts[3].trim().isEmpty()) ? 0.0 : Double.parseDouble(parts[3].trim());
+        this.ticketCount = (parts[4] == null || parts[4].trim().isEmpty()) ? 0 : Integer.parseInt(parts[4].trim());
+        this.transactionDate = parts[5].trim();
         this.status = (parts[6] == null || parts[6].trim().isEmpty()) ? null : TransactionStatus.valueOf(parts[6].trim());
-        
     }
 
 

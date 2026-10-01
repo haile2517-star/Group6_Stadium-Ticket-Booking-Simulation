@@ -16,7 +16,7 @@ public class AccountSearchCriteria {
         }
         if (role != null) {
             boolean roleMatches;
-            
+
             if (role == UserRole.FAN) {
                 roleMatches = account instanceof Fan;
             } else if (role == UserRole.ORGANIZER) {
@@ -39,27 +39,26 @@ public class AccountSearchCriteria {
         String accountId = account.getId();
         String username = account.getUsername();
 
-        boolean keywordMatches = 
-                (accountId != null
-                    && accountId.toLowerCase(Locale.ROOT).contains(searchTerm)) 
+        boolean keywordMatches = (accountId != null
+                && accountId.toLowerCase(Locale.ROOT).contains(searchTerm))
                 || (username != null
                         && username.toLowerCase(Locale.ROOT).contains(searchTerm));
-                
+
         if (account instanceof Fan) {
             String fullName = ((Fan) account).getFullName();
             keywordMatches = keywordMatches
                     || (fullName != null
-                        && fullName.toLowerCase(Locale.ROOT).contains(searchTerm));
+                            && fullName.toLowerCase(Locale.ROOT).contains(searchTerm));
         } else if (account instanceof Organizer) {
             String orgName = ((Organizer) account).getOrgName();
             keywordMatches = keywordMatches
                     || (orgName != null
-                        && orgName.toLowerCase(Locale.ROOT).contains(searchTerm));
+                            && orgName.toLowerCase(Locale.ROOT).contains(searchTerm));
         } else if (account instanceof Admin) {
             String fullName = ((Admin) account).getFullName();
             keywordMatches = keywordMatches
-                    || (fullName != null 
-                        && fullName.toLowerCase(Locale.ROOT).contains(searchTerm));
+                    || (fullName != null
+                            && fullName.toLowerCase(Locale.ROOT).contains(searchTerm));
         }
         return keywordMatches;
     }

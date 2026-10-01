@@ -2,7 +2,6 @@ package org.stadium.model;
 
 import org.stadium.model.enums.TicketStatus;
 
-
 public class Ticket extends BaseEntity {
 
     private String ticketId;
@@ -17,7 +16,8 @@ public class Ticket extends BaseEntity {
     public Ticket() {
     }
 
-    public Ticket(String ticketId, String matchId, String seatId, String TransactionId,String fanId, double price, String bookingDate, TicketStatus status ){
+    public Ticket(String ticketId, String matchId, String seatId, String TransactionId, String fanId, double price,
+            String bookingDate, TicketStatus status) {
         this.ticketId = ticketId;
         this.matchId = matchId;
         this.seatId = seatId;
@@ -27,22 +27,23 @@ public class Ticket extends BaseEntity {
         this.bookingDate = bookingDate;
         this.status = status;
 
-
-
-
-
     }
+
     @Override
-    public String getId(){
+    public String getId() {
         return this.ticketId;
     }
-    public boolean isAvailable(){
+
+    public boolean isAvailable() {
         return this.status == TicketStatus.AVAILABLE;
 
     }
-    @Override 
+
+    @Override
     public String toCsvLine() {
-        return ticketId + "," + matchId + "," + seatId + "," + (TransactionId != null ? TransactionId:"") + "," +  (fanId != null ? fanId : "") + "," + price + "," + (bookingDate != null ? bookingDate : "") + "," + (status != null ? status.name() : "");
+        return ticketId + "," + matchId + "," + seatId + "," + (TransactionId != null ? TransactionId : "") + ","
+                + (fanId != null ? fanId : "") + "," + price + "," + (bookingDate != null ? bookingDate : "") + ","
+                + (status != null ? status.name() : "");
     }
 
     @Override
@@ -57,7 +58,5 @@ public class Ticket extends BaseEntity {
         this.bookingDate = parts[6].trim();
         this.status = (parts[7] == null || parts[7].trim().isEmpty() ? null : TicketStatus.valueOf(parts[7].trim()));
     }
-
-
 
 }

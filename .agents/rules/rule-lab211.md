@@ -1,5 +1,5 @@
 ﻿---
-trigger: always_on
+trigger: manual
 ---
 
 # Quy Tắc Bắt Buộc — Dự Án LAB211 Nhóm 6
@@ -62,4 +62,3 @@ Nếu có mâu thuẫn giữa các nguồn, AI phải hỏi Leader để xác nh
 Mỗi khi bắt đầu một phiên làm việc mới, AI PHẢI TỰ ĐỘNG thực hiện các việc sau mà không cần người dùng nhắc nhở (kéo thả file):
 1. **Liên kết với Obsidian:** Dùng công cụ call_mcp_tool gọi server Obsidian để quét cấu trúc thư mục, tự động đọc các file "Task" (tiến độ) và "Logs" (kinh nghiệm) để biết hiện tại team đang làm tới đâu, các lỗi nào đã từng gặp phải để tránh lặp lại.
 2. **Hiểu toàn bộ Project:** Dùng công cụ list_dir để quét danh sách các file hiện có trong thư mục group6_Stadium-Ticket-Booking-Simulation/src và đọc file README.md để lấy bức tranh tổng thể về các file trong dự án một cách tự động.
-

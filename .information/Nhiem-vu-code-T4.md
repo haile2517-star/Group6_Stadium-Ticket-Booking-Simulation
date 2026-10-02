@@ -4,7 +4,11 @@
 - Hoàn thiện toàn bộ các Repository (kế thừa `CsvRepository<T>`).
 - Thực hiện được các thao tác CRUD (Thêm, Đọc, Sửa, Xóa).
 - Implement tính năng **tìm kiếm theo điều kiện** sử dụng `findByCondition(Predicate<T>)`.
-- **Yêu cầu nghiệm thu (DoD):** CRUD test thành công và tốc độ đọc file CSV $\ge 10.000$ dòng phải $\le 500ms$.
+- **Yêu cầu nghiệm thu (DoD):**
+  1. Tuân thủ 100% cấu trúc, chữ ký hàm và kiểu trả về theo sơ đồ **Class Diagram** (MVC). Không tự ý phá vỡ các ràng buộc quan hệ của dự án.
+  2. Kế thừa chuẩn xác `CsvRepository<T>`, định nghĩa đúng header.
+  3. Hoàn thiện các thao tác CRUD và tìm kiếm theo điều kiện (`findByCondition`).
+  4. Tốc độ nạp dữ liệu (`loadFromFile`) cho file $\ge 10.000$ dòng (như `seats.csv`) phải $\le 500ms$.
 
 ---
 
@@ -83,3 +87,5 @@ Dựa vào việc mỗi thành viên đã nằm lòng cấu trúc Entity ở Tu�
    Khi tìm kiếm hoặc lọc dữ liệu, luôn lường trước các trường có thể bị `null` (nhất là tìm kiếm theo chuỗi). Sử dụng `if (str != null && str.equalsIgnoreCase(...))` để tránh `NullPointerException`.
 4. **Không thay đổi File Data Gốc:**
    Khi test CRUD, các thao tác `save()` hoặc `delete()` sẽ thay đổi file trong thư mục `data/`. Hãy copy thư mục `data/` ra một thư mục `data_test/` để chạy thử nghiệm, tránh làm hỏng dữ liệu gốc.
+5. **Tuân thủ Tuyệt đối Kiến trúc Dự án:**
+   Mọi Repository phải nằm đúng package `repository`, không rò rỉ logic UI hay logic nghiệp vụ phức tạp (như tính toán kinh doanh) vào Repository, giữ đúng chuẩn mô hình MVC. Nếu sơ đồ lớp yêu cầu hàm trả về `List<T>`, không tự ý đổi sang mảng hay kiểu khác.

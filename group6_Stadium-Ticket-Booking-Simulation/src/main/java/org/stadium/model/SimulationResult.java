@@ -86,6 +86,9 @@ public class SimulationResult extends BaseEntity {
                 "SimulationResult CSV row contains an invalid numeric value", e
             );
         }
+        public SynchronizationMechanism getMechanism() {
+            return mechanism;
+        }
 
         resultId = parts[0];
         mechanism = parsedMechanism;

@@ -16,7 +16,7 @@ public abstract class CsvRepository<T extends BaseEntity> {
         loadFromFile();
     }
 
-    protected abstract T createEntity();
+    public abstract T createEntity();
 
     public void loadFromFile() {
         items.clear();
@@ -53,7 +53,7 @@ public abstract class CsvRepository<T extends BaseEntity> {
         }
     }
 
-    protected abstract String getHeader();
+    public abstract String getHeader();
 
     public boolean save(T entity) {
         items.add(entity);

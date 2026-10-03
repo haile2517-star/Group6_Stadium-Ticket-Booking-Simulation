@@ -37,5 +37,29 @@ public class TicketPricing extends BaseEntity {
         this.basePrice = (parts[3] == null ||  parts[3].trim().isEmpty()) ? 0.0 : Double.parseDouble(parts[3].trim());
 
     }
+public String getPricingId() {
+    return pricingId;
+}
+public void setPricingId(String pricingId) {
+    this.pricingId = pricingId;
+}
+public String getMatchId() {
+    return matchId;
+}
+public void setMatchId(String matchId) {
+    this.matchId = matchId;
+}
+public String getSectionId() {
+    return sectionId;
+}
+public void setSectionId(String sectionId) {
+    this.sectionId = sectionId;
+}
+public double getBasePrice() {
+    return basePrice;
+}
+public void setBasePrice(double basePrice) {
+    this.basePrice = basePrice;
+}
 
 }

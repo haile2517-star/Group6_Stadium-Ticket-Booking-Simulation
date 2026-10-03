@@ -59,4 +59,73 @@ public class Ticket extends BaseEntity {
         this.status = (parts[7] == null || parts[7].trim().isEmpty() ? null : TicketStatus.valueOf(parts[7].trim()));
     }
 
+
+    public String getTicketId(){
+        return this.ticketId;
+    }
+     
+
+     public void setTicketId(String ticketId) {
+         this.ticketId = ticketId;
+     }
+
+     public String getMatchId() {
+         return matchId;
+     }
+
+     public void setMatchId(String matchId) {
+         this.matchId = matchId;
+     }
+
+     public String getSeatId() {
+         return seatId;
+     }
+
+     public void setSeatId(String seatId) {
+         this.seatId = seatId;
+     }
+
+     public String getTransactionId() {
+         return TransactionId;
+     }
+
+     public void setTransactionId(String transactionId) {
+         TransactionId = transactionId;
+     }
+
+     public String getFanId() {
+         return fanId;
+     }
+
+     public void setFanId(String fanId) {
+         this.fanId = fanId;
+     }
+
+     public double getPrice() {
+         return price;
+     }
+
+     public void setPrice(double price) {
+         this.price = price;
+     }
+
+     public String getBookingDate() {
+         return bookingDate;
+     }
+
+     public void setBookingDate(String bookingDate) {
+         this.bookingDate = bookingDate;
+     }
+
+     public TicketStatus getStatus() {
+         return status;
+     }
+
+     public void setStatus(TicketStatus status) {
+         this.status = status;
+     }
+
+
+
+
 }

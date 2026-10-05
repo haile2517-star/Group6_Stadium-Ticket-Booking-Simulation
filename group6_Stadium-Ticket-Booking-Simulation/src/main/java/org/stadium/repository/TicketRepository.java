@@ -20,7 +20,7 @@ public class TicketRepository extends CsvRepository<Ticket> {
         return "ticketId,matchId,seatId,transactionId,fanId,price,bookingDate,status";
     }
     public List<Ticket> findByMatchId(String matchId){
-        return findByCondition(t -> t.getFanId().equals(matchId));
+        return findByCondition(t -> t.getMatchId().equals(matchId));
 
     }
      public List<Ticket> findByFanId(String fanId){

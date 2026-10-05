@@ -2,23 +2,21 @@ package org.stadium.repository;
 
 import org.stadium.model.Admin;
 
+import java.util.List;
+
 public class AdminRepository extends CsvRepository<Admin> {
 
     public AdminRepository(String filePath) {
         super(filePath);
     }
 
-    public AdminRepository() {
-        super("data/admins.csv");
-    }
-
     @Override
-    protected Admin createEntity() {
+    public Admin createEntity() {
         return new Admin();
     }
 
     @Override
-    protected String getHeader() {
+    public String getHeader() {
         return "adminId,username,passwordHash,fullName,email,phone,status";
     }
 
@@ -26,11 +24,7 @@ public class AdminRepository extends CsvRepository<Admin> {
         if (username == null) {
             return null;
         }
-        for (Admin admin : items) {
-            if (username.equalsIgnoreCase(admin.getUsername())) {
-                return admin;
-            }
-        }
-        return null;
+        List<Admin> result = findByCondition(admin -> username.equalsIgnoreCase(admin.getUsername()));
+        return result.isEmpty() ? null : result.get(0);
     }
 }

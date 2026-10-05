@@ -3,7 +3,6 @@ package org.stadium.repository;
 import org.stadium.model.AccountStatus;
 import org.stadium.model.Organizer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class OrganizerRepository extends CsvRepository<Organizer> {
@@ -12,17 +11,13 @@ public class OrganizerRepository extends CsvRepository<Organizer> {
         super(filePath);
     }
 
-    public OrganizerRepository() {
-        super("data/organizers.csv");
-    }
-
     @Override
-    protected Organizer createEntity() {
+    public Organizer createEntity() {
         return new Organizer();
     }
 
     @Override
-    protected String getHeader() {
+    public String getHeader() {
         return "organizerId,username,passwordHash,orgName,email,phone,status";
     }
 
@@ -30,21 +25,11 @@ public class OrganizerRepository extends CsvRepository<Organizer> {
         if (username == null) {
             return null;
         }
-        for (Organizer org : items) {
-            if (username.equalsIgnoreCase(org.getUsername())) {
-                return org;
-            }
-        }
-        return null;
+        List<Organizer> result = findByCondition(org -> username.equalsIgnoreCase(org.getUsername()));
+        return result.isEmpty() ? null : result.get(0);
     }
 
     public List<Organizer> findPendingOrganizers() {
-        List<Organizer> pendingList = new ArrayList<>();
-        for (Organizer org : items) {
-            if (org.getStatus() == AccountStatus.PENDING) {
-                pendingList.add(org);
-            }
-        }
-        return pendingList;
+        return findByCondition(org -> org.getStatus() == AccountStatus.PENDING);
     }
 }

@@ -16,12 +16,12 @@ public class TransactionRepository extends CsvRepository<BookingTransaction> {
 
     @Override
     public String getHeader(){
-        return "transactionId,fanId,matchId.totalAmount,ticketCount,transactionDate,status";
+        return "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status";
     }
     public List<BookingTransaction> findByFanId(String fanId){
-        return findByCondition(t -> t.toCsvLine().split(",", -1)[1].equals(fanId));
+        return findByCondition(t -> fanId != null && fanId.equals(t.getFanId()));
     }
     public List<BookingTransaction> findByStatus(TransactionStatus status){
-        return findByCondition(t -> t.toCsvLine().split(",", -1)[6].equals(status.name()));
+        return findByCondition(t -> t.getStatus() == status);
     }
 }

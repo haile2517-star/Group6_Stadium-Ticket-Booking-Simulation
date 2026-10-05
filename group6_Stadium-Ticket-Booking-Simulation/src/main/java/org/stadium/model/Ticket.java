@@ -7,7 +7,7 @@ public class Ticket extends BaseEntity {
     private String ticketId;
     private String matchId;
     private String seatId;
-    private String TransactionId;
+    private String transactionId;
     private String fanId;
     private double price;
     private String bookingDate;
@@ -16,12 +16,12 @@ public class Ticket extends BaseEntity {
     public Ticket() {
     }
 
-    public Ticket(String ticketId, String matchId, String seatId, String TransactionId, String fanId, double price,
+    public Ticket(String ticketId, String matchId, String seatId, String transactionId, String fanId, double price,
             String bookingDate, TicketStatus status) {
         this.ticketId = ticketId;
         this.matchId = matchId;
         this.seatId = seatId;
-        this.TransactionId = TransactionId;
+        this.transactionId = transactionId;
         this.fanId = fanId;
         this.price = price;
         this.bookingDate = bookingDate;
@@ -41,7 +41,7 @@ public class Ticket extends BaseEntity {
 
     @Override
     public String toCsvLine() {
-        return ticketId + "," + matchId + "," + seatId + "," + (TransactionId != null ? TransactionId : "") + ","
+        return ticketId + "," + matchId + "," + seatId + "," + (transactionId != null ? transactionId : "") + ","
                 + (fanId != null ? fanId : "") + "," + price + "," + (bookingDate != null ? bookingDate : "") + ","
                 + (status != null ? status.name() : "");
     }
@@ -52,7 +52,7 @@ public class Ticket extends BaseEntity {
         this.ticketId = parts[0].trim();
         this.matchId = parts[1].trim();
         this.seatId = parts[2].trim();
-        this.TransactionId = parts[3].trim();
+        this.transactionId = parts[3].trim();
         this.fanId = parts[4].trim();
         this.price = (parts[5] == null || parts[5].trim().isEmpty() ? 0.0 : Double.parseDouble(parts[5].trim()));
         this.bookingDate = parts[6].trim();
@@ -86,11 +86,11 @@ public class Ticket extends BaseEntity {
      }
 
      public String getTransactionId() {
-         return TransactionId;
+         return transactionId;
      }
 
      public void setTransactionId(String transactionId) {
-         TransactionId = transactionId;
+         this.transactionId = transactionId;
      }
 
      public String getFanId() {

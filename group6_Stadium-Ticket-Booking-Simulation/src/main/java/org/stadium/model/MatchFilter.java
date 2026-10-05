@@ -1,4 +1,4 @@
-﻿package org.stadium.model;
+package org.stadium.model;
 
 import org.stadium.model.enums.MatchStatus;
 

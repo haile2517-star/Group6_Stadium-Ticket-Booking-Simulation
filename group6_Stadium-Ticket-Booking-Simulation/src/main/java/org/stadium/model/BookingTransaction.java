@@ -31,15 +31,6 @@ public class BookingTransaction extends BaseEntity {
     public String getId(){
         return this.transactionId;
     }
-    public void markAsSuccess(){
-        this.status = TransactionStatus.SUCCESS;
-    }
-    public void markAsFailed(){
-        this.status = TransactionStatus.FAILED;
-    }
-    public void markAsCancelled(){
-        this.status = TransactionStatus.CANCELLED;
-    }
     @Override 
     public String toCsvLine(){
         return transactionId + "," + fanId + "," + matchId + "," + totalAmount + "," + ticketCount + "," + (transactionDate != null ? transactionDate : "") + "," + (status != null ? status.name() : "");
@@ -56,5 +47,60 @@ public class BookingTransaction extends BaseEntity {
         this.status = (parts[6] == null || parts[6].trim().isEmpty()) ? null : TransactionStatus.valueOf(parts[6].trim());
     }
 
+    // Getters and Setters
+    public String getTransactionId() {
+        return transactionId;
+    }
 
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getFanId() {
+        return fanId;
+    }
+
+    public void setFanId(String fanId) {
+        this.fanId = fanId;
+    }
+
+    public String getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(String matchId) {
+        this.matchId = matchId;
+    }
+
+    public String getTransactionDate() {
+        return transactionDate;
+    }
+
+    public void setTransactionDate(String transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public int getTicketCount() {
+        return ticketCount;
+    }
+
+    public void setTicketCount(int ticketCount) {
+        this.ticketCount = ticketCount;
+    }
+
+    public TransactionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TransactionStatus status) {
+        this.status = status;
+    }
 }

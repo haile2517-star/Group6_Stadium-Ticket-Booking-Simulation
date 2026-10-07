@@ -1,4 +1,4 @@
-﻿# 🎫 Stadium Ticket Booking Simulation — Nhóm 6 (LAB211)
+# 🎫 Stadium Ticket Booking Simulation — Nhóm 6 (LAB211)
 
 > **Đọc file này trước khi code.** Đây là nguồn chân lý về mọi quy ước trong dự án.
 
@@ -29,6 +29,31 @@ Hệ thống mô phỏng bán vé trực tuyến cho sân vận động. Trọng
 | `FILE_LOCK` | Java NIO `FileLock` khóa cấp file |
 | `SYNCHRONIZED` | `synchronized` block trong Repository |
 | `OPTIMISTIC` | Kiểm tra `version` trước khi ghi (CAS) |
+
+---
+
+## 🎯 Phân Quyền & Yêu Cầu Chức Năng (Usecases)
+
+Dựa theo bài toán gốc và sơ đồ Usecase, hệ thống tập trung giải quyết bài toán cốt lõi là **đặt vé đồng thời của Fan** và yêu cầu kỹ thuật **CRUD (Seat, Fan, Match)** từ Rubric chấm điểm. Chức năng được phân bổ cho 4 nhóm Actor chính:
+
+### 1. 👤 Guest (Khách vãng lai)
+- **Xác thực:** Đăng ký tài khoản (trở thành Fan hoặc Organizer) và Đăng nhập.
+- **Tra cứu công khai:** Xem danh sách trận đấu (`View Matches`), tìm kiếm và lọc trận đấu (`Search/Filter Matches`).
+
+### 2. 🎟️ Fan (Người hâm mộ - Trọng tâm bài toán)
+- **Quản lý hồ sơ:** Xem, cập nhật thông tin cá nhân và đổi mật khẩu.
+- **Giao dịch Đặt vé (Core Flow):** Đặt mua vé (giới hạn **tối đa 4 vé/lần giao dịch** theo yêu cầu đề bài). Quá trình đặt vé tuân thủ vòng đời ghế: `AVAILABLE` → `LOCKED` → `BOOKED` (không bán lại ghế đã BOOKED).
+- **Lịch sử:** Hủy vé và xem lịch sử giao dịch vé đã mua (`View Booking History`).
+
+### 3. 🏢 Organizer (Ban tổ chức)
+Được sinh ra để đáp ứng yêu cầu "CRUD cho Match" của bài toán:
+- **Quản lý Trận đấu (CRUD Match):** Tạo sự kiện mới, cập nhật hoặc xóa trận đấu do mình tổ chức.
+- **Quản lý Vé:** Cấu hình giá vé (`Configure Ticket Pricing`), tự động phát hành vé (`Generate tickets`), và xem báo cáo doanh thu vé bán ra.
+
+### 4. ⚙️ System Admin (Quản trị viên & Giả lập)
+Đáp ứng yêu cầu "CRUD cho Seat, Fan" và "Luồng Simulator" của đề:
+- **Quản lý Hệ thống (CRUD Seat & Fan):** Duyệt/Xóa tài khoản Fan, Organizer. Thêm, Sửa, Xóa, Tìm kiếm ghế ngồi (Seat) trong sân vận động.
+- **Vận hành Giả lập (Simulator Tool):** Dùng `CountDownLatch` giả lập **100 - 500 threads** truy cập đồng thời để ép lỗi Double Booking. Khởi chạy 4 cơ chế khóa (`NO_LOCK`, `FILE_LOCK`, `SYNCHRONIZED`, `OPTIMISTIC` với trường `version`) và xuất báo cáo đo lường *Throughput (vé/s)* & *Double booking rate (%)* ra CSV.
 
 ---
 

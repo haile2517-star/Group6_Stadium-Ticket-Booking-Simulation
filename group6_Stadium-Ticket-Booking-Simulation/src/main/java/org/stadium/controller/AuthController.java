@@ -1,0 +1,358 @@
+package org.stadium.controller;
+
+import org.stadium.model.Account;
+import org.stadium.model.AccountStatus;
+import org.stadium.model.Admin;
+import org.stadium.model.Fan;
+import org.stadium.model.Organizer;
+import org.stadium.repository.AdminRepository;
+import org.stadium.repository.FanRepository;
+import org.stadium.repository.OrganizerRepository;
+
+import java.io.File;
+
+/**
+ * Controller phụ trách xác thực và quản lý tài khoản người dùng (Auth / Account domain).
+ * Thành viên phụ trách: Kiệt (Tuần 5 - Controller Layer).
+ */
+public class AuthController {
+
+    private final FanRepository fanRepo;
+    private final OrganizerRepository organizerRepo;
+    private final AdminRepository adminRepo;
+    private Account currentUser;
+
+    public AuthController(FanRepository fanRepo, OrganizerRepository organizerRepo, AdminRepository adminRepo) {
+        this.fanRepo = fanRepo;
+        this.organizerRepo = organizerRepo;
+        this.adminRepo = adminRepo;
+    }
+
+    public AuthController() {
+        this(
+                new FanRepository(resolvePath("fans.csv")),
+                new OrganizerRepository(resolvePath("organizers.csv")),
+                new AdminRepository(resolvePath("admins.csv"))
+        );
+    }
+
+    private static String resolvePath(String fileName) {
+        if (new File("data/" + fileName).exists()) {
+            return "data/" + fileName;
+        } else if (new File("../data/" + fileName).exists()) {
+            return "../data/" + fileName;
+        }
+        return "data/" + fileName;
+    }
+
+    /**
+     * Đăng nhập hệ thống bằng username và password.
+     * Kiểm tra lần lượt trong AdminRepository, FanRepository, OrganizerRepository.
+     * Chỉ cho phép đăng nhập nếu tài khoản có trạng thái ACTIVE và mật khẩu hợp lệ.
+     *
+     * @param username tên đăng nhập
+     * @param pass mật khẩu nhập vào
+     * @return Account nếu đăng nhập thành công, null nếu thất bại
+     */
+    public Account login(String username, String pass) {
+        if (username == null || username.trim().isEmpty() || pass == null || pass.isEmpty()) {
+            return null;
+        }
+
+        String trimmedUser = username.trim();
+
+        // 1. Kiểm tra Admin
+        Admin admin = adminRepo.findByUsername(trimmedUser);
+        if (admin != null) {
+            if (admin.getStatus() == AccountStatus.ACTIVE && admin.validatePassword(pass)) {
+                this.currentUser = admin;
+                return admin;
+            }
+            return null;
+        }
+
+        // 2. Kiểm tra Fan
+        Fan fan = fanRepo.findByUsername(trimmedUser);
+        if (fan != null) {
+            if (fan.getStatus() == AccountStatus.ACTIVE && fan.validatePassword(pass)) {
+                this.currentUser = fan;
+                return fan;
+            }
+            return null;
+        }
+
+        // 3. Kiểm tra Organizer
+        Organizer organizer = organizerRepo.findByUsername(trimmedUser);
+        if (organizer != null) {
+            if (organizer.getStatus() == AccountStatus.ACTIVE && organizer.validatePassword(pass)) {
+                this.currentUser = organizer;
+                return organizer;
+            }
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Đăng xuất tài khoản khỏi phiên hiện tại.
+     *
+     * @param accountId mã tài khoản cần đăng xuất
+     */
+    public void logout(String accountId) {
+        if (currentUser != null) {
+            if (accountId == null || accountId.trim().isEmpty() || currentUser.getId().equalsIgnoreCase(accountId.trim())) {
+                this.currentUser = null;
+            }
+        }
+    }
+
+    /**
+     * Đăng ký tài khoản người hâm mộ (Fan).
+     *
+     * @param username tên đăng nhập
+     * @param pass mật khẩu
+     * @param name họ và tên đầy đủ
+     * @param email địa chỉ email
+     * @param phone số điện thoại
+     * @return true nếu đăng ký thành công, false nếu thông tin không hợp lệ hoặc username đã tồn tại
+     */
+    public boolean registerFan(String username, String pass, String name, String email, String phone) {
+        if (username == null || username.trim().isEmpty()
+                || pass == null || pass.trim().isEmpty()
+                || name == null || name.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+
+        String trimmedUsername = username.trim();
+
+        // Kiểm tra tính duy nhất của username trên toàn hệ thống
+        if (isUsernameExists(trimmedUsername)) {
+            return false;
+        }
+
+        String newFanId = generateNextFanId();
+
+        Fan newFan = new Fan();
+        newFan.setAccountId(newFanId);
+        newFan.setUsername(trimmedUsername);
+        newFan.setPasswordHash("hash_pass_" + pass);
+        newFan.setFullName(name.trim());
+        newFan.setEmail(email.trim());
+        newFan.setPhone(phone.trim());
+        newFan.setFanType("STANDARD");
+        newFan.setStatus(AccountStatus.ACTIVE);
+
+        return fanRepo.save(newFan);
+    }
+
+    /**
+     * Đăng ký tài khoản ban tổ chức (Organizer).
+     * Mặc định tài khoản Organizer sau khi đăng ký sẽ ở trạng thái PENDING chờ Admin duyệt.
+     *
+     * @param username tên đăng nhập
+     * @param pass mật khẩu
+     * @param orgName tên đơn vị tổ chức
+     * @param email địa chỉ email
+     * @param phone số điện thoại
+     * @return true nếu đăng ký thành công, false nếu không hợp lệ
+     */
+    public boolean registerOrganizer(String username, String pass, String orgName, String email, String phone) {
+        if (username == null || username.trim().isEmpty()
+                || pass == null || pass.trim().isEmpty()
+                || orgName == null || orgName.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+
+        String trimmedUsername = username.trim();
+
+        if (isUsernameExists(trimmedUsername)) {
+            return false;
+        }
+
+        String newOrgId = generateNextOrganizerId();
+
+        Organizer newOrg = new Organizer();
+        newOrg.setAccountId(newOrgId);
+        newOrg.setUsername(trimmedUsername);
+        newOrg.setPasswordHash("hash_pass_" + pass);
+        newOrg.setOrgName(orgName.trim());
+        newOrg.setEmail(email.trim());
+        newOrg.setPhone(phone.trim());
+        newOrg.setStatus(AccountStatus.PENDING);
+
+        return organizerRepo.save(newOrg);
+    }
+
+    /**
+     * Xem thông tin hồ sơ tài khoản theo ID.
+     *
+     * @param accountId mã tài khoản
+     * @return Account nếu tìm thấy, null nếu không tồn tại
+     */
+    public Account viewProfile(String accountId) {
+        if (accountId == null || accountId.trim().isEmpty()) {
+            return null;
+        }
+        String id = accountId.trim();
+
+        Account acc = fanRepo.findById(id);
+        if (acc != null) return acc;
+
+        acc = organizerRepo.findById(id);
+        if (acc != null) return acc;
+
+        return adminRepo.findById(id);
+    }
+
+    /**
+     * Cập nhật thông tin liên hệ (email, phone).
+     *
+     * @param accountId mã tài khoản
+     * @param email email mới
+     * @param phone số điện thoại mới
+     * @return true nếu cập nhật thành công, false nếu thất bại
+     */
+    public boolean updateProfile(String accountId, String email, String phone) {
+        if (accountId == null || accountId.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        String id = accountId.trim();
+
+        Fan fan = fanRepo.findById(id);
+        if (fan != null) {
+            fan.updateContactInfo(email.trim(), phone.trim());
+            fanRepo.saveToFile();
+            return true;
+        }
+
+        Organizer org = organizerRepo.findById(id);
+        if (org != null) {
+            org.updateContactInfo(email.trim(), phone.trim());
+            organizerRepo.saveToFile();
+            return true;
+        }
+
+        Admin admin = adminRepo.findById(id);
+        if (admin != null) {
+            admin.updateContactInfo(email.trim(), phone.trim());
+            adminRepo.saveToFile();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Thay đổi mật khẩu tài khoản.
+     *
+     * @param accountId mã tài khoản
+     * @param oldPass mật khẩu cũ
+     * @param newPass mật khẩu mới
+     * @return true nếu đổi mật khẩu thành công, false nếu sai mật khẩu cũ hoặc không tìm thấy tài khoản
+     */
+    public boolean changePassword(String accountId, String oldPass, String newPass) {
+        if (accountId == null || accountId.trim().isEmpty()
+                || oldPass == null || oldPass.isEmpty()
+                || newPass == null || newPass.trim().isEmpty()) {
+            return false;
+        }
+        String id = accountId.trim();
+
+        Account acc = viewProfile(id);
+        if (acc == null) {
+            return false;
+        }
+
+        if (!acc.validatePassword(oldPass)) {
+            return false;
+        }
+
+        acc.changePassword("hash_pass_" + newPass);
+
+        if (acc instanceof Fan) {
+            fanRepo.saveToFile();
+        } else if (acc instanceof Organizer) {
+            organizerRepo.saveToFile();
+        } else if (acc instanceof Admin) {
+            adminRepo.saveToFile();
+        }
+
+        return true;
+    }
+
+    /**
+     * Kiểm tra username đã tồn tại trên bất kỳ repository tài khoản nào chưa.
+     */
+    private boolean isUsernameExists(String username) {
+        return fanRepo.findByUsername(username) != null
+                || organizerRepo.findByUsername(username) != null
+                || adminRepo.findByUsername(username) != null;
+    }
+
+    /**
+     * Tự động sinh ID tiếp theo cho Fan theo định dạng FAN + 4 chữ số (ví dụ: FAN0251).
+     */
+    private synchronized String generateNextFanId() {
+        int maxId = 0;
+        for (Fan fan : fanRepo.findAll()) {
+            String id = fan.getId();
+            if (id != null && id.toUpperCase().startsWith("FAN")) {
+                try {
+                    int num = Integer.parseInt(id.substring(3));
+                    if (num > maxId) {
+                        maxId = num;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return String.format("FAN%04d", maxId + 1);
+    }
+
+    /**
+     * Tự động sinh ID tiếp theo cho Organizer theo định dạng ORG + 2 chữ số (ví dụ: ORG07).
+     */
+    private synchronized String generateNextOrganizerId() {
+        int maxId = 0;
+        for (Organizer org : organizerRepo.findAll()) {
+            String id = org.getId();
+            if (id != null && id.toUpperCase().startsWith("ORG")) {
+                try {
+                    int num = Integer.parseInt(id.substring(3));
+                    if (num > maxId) {
+                        maxId = num;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return String.format("ORG%02d", maxId + 1);
+    }
+
+    public Account getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(Account currentUser) {
+        this.currentUser = currentUser;
+    }
+
+    public FanRepository getFanRepo() {
+        return fanRepo;
+    }
+
+    public OrganizerRepository getOrganizerRepo() {
+        return organizerRepo;
+    }
+
+    public AdminRepository getAdminRepo() {
+        return adminRepo;
+    }
+}

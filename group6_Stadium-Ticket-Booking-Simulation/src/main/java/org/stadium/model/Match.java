@@ -48,7 +48,7 @@ public class Match extends BaseEntity {
         this.status = MatchStatus.valueOf(parts[8]);
     }
 
-    // Getters and setters
+  
     public String getMatchId() {
         return this.matchId;
     }

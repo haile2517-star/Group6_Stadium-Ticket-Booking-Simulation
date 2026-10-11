@@ -35,7 +35,6 @@ public class AuthControllerTest {
 
             AuthController authController = new AuthController(fanRepo, orgRepo, adminRepo);
 
-            // Test 1: Đăng nhập Admin thành công
             test("1. Dang nhap Admin thanh cong", () -> {
                 Account acc = authController.login("admin", "hash_admin_2026");
                 assertCondition(acc != null, "Admin phai dang nhap thanh cong");
@@ -43,32 +42,27 @@ public class AuthControllerTest {
                 assertCondition(authController.getCurrentUser() != null, "Current user phai duoc cap nhat");
             });
 
-            // Test 2: Đăng xuất
             test("2. Dang xuat he thong", () -> {
                 authController.logout("ADM01");
                 assertCondition(authController.getCurrentUser() == null, "Current user phai ve null sau khi logout");
             });
 
-            // Test 3: Đăng nhập Fan thành công
             test("3. Dang nhap Fan thanh cong", () -> {
                 Account acc = authController.login("namml1", "namml1");
                 assertCondition(acc != null, "Fan phai dang nhap thanh cong");
                 assertCondition("FAN0001".equals(acc.getId()), "Fan ID phai la FAN0001");
             });
 
-            // Test 4: Đăng nhập thất bại do sai mật khẩu
             test("4. Dang nhap that bai do sai mat khau", () -> {
                 Account acc = authController.login("namml1", "wrong_password");
                 assertCondition(acc == null, "Dang nhap phai that bai khi sai mat khau");
             });
 
-            // Test 5: Đăng nhập thất bại do tài khoản bị BLOCKED
             test("5. Dang nhap that bai do tai khoan bi BLOCKED", () -> {
                 Account acc = authController.login("binhvt246", "binhvt246");
                 assertCondition(acc == null, "Tai khoan bi BLOCKED khong duoc phep dang nhap");
             });
 
-            // Test 6: Đăng ký Fan mới hợp lệ
             test("6. Dang ky Fan moi thanh cong", () -> {
                 boolean registered = authController.registerFan(
                         "kiet_test",
@@ -84,12 +78,10 @@ public class AuthControllerTest {
                 assertCondition(createdFan.getStatus() == AccountStatus.ACTIVE, "Fan moi phai co trang thai ACTIVE");
                 assertCondition("STANDARD".equals(createdFan.getFanType()), "Loai Fan mac dinh phai la STANDARD");
 
-                // Thử đăng nhập bằng tài khoản vừa tạo
                 Account loginAcc = authController.login("kiet_test", "password123");
                 assertCondition(loginAcc != null, "Fan moi tao phai dang nhap thanh cong");
             });
 
-            // Test 7: Đăng ký Fan trùng username
             test("7. Dang ky Fan that bai khi trung username", () -> {
                 boolean registered = authController.registerFan(
                         "kiet_test",
@@ -107,14 +99,12 @@ public class AuthControllerTest {
                 assertCondition(!r1 && !r2, "Dang ky phai that bai khi thieu thong tin");
             });
 
-            // Test 9: Xem hồ sơ (viewProfile)
             test("9. Xem thong tin ho so (viewProfile)", () -> {
                 Account profile = authController.viewProfile("FAN0001");
                 assertCondition(profile != null, "Phai tim thay ho so FAN0001");
                 assertCondition("namml1".equals(profile.getUsername()), "Username phai khop voi FAN0001");
             });
 
-            // Test 10: Cập nhật hồ sơ (updateProfile)
             test("10. Cap nhat ho so (updateProfile)", () -> {
                 boolean updated = authController.updateProfile("FAN0001", "new_nam@gmail.com", "0999888777");
                 assertCondition(updated, "Cap nhat ho so phai thanh cong");
@@ -124,21 +114,17 @@ public class AuthControllerTest {
                 assertCondition("0999888777".equals(fan.getPhone()), "Phone phai duoc cap nhat");
             });
 
-            // Test 11: Đổi mật khẩu (changePassword)
             test("11. Doi mat khau thanh cong va dang nhap bang mat khau moi", () -> {
                 boolean changed = authController.changePassword("FAN0001", "namml1", "newPass2026");
                 assertCondition(changed, "Doi mat khau voi oldPass dung phai thanh cong");
 
-                // Đăng nhập bằng pass cũ phải thất bại
                 Account loginOld = authController.login("namml1", "namml1");
                 assertCondition(loginOld == null, "Dang nhap voi pass cu phai that bai");
 
-                // Đăng nhập bằng pass mới phải thành công
                 Account loginNew = authController.login("namml1", "newPass2026");
                 assertCondition(loginNew != null, "Dang nhap voi pass moi phai thanh cong");
             });
 
-            // Test 12: Đổi mật khẩu thất bại khi sai mật khẩu cũ
             test("12. Doi mat khau that bai khi sai pass cu", () -> {
                 boolean changed = authController.changePassword("FAN0001", "wrong_old_pass", "abc12345");
                 assertCondition(!changed, "Doi mat khau phai that bai khi sai mat khau cu");
@@ -152,7 +138,7 @@ public class AuthControllerTest {
             System.err.println("Co loi xay ra trong qua trinh kiem thu: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Xoa file tam
+  
             tempFans.delete();
             tempAdmins.delete();
             tempOrgs.delete();

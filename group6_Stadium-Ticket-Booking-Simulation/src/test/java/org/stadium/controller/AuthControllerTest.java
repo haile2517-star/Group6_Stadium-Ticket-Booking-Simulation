@@ -17,7 +17,7 @@ public class AuthControllerTest {
     private static int testsPassed = 0;
 
     public static void main(String[] args) {
-        System.out.println("=== BAT DAU KIEM THU AUTHCONTROLLER (NHIEM VU CUA KIET - TUAN 5) ===\n");
+        System.out.println("=== BAT DAU KIEM THU AUTHCONTROLLER ===\n");
 
         File tempDir = new File("target/test-data");
         tempDir.mkdirs();
@@ -75,8 +75,7 @@ public class AuthControllerTest {
                         "password123",
                         "Nguyen Tuan Kiet",
                         "kiet@example.com",
-                        "0912345678"
-                );
+                        "0912345678");
                 assertCondition(registered, "Dang ky Fan moi phai tra ve true");
 
                 Fan createdFan = fanRepo.findByUsername("kiet_test");
@@ -97,8 +96,7 @@ public class AuthControllerTest {
                         "different_pass",
                         "Another Name",
                         "another@example.com",
-                        "0999999999"
-                );
+                        "0999999999");
                 assertCondition(!registered, "Khong duoc phep dang ky khi username da ton tai");
             });
 
@@ -166,7 +164,8 @@ public class AuthControllerTest {
         try (FileWriter fw = new FileWriter(fans)) {
             fw.write("fanId,username,passwordHash,fullName,email,phone,fanType,status\n");
             fw.write("FAN0001,namml1,hash_pass_namml1,Le Minh Nam,namml1@gmail.com,0902948884,VIP,ACTIVE\n");
-            fw.write("FAN0246,binhvt246,hash_pass_binhvt246,Tran Van Binh,binhvt246@gmail.com,0957692194,SILVER,BLOCKED\n");
+            fw.write(
+                    "FAN0246,binhvt246,hash_pass_binhvt246,Tran Van Binh,binhvt246@gmail.com,0957692194,SILVER,BLOCKED\n");
         }
         try (FileWriter fw = new FileWriter(admins)) {
             fw.write("adminId,username,passwordHash,fullName,email,phone,status\n");

@@ -13,14 +13,14 @@ public abstract class CsvRepository<T extends BaseEntity> {
 
     public CsvRepository(String filePath) {
         this.filePath = filePath;
-        loadFromFile();
+        this.loadFromFile();
     }
 
     public abstract T createEntity();
 
     public void loadFromFile() {
-        items.clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        this.items.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(this.filePath))) {
             String line;
             boolean firstLine = true;
             while ((line = br.readLine()) != null) {
@@ -28,63 +28,81 @@ public abstract class CsvRepository<T extends BaseEntity> {
                     firstLine = false;
                     continue;
                 }
-                if (line.isEmpty())
+                if (line.isEmpty()) {
                     continue;
-                T entity = createEntity();
+                }
+                T entity = this.createEntity();
                 entity.fromCsvLine(line);
-                items.add(entity);
+                this.items.add(entity);
             }
-
         } catch (IOException e) {
-            System.err.println("[CsvRepository] Loi doc file: " + filePath + "-" + e.getMessage());
+            System.err.println("[CsvRepository] Loi doc file: " + this.filePath + "-" + e.getMessage());
         }
     }
 
     public void saveToFile() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
-            bw.write(getHeader());
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(this.filePath))) {
+            bw.write(this.getHeader());
             bw.newLine();
-            for (T item : items) {
+            for (T item : this.items) {
                 bw.write(item.toCsvLine());
                 bw.newLine();
             }
         } catch (IOException e) {
-            System.err.println("[CsvRepository] Loi ghi file " + filePath + "-" + e.getMessage());
+            System.err.println("[CsvRepository] Loi ghi file " + this.filePath + "-" + e.getMessage());
         }
     }
 
     public abstract String getHeader();
 
     public boolean save(T entity) {
-        items.add(entity);
-        saveToFile();
+        this.items.add(entity);
+        this.saveToFile();
         return true;
     }
 
     public T findById(String id) {
-        return items.stream()
+        return this.items.stream()
                 .filter(e -> e.getId().equals(id))
                 .findFirst()
                 .orElse(null);
     }
 
     public List<T> findAll() {
-        return new ArrayList<>(items);
+        return new ArrayList<>(this.items);
     }
 
     public List<T> findByCondition(Predicate<T> predicate) {
         List<T> result = new ArrayList<>();
-        for (T item : items) {
-            if (predicate.test(item))
+        for (T item : this.items) {
+            if (predicate.test(item)) {
                 result.add(item);
+            }
         }
         return result;
     }
 
     public boolean deleteById(String id) {
-        boolean removed = items.removeIf(e -> e.getId().equals(id));
-        if (removed)
-            saveToFile();
+        boolean removed = this.items.removeIf(e -> e.getId().equals(id));
+        if (removed) {
+            this.saveToFile();
+        }
         return removed;
+    }
+
+    public String getFilePath() {
+        return this.filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public List<T> getItems() {
+        return this.items;
+    }
+
+    public void setItems(List<T> items) {
+        this.items = items;
     }
 }

@@ -22,12 +22,12 @@ public class TicketPricing extends BaseEntity {
     }
 
     public double getPrice() {
-        return price;
+        return this.price;
     }
 
     @Override
     public String toCsvLine() {
-        return pricingId + "," + matchId + "," + sectionId + "," + price;
+        return this.pricingId + "," + this.matchId + "," + this.sectionId + "," + this.price;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class TicketPricing extends BaseEntity {
     }
 
     public String getPricingId() {
-        return pricingId;
+        return this.pricingId;
     }
 
     public void setPricingId(String pricingId) {
@@ -48,7 +48,7 @@ public class TicketPricing extends BaseEntity {
     }
 
     public String getMatchId() {
-        return matchId;
+        return this.matchId;
     }
 
     public void setMatchId(String matchId) {
@@ -56,7 +56,7 @@ public class TicketPricing extends BaseEntity {
     }
 
     public String getSectionId() {
-        return sectionId;
+        return this.sectionId;
     }
 
     public void setSectionId(String sectionId) {

@@ -13,10 +13,14 @@ import java.io.IOException;
 
 public class AuthControllerTest {
 
-    private static int testsRun = 0;
-    private static int testsPassed = 0;
+    private int testsRun = 0;
+    private int testsPassed = 0;
 
     public static void main(String[] args) {
+        new AuthControllerTest().run();
+    }
+
+    public void run() {
         System.out.println("=== BAT DAU KIEM THU AUTHCONTROLLER ===\n");
 
         File tempDir = new File("target/test-data");
@@ -27,7 +31,7 @@ public class AuthControllerTest {
         File tempOrgs = new File(tempDir, "orgs_test.csv");
 
         try {
-            initSampleData(tempFans, tempAdmins, tempOrgs);
+            this.initSampleData(tempFans, tempAdmins, tempOrgs);
 
             FanRepository fanRepo = new FanRepository(tempFans.getAbsolutePath());
             AdminRepository adminRepo = new AdminRepository(tempAdmins.getAbsolutePath());
@@ -35,110 +39,109 @@ public class AuthControllerTest {
 
             AuthController authController = new AuthController(fanRepo, orgRepo, adminRepo);
 
-            test("1. Dang nhap Admin thanh cong", () -> {
+            this.test("1. Dang nhap Admin thanh cong", () -> {
                 Account acc = authController.login("admin", "hash_admin_2026");
-                assertCondition(acc != null, "Admin phai dang nhap thanh cong");
-                assertCondition("ADM01".equals(acc.getId()), "Admin ID phai la ADM01");
-                assertCondition(authController.getCurrentUser() != null, "Current user phai duoc cap nhat");
+                this.assertCondition(acc != null, "Admin phai dang nhap thanh cong");
+                this.assertCondition("ADM01".equals(acc.getId()), "Admin ID phai la ADM01");
+                this.assertCondition(authController.getCurrentUser() != null, "Current user phai duoc cap nhat");
             });
 
-            test("2. Dang xuat he thong", () -> {
+            this.test("2. Dang xuat he thong", () -> {
                 authController.logout("ADM01");
-                assertCondition(authController.getCurrentUser() == null, "Current user phai ve null sau khi logout");
+                this.assertCondition(authController.getCurrentUser() == null, "Current user phai ve null sau khi logout");
             });
 
-            test("3. Dang nhap Fan thanh cong", () -> {
+            this.test("3. Dang nhap Fan thanh cong", () -> {
                 Account acc = authController.login("namml1", "namml1");
-                assertCondition(acc != null, "Fan phai dang nhap thanh cong");
-                assertCondition("FAN0001".equals(acc.getId()), "Fan ID phai la FAN0001");
+                this.assertCondition(acc != null, "Fan phai dang nhap thanh cong");
+                this.assertCondition("FAN0001".equals(acc.getId()), "Fan ID phai la FAN0001");
             });
 
-            test("4. Dang nhap that bai do sai mat khau", () -> {
+            this.test("4. Dang nhap that bai do sai mat khau", () -> {
                 Account acc = authController.login("namml1", "wrong_password");
-                assertCondition(acc == null, "Dang nhap phai that bai khi sai mat khau");
+                this.assertCondition(acc == null, "Dang nhap phai that bai khi sai mat khau");
             });
 
-            test("5. Dang nhap that bai do tai khoan bi BLOCKED", () -> {
+            this.test("5. Dang nhap that bai do tai khoan bi BLOCKED", () -> {
                 Account acc = authController.login("binhvt246", "binhvt246");
-                assertCondition(acc == null, "Tai khoan bi BLOCKED khong duoc phep dang nhap");
+                this.assertCondition(acc == null, "Tai khoan bi BLOCKED khong duoc phep dang nhap");
             });
 
-            test("6. Dang ky Fan moi thanh cong", () -> {
+            this.test("6. Dang ky Fan moi thanh cong", () -> {
                 boolean registered = authController.registerFan(
                         "kiet_test",
                         "password123",
                         "Nguyen Tuan Kiet",
                         "kiet@example.com",
                         "0912345678");
-                assertCondition(registered, "Dang ky Fan moi phai tra ve true");
+                this.assertCondition(registered, "Dang ky Fan moi phai tra ve true");
 
                 Fan createdFan = fanRepo.findByUsername("kiet_test");
-                assertCondition(createdFan != null, "Fan moi phai ton tai trong repository");
-                assertCondition(createdFan.getId().startsWith("FAN"), "ID phai co prefix FAN");
-                assertCondition(createdFan.getStatus() == AccountStatus.ACTIVE, "Fan moi phai co trang thai ACTIVE");
-                assertCondition("STANDARD".equals(createdFan.getFanType()), "Loai Fan mac dinh phai la STANDARD");
+                this.assertCondition(createdFan != null, "Fan moi phai ton tai trong repository");
+                this.assertCondition(createdFan.getId().startsWith("FAN"), "ID phai co prefix FAN");
+                this.assertCondition(createdFan.getStatus() == AccountStatus.ACTIVE, "Fan moi phai co trang thai ACTIVE");
+                this.assertCondition("STANDARD".equals(createdFan.getFanType()), "Loai Fan mac dinh phai la STANDARD");
 
                 Account loginAcc = authController.login("kiet_test", "password123");
-                assertCondition(loginAcc != null, "Fan moi tao phai dang nhap thanh cong");
+                this.assertCondition(loginAcc != null, "Fan moi tao phai dang nhap thanh cong");
             });
 
-            test("7. Dang ky Fan that bai khi trung username", () -> {
+            this.test("7. Dang ky Fan that bai khi trung username", () -> {
                 boolean registered = authController.registerFan(
                         "kiet_test",
                         "different_pass",
                         "Another Name",
                         "another@example.com",
                         "0999999999");
-                assertCondition(!registered, "Khong duoc phep dang ky khi username da ton tai");
+                this.assertCondition(!registered, "Khong duoc phep dang ky khi username da ton tai");
             });
 
             // Test 8: Đăng ký Fan với tham số rỗng / null
-            test("8. Dang ky Fan that bai khi du lieu khong hop le", () -> {
+            this.test("8. Dang ky Fan that bai khi du lieu khong hop le", () -> {
                 boolean r1 = authController.registerFan("", "pass", "Name", "e@e.com", "090");
                 boolean r2 = authController.registerFan("user_x", null, "Name", "e@e.com", "090");
-                assertCondition(!r1 && !r2, "Dang ky phai that bai khi thieu thong tin");
+                this.assertCondition(!r1 && !r2, "Dang ky phai that bai khi thieu thong tin");
             });
 
-            test("9. Xem thong tin ho so (viewProfile)", () -> {
+            this.test("9. Xem thong tin ho so (viewProfile)", () -> {
                 Account profile = authController.viewProfile("FAN0001");
-                assertCondition(profile != null, "Phai tim thay ho so FAN0001");
-                assertCondition("namml1".equals(profile.getUsername()), "Username phai khop voi FAN0001");
+                this.assertCondition(profile != null, "Phai tim thay ho so FAN0001");
+                this.assertCondition("namml1".equals(profile.getUsername()), "Username phai khop voi FAN0001");
             });
 
-            test("10. Cap nhat ho so (updateProfile)", () -> {
+            this.test("10. Cap nhat ho so (updateProfile)", () -> {
                 boolean updated = authController.updateProfile("FAN0001", "new_nam@gmail.com", "0999888777");
-                assertCondition(updated, "Cap nhat ho so phai thanh cong");
+                this.assertCondition(updated, "Cap nhat ho so phai thanh cong");
 
                 Fan fan = fanRepo.findById("FAN0001");
-                assertCondition("new_nam@gmail.com".equals(fan.getEmail()), "Email phai duoc cap nhat");
-                assertCondition("0999888777".equals(fan.getPhone()), "Phone phai duoc cap nhat");
+                this.assertCondition("new_nam@gmail.com".equals(fan.getEmail()), "Email phai duoc cap nhat");
+                this.assertCondition("0999888777".equals(fan.getPhone()), "Phone phai duoc cap nhat");
             });
 
-            test("11. Doi mat khau thanh cong va dang nhap bang mat khau moi", () -> {
+            this.test("11. Doi mat khau thanh cong va dang nhap bang mat khau moi", () -> {
                 boolean changed = authController.changePassword("FAN0001", "namml1", "newPass2026");
-                assertCondition(changed, "Doi mat khau voi oldPass dung phai thanh cong");
+                this.assertCondition(changed, "Doi mat khau voi oldPass dung phai thanh cong");
 
                 Account loginOld = authController.login("namml1", "namml1");
-                assertCondition(loginOld == null, "Dang nhap voi pass cu phai that bai");
+                this.assertCondition(loginOld == null, "Dang nhap voi pass cu phai that bai");
 
                 Account loginNew = authController.login("namml1", "newPass2026");
-                assertCondition(loginNew != null, "Dang nhap voi pass moi phai thanh cong");
+                this.assertCondition(loginNew != null, "Dang nhap voi pass moi phai thanh cong");
             });
 
-            test("12. Doi mat khau that bai khi sai pass cu", () -> {
+            this.test("12. Doi mat khau that bai khi sai pass cu", () -> {
                 boolean changed = authController.changePassword("FAN0001", "wrong_old_pass", "abc12345");
-                assertCondition(!changed, "Doi mat khau phai that bai khi sai mat khau cu");
+                this.assertCondition(!changed, "Doi mat khau phai that bai khi sai mat khau cu");
             });
 
             System.out.println("\n--------------------------------------------------");
-            System.out.printf("KET QUA: %d/%d test cases DA PASS HOAN TOAN!\n", testsPassed, testsRun);
+            System.out.printf("KET QUA: %d/%d test cases DA PASS HOAN TOAN!\n", this.testsPassed, this.testsRun);
             System.out.println("--------------------------------------------------");
 
         } catch (Exception e) {
             System.err.println("Co loi xay ra trong qua trinh kiem thu: " + e.getMessage());
             e.printStackTrace();
         } finally {
-  
             tempFans.delete();
             tempAdmins.delete();
             tempOrgs.delete();
@@ -146,7 +149,7 @@ public class AuthControllerTest {
         }
     }
 
-    private static void initSampleData(File fans, File admins, File orgs) throws IOException {
+    private void initSampleData(File fans, File admins, File orgs) throws IOException {
         try (FileWriter fw = new FileWriter(fans)) {
             fw.write("fanId,username,passwordHash,fullName,email,phone,fanType,status\n");
             fw.write("FAN0001,namml1,hash_pass_namml1,Le Minh Nam,namml1@gmail.com,0902948884,VIP,ACTIVE\n");
@@ -163,18 +166,18 @@ public class AuthControllerTest {
         }
     }
 
-    private static void test(String testName, Runnable testBody) {
-        testsRun++;
+    private void test(String testName, Runnable testBody) {
+        this.testsRun++;
         try {
             testBody.run();
-            testsPassed++;
+            this.testsPassed++;
             System.out.println("[PASS] " + testName);
         } catch (AssertionError | Exception e) {
             System.err.println("[FAIL] " + testName + " -> " + e.getMessage());
         }
     }
 
-    private static void assertCondition(boolean condition, String message) {
+    private void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
         }

@@ -21,6 +21,6 @@ public class SectionRepository extends CsvRepository<SeatSection> {
     }
 
     public List<SeatSection> findByStadiumId(String stadiumId) {
-        return findByCondition(s -> s.getStadiumId().equals(stadiumId));
+        return this.findByCondition(s -> s.getStadiumId().equals(stadiumId));
     }
 }

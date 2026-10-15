@@ -18,7 +18,7 @@ public class Match extends BaseEntity {
 
     @Override
     public String getId() {
-        return matchId;
+        return this.matchId;
     }
 
     public void updateMatchDetails(String title, String start, String end) {
@@ -29,9 +29,9 @@ public class Match extends BaseEntity {
 
     @Override
     public String toCsvLine() {
-        return matchId + "," + organizerId + "," + stadiumId + ","
-                + matchTitle + "," + teamA + "," + teamB + "," + startTime + "," + endTime + "," + status.name();
-
+        return this.matchId + "," + this.organizerId + "," + this.stadiumId + ","
+                + this.matchTitle + "," + this.teamA + "," + this.teamB + ","
+                + this.startTime + "," + this.endTime + "," + this.status.name();
     }
 
     @Override
@@ -48,7 +48,6 @@ public class Match extends BaseEntity {
         this.status = MatchStatus.valueOf(parts[8]);
     }
 
-  
     public String getMatchId() {
         return this.matchId;
     }
@@ -66,7 +65,7 @@ public class Match extends BaseEntity {
     }
 
     public String getStadiumId() {
-        return stadiumId;
+        return this.stadiumId;
     }
 
     public void setStadiumId(String stadiumId) {
@@ -74,7 +73,7 @@ public class Match extends BaseEntity {
     }
 
     public String getMatchTitle() {
-        return matchTitle;
+        return this.matchTitle;
     }
 
     public void setMatchTitle(String matchTitle) {
@@ -120,5 +119,4 @@ public class Match extends BaseEntity {
     public void setStatus(MatchStatus status) {
         this.status = status;
     }
-
 }

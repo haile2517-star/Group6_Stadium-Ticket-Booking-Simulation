@@ -24,7 +24,7 @@ public class AdminRepository extends CsvRepository<Admin> {
         if (username == null) {
             return null;
         }
-        List<Admin> result = findByCondition(admin -> username.equalsIgnoreCase(admin.getUsername()));
+        List<Admin> result = this.findByCondition(admin -> username.equalsIgnoreCase(admin.getUsername()));
         return result.isEmpty() ? null : result.get(0);
     }
 }

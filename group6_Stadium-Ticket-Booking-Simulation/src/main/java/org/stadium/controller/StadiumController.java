@@ -47,24 +47,28 @@ public class StadiumController {
      * Khởi tạo StadiumController với SectionRepository và SeatRepository.
      */
     public StadiumController(SectionRepository sectionRepository, SeatRepository seatRepository) {
-        this(new StadiumRepository(resolvePath("stadiums.csv")), sectionRepository, seatRepository);
+        String path = new File("data/stadiums.csv").exists() ? "data/stadiums.csv" : (new File("../data/stadiums.csv").exists() ? "../data/stadiums.csv" : "data/stadiums.csv");
+        this.stadiumRepository = new StadiumRepository(path);
+        this.sectionRepository = sectionRepository;
+        this.seatRepository = seatRepository;
     }
 
     /**
      * Constructor mặc định tự động nạp dữ liệu từ thư mục data / ../data.
      */
     public StadiumController() {
-        this(
-                new StadiumRepository(resolvePath("stadiums.csv")),
-                new SectionRepository(resolvePath("sections.csv")),
-                new SeatRepository(resolvePath("seats.csv"))
-        );
+        String pathStadiums = new File("data/stadiums.csv").exists() ? "data/stadiums.csv" : (new File("../data/stadiums.csv").exists() ? "../data/stadiums.csv" : "data/stadiums.csv");
+        String pathSections = new File("data/sections.csv").exists() ? "data/sections.csv" : (new File("../data/sections.csv").exists() ? "../data/sections.csv" : "data/sections.csv");
+        String pathSeats = new File("data/seats.csv").exists() ? "data/seats.csv" : (new File("../data/seats.csv").exists() ? "../data/seats.csv" : "data/seats.csv");
+        this.stadiumRepository = new StadiumRepository(pathStadiums);
+        this.sectionRepository = new SectionRepository(pathSections);
+        this.seatRepository = new SeatRepository(pathSeats);
     }
 
     /**
      * Tìm đường dẫn file dữ liệu CSV phù hợp (hỗ trợ cả chạy từ thư mục gốc hoặc thư mục con).
      */
-    private static String resolvePath(String fileName) {
+    public String resolvePath(String fileName) {
         if (new File("data/" + fileName).exists()) {
             return "data/" + fileName;
         } else if (new File("../data/" + fileName).exists()) {
@@ -74,7 +78,19 @@ public class StadiumController {
     }
 
     /**
+     * Lấy toàn bộ danh sách sân vận động trong hệ thống.
+     * Khớp chính xác phương thức trong Class Diagram: +getAllStadiums(): List~Stadium~
+     */
+    public List<Stadium> getAllStadiums() {
+        if (this.stadiumRepository == null) {
+            return Collections.emptyList();
+        }
+        return this.stadiumRepository.findAll();
+    }
+
+    /**
      * Lấy danh sách các khán đài / khu vực (SeatSection) thuộc về một sân vận động cụ thể.
+     * Khớp chính xác phương thức trong Class Diagram: +getSections(stadiumId: String): List~SeatSection~
      *
      * @param stadiumId mã sân vận động (ví dụ: STD01)
      * @return danh sách các SeatSection, hoặc danh sách rỗng nếu không tìm thấy
@@ -83,15 +99,16 @@ public class StadiumController {
         if (stadiumId == null || stadiumId.trim().isEmpty()) {
             return Collections.emptyList();
         }
-        if (sectionRepository == null) {
+        if (this.sectionRepository == null) {
             return Collections.emptyList();
         }
-        return sectionRepository.findByStadiumId(stadiumId.trim());
+        return this.sectionRepository.findByStadiumId(stadiumId.trim());
     }
 
     /**
      * Render sơ đồ ghế của một khu vực (SeatSection) dưới dạng ASCII map
      * để hiển thị trên giao diện dòng lệnh / chuẩn bị cho UI.
+     * Khớp chính xác phương thức trong Class Diagram: +buildSeatMap(sectionId: String): String
      *
      * @param sectionId mã khu vực (ví dụ: SEC_STD01_A)
      * @return chuỗi biểu diễn sơ đồ ghế dạng ASCII map
@@ -102,12 +119,12 @@ public class StadiumController {
         }
 
         String targetSectionId = sectionId.trim();
-        SeatSection section = sectionRepository != null ? sectionRepository.findById(targetSectionId) : null;
+        SeatSection section = this.sectionRepository != null ? this.sectionRepository.findById(targetSectionId) : null;
         if (section == null) {
             return "Section not found: " + targetSectionId;
         }
 
-        List<Seat> seats = seatRepository != null ? seatRepository.findBySectionId(targetSectionId) : Collections.emptyList();
+        List<Seat> seats = this.seatRepository != null ? this.seatRepository.findBySectionId(targetSectionId) : Collections.emptyList();
         if (seats == null || seats.isEmpty()) {
             return "No seats found for section: " + targetSectionId;
         }
@@ -156,12 +173,12 @@ public class StadiumController {
             List<Seat> rowSeats = entry.getValue();
 
             // Sắp xếp các ghế trong hàng theo số thứ tự ghế
-            rowSeats.sort(Comparator.comparingInt(seat -> extractSeatSequence(seat.getSeatNumber(), digitPattern)));
+            rowSeats.sort(Comparator.comparingInt(seat -> this.extractSeatSequence(seat.getSeatNumber(), digitPattern)));
 
             map.append(String.format("Row %02d: ", rowNumber));
 
             for (Seat seat : rowSeats) {
-                map.append("[").append(getSeatSymbol(seat.getStatus())).append("] ");
+                map.append("[").append(this.getSeatSymbol(seat.getStatus())).append("] ");
             }
 
             map.append("\n");
@@ -211,64 +228,62 @@ public class StadiumController {
     }
 
     /**
+     * Lấy danh sách toàn bộ ghế thuộc một khu vực.
+     * Khớp chính xác phương thức trong Class Diagram: +getSeats(sectionId: String): List~Seat~
+     */
+    public List<Seat> getSeats(String sectionId) {
+        if (sectionId == null || sectionId.trim().isEmpty() || this.seatRepository == null) {
+            return Collections.emptyList();
+        }
+        return this.seatRepository.findBySectionId(sectionId.trim());
+    }
+
+    /**
+     * Alias tương thích ngược cho getSeats(sectionId).
+     */
+    public List<Seat> getSeatsBySection(String sectionId) {
+        return this.getSeats(sectionId);
+    }
+
+    /**
      * Lấy thông tin chi tiết một khu vực theo mã.
      */
     public SeatSection getSection(String sectionId) {
-        if (sectionId == null || sectionId.trim().isEmpty() || sectionRepository == null) {
+        if (sectionId == null || sectionId.trim().isEmpty() || this.sectionRepository == null) {
             return null;
         }
-        return sectionRepository.findById(sectionId.trim());
+        return this.sectionRepository.findById(sectionId.trim());
     }
 
     /**
      * Lấy thông tin sân vận động theo mã.
      */
     public Stadium getStadium(String stadiumId) {
-        if (stadiumId == null || stadiumId.trim().isEmpty() || stadiumRepository == null) {
+        if (stadiumId == null || stadiumId.trim().isEmpty() || this.stadiumRepository == null) {
             return null;
         }
-        return stadiumRepository.findById(stadiumId.trim());
-    }
-
-    /**
-     * Lấy toàn bộ danh sách sân vận động trong hệ thống.
-     */
-    public List<Stadium> getAllStadiums() {
-        if (stadiumRepository == null) {
-            return Collections.emptyList();
-        }
-        return stadiumRepository.findAll();
-    }
-
-    /**
-     * Lấy danh sách toàn bộ ghế thuộc một khu vực.
-     */
-    public List<Seat> getSeatsBySection(String sectionId) {
-        if (sectionId == null || sectionId.trim().isEmpty() || seatRepository == null) {
-            return Collections.emptyList();
-        }
-        return seatRepository.findBySectionId(sectionId.trim());
+        return this.stadiumRepository.findById(stadiumId.trim());
     }
 
     /**
      * Lấy danh sách ghế còn trống (AVAILABLE) thuộc một khu vực.
      */
     public List<Seat> getAvailableSeats(String sectionId) {
-        if (sectionId == null || sectionId.trim().isEmpty() || seatRepository == null) {
+        if (sectionId == null || sectionId.trim().isEmpty() || this.seatRepository == null) {
             return Collections.emptyList();
         }
-        return seatRepository.findAvailableBySection(sectionId.trim());
+        return this.seatRepository.findAvailableBySection(sectionId.trim());
     }
 
     public StadiumRepository getStadiumRepository() {
-        return stadiumRepository;
+        return this.stadiumRepository;
     }
 
     public SectionRepository getSectionRepository() {
-        return sectionRepository;
+        return this.sectionRepository;
     }
 
     public SeatRepository getSeatRepository() {
-        return seatRepository;
+        return this.seatRepository;
     }
 }

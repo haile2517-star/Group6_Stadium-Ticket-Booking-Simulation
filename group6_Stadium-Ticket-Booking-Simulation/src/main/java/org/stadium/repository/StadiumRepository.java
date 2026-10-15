@@ -24,7 +24,7 @@ public class StadiumRepository extends CsvRepository<Stadium> {
         if (stadiumName == null) {
             return null;
         }
-        List<Stadium> result = findByCondition(s -> stadiumName.equalsIgnoreCase(s.getStadiumName()));
+        List<Stadium> result = this.findByCondition(s -> stadiumName.equalsIgnoreCase(s.getStadiumName()));
         return result.isEmpty() ? null : result.get(0);
     }
 }

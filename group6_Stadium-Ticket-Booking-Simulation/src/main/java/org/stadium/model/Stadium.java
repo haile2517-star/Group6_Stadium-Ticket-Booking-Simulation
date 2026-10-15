@@ -23,10 +23,10 @@ public class Stadium extends BaseEntity {
 
     @Override
     public String toCsvLine() {
-        return (stadiumId != null ? stadiumId : "") + ","
-                + (stadiumName != null ? stadiumName : "") + ","
-                + (address != null ? address : "") + ","
-                + capacity;
+        return (this.stadiumId != null ? this.stadiumId : "") + ","
+                + (this.stadiumName != null ? this.stadiumName : "") + ","
+                + (this.address != null ? this.address : "") + ","
+                + this.capacity;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class Stadium extends BaseEntity {
 
     // Getters and Setters
     public String getStadiumId() {
-        return stadiumId;
+        return this.stadiumId;
     }
 
     public void setStadiumId(String stadiumId) {
@@ -48,7 +48,7 @@ public class Stadium extends BaseEntity {
     }
 
     public String getStadiumName() {
-        return stadiumName;
+        return this.stadiumName;
     }
 
     public void setStadiumName(String stadiumName) {
@@ -56,7 +56,7 @@ public class Stadium extends BaseEntity {
     }
 
     public String getAddress() {
-        return address;
+        return this.address;
     }
 
     public void setAddress(String address) {
@@ -64,7 +64,7 @@ public class Stadium extends BaseEntity {
     }
 
     public int getCapacity() {
-        return capacity;
+        return this.capacity;
     }
 
     public void setCapacity(int capacity) {
@@ -74,10 +74,10 @@ public class Stadium extends BaseEntity {
     @Override
     public String toString() {
         return "Stadium{" +
-                "stadiumId='" + stadiumId + '\'' +
-                ", stadiumName='" + stadiumName + '\'' +
-                ", address='" + address + '\'' +
-                ", capacity=" + capacity +
+                "stadiumId='" + this.stadiumId + '\'' +
+                ", stadiumName='" + this.stadiumName + '\'' +
+                ", address='" + this.address + '\'' +
+                ", capacity=" + this.capacity +
                 '}';
     }
 }

@@ -9,25 +9,25 @@ public class SimulationResultRepository extends CsvRepository<SimulationResult> 
         super(filePath);
     }
 
-@Override
-public SimulationResult createEntity() {
-    return new SimulationResult();
-}
-
-@Override 
-public String getHeader() {
-    return "resultId,mechanism,threadCount,totalRequests,successCount,failedCount,doubleBookingCount,throughput,doubleBookingRate,executionTimeMs";
-}
-
-public List<SimulationResult> findByMechanism(SynchronizationMechanism mechanism) {
-    return findByCondition(result -> result.getMechanism() == mechanism);
-}
-
-public SimulationResult getLatestResult() {
-    List<SimulationResult> results = findAll();
-    if(results.isEmpty()) {
-        return null;
+    @Override
+    public SimulationResult createEntity() {
+        return new SimulationResult();
     }
-    return results.get(results.size() - 1);
-}
+
+    @Override
+    public String getHeader() {
+        return "resultId,mechanism,threadCount,totalRequests,successCount,failedCount,doubleBookingCount,throughput,doubleBookingRate,executionTimeMs";
+    }
+
+    public List<SimulationResult> findByMechanism(SynchronizationMechanism mechanism) {
+        return this.findByCondition(result -> result.getMechanism() == mechanism);
+    }
+
+    public SimulationResult getLatestResult() {
+        List<SimulationResult> results = this.findAll();
+        if (results.isEmpty()) {
+            return null;
+        }
+        return results.get(results.size() - 1);
+    }
 }

@@ -8,35 +8,35 @@ public class Admin extends Account {
 
     @Override
     public String getId() {
-        return getAccountId();
+        return this.getAccountId();
     }
 
     public String getFullName() {
-        return fullName;
+        return this.fullName;
     }
 
     @Override
     public String toCsvLine() {
         return String.join(",",
-                getAccountId(),
-                getUsername(),
-                getPasswordHash(),
-                fullName,
-                getEmail(),
-                getPhone(),
-                getStatus().name());
+                this.getAccountId(),
+                this.getUsername(),
+                this.getPasswordHash(),
+                this.fullName,
+                this.getEmail(),
+                this.getPhone(),
+                this.getStatus().name());
     }
 
     @Override
     public void fromCsvLine(String line) {
         String[] parts = line.split(",", -1);
-        setAccountId(parts[0].trim());
-        setUsername(parts[1].trim());
-        setPasswordHash(parts[2].trim());
+        this.setAccountId(parts[0].trim());
+        this.setUsername(parts[1].trim());
+        this.setPasswordHash(parts[2].trim());
         this.fullName = parts[3].trim();
-        setEmail(parts[4].trim());
-        setPhone(parts[5].trim());
-        setStatus(AccountStatus.valueOf(parts[6].trim()));
+        this.setEmail(parts[4].trim());
+        this.setPhone(parts[5].trim());
+        this.setStatus(AccountStatus.valueOf(parts[6].trim()));
     }
 
     public void setFullName(String fullName) {
@@ -46,12 +46,12 @@ public class Admin extends Account {
     @Override
     public String toString() {
         return "Admin{" +
-                "adminId='" + getAccountId() + '\'' +
-                ", username='" + getUsername() + '\'' +
-                ", fullName='" + fullName + '\'' +
-                ", email='" + getEmail() + '\'' +
-                ", phone='" + getPhone() + '\'' +
-                ", status=" + getStatus() +
+                "adminId='" + this.getAccountId() + '\'' +
+                ", username='" + this.getUsername() + '\'' +
+                ", fullName='" + this.fullName + '\'' +
+                ", email='" + this.getEmail() + '\'' +
+                ", phone='" + this.getPhone() + '\'' +
+                ", status=" + this.getStatus() +
                 '}';
     }
 }

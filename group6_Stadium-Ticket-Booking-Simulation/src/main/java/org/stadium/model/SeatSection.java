@@ -33,12 +33,12 @@ public class SeatSection extends BaseEntity {
 
     @Override
     public String toCsvLine() {
-        return (sectionId != null ? sectionId : "") + ","
-                + (stadiumId != null ? stadiumId : "") + ","
-                + (sectionName != null ? sectionName : "") + ","
-                + (sectionType != null ? sectionType.name() : "") + ","
-                + totalRows + ","
-                + seatsPerRow;
+        return (this.sectionId != null ? this.sectionId : "") + ","
+                + (this.stadiumId != null ? this.stadiumId : "") + ","
+                + (this.sectionName != null ? this.sectionName : "") + ","
+                + (this.sectionType != null ? this.sectionType.name() : "") + ","
+                + this.totalRows + ","
+                + this.seatsPerRow;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class SeatSection extends BaseEntity {
 
     // Getters and Setters
     public String getSectionId() {
-        return sectionId;
+        return this.sectionId;
     }
 
     public void setSectionId(String sectionId) {
@@ -62,7 +62,7 @@ public class SeatSection extends BaseEntity {
     }
 
     public String getStadiumId() {
-        return stadiumId;
+        return this.stadiumId;
     }
 
     public void setStadiumId(String stadiumId) {
@@ -70,7 +70,7 @@ public class SeatSection extends BaseEntity {
     }
 
     public String getSectionName() {
-        return sectionName;
+        return this.sectionName;
     }
 
     public void setSectionName(String sectionName) {
@@ -78,7 +78,7 @@ public class SeatSection extends BaseEntity {
     }
 
     public SeatType getSectionType() {
-        return sectionType;
+        return this.sectionType;
     }
 
     public void setSectionType(SeatType sectionType) {
@@ -86,7 +86,7 @@ public class SeatSection extends BaseEntity {
     }
 
     public int getTotalRows() {
-        return totalRows;
+        return this.totalRows;
     }
 
     public void setTotalRows(int totalRows) {
@@ -94,7 +94,7 @@ public class SeatSection extends BaseEntity {
     }
 
     public int getSeatsPerRow() {
-        return seatsPerRow;
+        return this.seatsPerRow;
     }
 
     public void setSeatsPerRow(int seatsPerRow) {
@@ -104,13 +104,13 @@ public class SeatSection extends BaseEntity {
     @Override
     public String toString() {
         return "SeatSection{" +
-                "sectionId='" + sectionId + '\'' +
-                ", stadiumId='" + stadiumId + '\'' +
-                ", sectionName='" + sectionName + '\'' +
-                ", sectionType=" + sectionType +
-                ", totalRows=" + totalRows +
-                ", seatsPerRow=" + seatsPerRow +
-                ", totalSeats=" + getTotalSeats() +
+                "sectionId='" + this.sectionId + '\'' +
+                ", stadiumId='" + this.stadiumId + '\'' +
+                ", sectionName='" + this.sectionName + '\'' +
+                ", sectionType=" + this.sectionType +
+                ", totalRows=" + this.totalRows +
+                ", seatsPerRow=" + this.seatsPerRow +
+                ", totalSeats=" + this.getTotalSeats() +
                 '}';
     }
 }

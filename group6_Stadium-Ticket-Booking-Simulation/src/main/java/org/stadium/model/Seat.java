@@ -45,13 +45,13 @@ public class Seat extends BaseEntity {
 
     @Override
     public String toCsvLine() {
-        return (seatId != null ? seatId : "") + ","
-                + (sectionId != null ? sectionId : "") + ","
-                + rowNumber + ","
-                + (seatNumber != null ? seatNumber : "") + ","
-                + (seatType != null ? seatType.name() : "") + ","
-                + (status != null ? status.name() : "") + ","
-                + version;
+        return (this.seatId != null ? this.seatId : "") + ","
+                + (this.sectionId != null ? this.sectionId : "") + ","
+                + this.rowNumber + ","
+                + (this.seatNumber != null ? this.seatNumber : "") + ","
+                + (this.seatType != null ? this.seatType.name() : "") + ","
+                + (this.status != null ? this.status.name() : "") + ","
+                + this.version;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class Seat extends BaseEntity {
 
     // Getters and Setters
     public String getSeatId() {
-        return seatId;
+        return this.seatId;
     }
 
     public void setSeatId(String seatId) {
@@ -76,7 +76,7 @@ public class Seat extends BaseEntity {
     }
 
     public String getSectionId() {
-        return sectionId;
+        return this.sectionId;
     }
 
     public void setSectionId(String sectionId) {
@@ -84,7 +84,7 @@ public class Seat extends BaseEntity {
     }
 
     public int getRowNumber() {
-        return rowNumber;
+        return this.rowNumber;
     }
 
     public void setRowNumber(int rowNumber) {
@@ -92,7 +92,7 @@ public class Seat extends BaseEntity {
     }
 
     public String getSeatNumber() {
-        return seatNumber;
+        return this.seatNumber;
     }
 
     public void setSeatNumber(String seatNumber) {
@@ -100,7 +100,7 @@ public class Seat extends BaseEntity {
     }
 
     public SeatType getSeatType() {
-        return seatType;
+        return this.seatType;
     }
 
     public void setSeatType(SeatType seatType) {
@@ -108,7 +108,7 @@ public class Seat extends BaseEntity {
     }
 
     public SeatStatus getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setStatus(SeatStatus status) {
@@ -122,13 +122,13 @@ public class Seat extends BaseEntity {
     @Override
     public String toString() {
         return "Seat{" +
-                "seatId='" + seatId + '\'' +
-                ", sectionId='" + sectionId + '\'' +
-                ", rowNumber=" + rowNumber +
-                ", seatNumber='" + seatNumber + '\'' +
-                ", seatType=" + seatType +
-                ", status=" + status +
-                ", version=" + version +
+                "seatId='" + this.seatId + '\'' +
+                ", sectionId='" + this.sectionId + '\'' +
+                ", rowNumber=" + this.rowNumber +
+                ", seatNumber='" + this.seatNumber + '\'' +
+                ", seatType=" + this.seatType +
+                ", status=" + this.status +
+                ", version=" + this.version +
                 '}';
     }
 }

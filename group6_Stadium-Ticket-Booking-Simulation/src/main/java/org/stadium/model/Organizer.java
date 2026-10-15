@@ -9,35 +9,35 @@ public class Organizer extends Account {
 
     @Override
     public String getId() {
-        return getAccountId();
+        return this.getAccountId();
     }
 
     public String getOrgName() {
-        return orgName;
+        return this.orgName;
     }
 
     @Override
     public String toCsvLine() {
         return String.join(",",
-                getAccountId(),
-                getUsername(),
-                getPasswordHash(),
-                orgName,
-                getEmail(),
-                getPhone(),
-                getStatus().name());
+                this.getAccountId(),
+                this.getUsername(),
+                this.getPasswordHash(),
+                this.orgName,
+                this.getEmail(),
+                this.getPhone(),
+                this.getStatus().name());
     }
 
     @Override
     public void fromCsvLine(String line) {
         String[] parts = line.split(",", -1);
-        setAccountId(parts[0].trim());
-        setUsername(parts[1].trim());
-        setPasswordHash(parts[2].trim());
+        this.setAccountId(parts[0].trim());
+        this.setUsername(parts[1].trim());
+        this.setPasswordHash(parts[2].trim());
         this.orgName = parts[3].trim();
-        setEmail(parts[4].trim());
-        setPhone(parts[5].trim());
-        setStatus(AccountStatus.valueOf(parts[6].trim()));
+        this.setEmail(parts[4].trim());
+        this.setPhone(parts[5].trim());
+        this.setStatus(AccountStatus.valueOf(parts[6].trim()));
     }
 
     public void setOrgName(String orgName) {
@@ -47,12 +47,12 @@ public class Organizer extends Account {
     @Override
     public String toString() {
         return "Organizer{" +
-                "organizerId='" + getAccountId() + '\'' +
-                ", username='" + getUsername() + '\'' +
-                ", orgName='" + orgName + '\'' +
-                ", email='" + getEmail() + '\'' +
-                ", phone='" + getPhone() + '\'' +
-                ", status=" + getStatus() +
+                "organizerId='" + this.getAccountId() + '\'' +
+                ", username='" + this.getUsername() + '\'' +
+                ", orgName='" + this.orgName + '\'' +
+                ", email='" + this.getEmail() + '\'' +
+                ", phone='" + this.getPhone() + '\'' +
+                ", status=" + this.getStatus() +
                 '}';
     }
 }

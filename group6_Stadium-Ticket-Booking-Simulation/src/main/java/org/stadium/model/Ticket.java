@@ -26,7 +26,6 @@ public class Ticket extends BaseEntity {
         this.price = price;
         this.bookingDate = bookingDate;
         this.status = status;
-
     }
 
     @Override
@@ -36,14 +35,13 @@ public class Ticket extends BaseEntity {
 
     public boolean isAvailable() {
         return this.status == TicketStatus.AVAILABLE;
-
     }
 
     @Override
     public String toCsvLine() {
-        return ticketId + "," + matchId + "," + seatId + "," + (transactionId != null ? transactionId : "") + ","
-                + (fanId != null ? fanId : "") + "," + price + "," + (bookingDate != null ? bookingDate : "") + ","
-                + (status != null ? status.name() : "");
+        return this.ticketId + "," + this.matchId + "," + this.seatId + "," + (this.transactionId != null ? this.transactionId : "") + ","
+                + (this.fanId != null ? this.fanId : "") + "," + this.price + "," + (this.bookingDate != null ? this.bookingDate : "") + ","
+                + (this.status != null ? this.status.name() : "");
     }
 
     @Override
@@ -59,73 +57,67 @@ public class Ticket extends BaseEntity {
         this.status = (parts[7] == null || parts[7].trim().isEmpty() ? null : TicketStatus.valueOf(parts[7].trim()));
     }
 
-
-    public String getTicketId(){
+    public String getTicketId() {
         return this.ticketId;
     }
-     
 
-     public void setTicketId(String ticketId) {
-         this.ticketId = ticketId;
-     }
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
 
-     public String getMatchId() {
-         return matchId;
-     }
+    public String getMatchId() {
+        return this.matchId;
+    }
 
-     public void setMatchId(String matchId) {
-         this.matchId = matchId;
-     }
+    public void setMatchId(String matchId) {
+        this.matchId = matchId;
+    }
 
-     public String getSeatId() {
-         return seatId;
-     }
+    public String getSeatId() {
+        return this.seatId;
+    }
 
-     public void setSeatId(String seatId) {
-         this.seatId = seatId;
-     }
+    public void setSeatId(String seatId) {
+        this.seatId = seatId;
+    }
 
-     public String getTransactionId() {
-         return transactionId;
-     }
+    public String getTransactionId() {
+        return this.transactionId;
+    }
 
-     public void setTransactionId(String transactionId) {
-         this.transactionId = transactionId;
-     }
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
 
-     public String getFanId() {
-         return fanId;
-     }
+    public String getFanId() {
+        return this.fanId;
+    }
 
-     public void setFanId(String fanId) {
-         this.fanId = fanId;
-     }
+    public void setFanId(String fanId) {
+        this.fanId = fanId;
+    }
 
-     public double getPrice() {
-         return price;
-     }
+    public double getPrice() {
+        return this.price;
+    }
 
-     public void setPrice(double price) {
-         this.price = price;
-     }
+    public void setPrice(double price) {
+        this.price = price;
+    }
 
-     public String getBookingDate() {
-         return bookingDate;
-     }
+    public String getBookingDate() {
+        return this.bookingDate;
+    }
 
-     public void setBookingDate(String bookingDate) {
-         this.bookingDate = bookingDate;
-     }
+    public void setBookingDate(String bookingDate) {
+        this.bookingDate = bookingDate;
+    }
 
-     public TicketStatus getStatus() {
-         return status;
-     }
+    public TicketStatus getStatus() {
+        return this.status;
+    }
 
-     public void setStatus(TicketStatus status) {
-         this.status = status;
-     }
-
-
-
-
+    public void setStatus(TicketStatus status) {
+        this.status = status;
+    }
 }

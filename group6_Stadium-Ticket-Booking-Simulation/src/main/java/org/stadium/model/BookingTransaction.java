@@ -13,7 +13,6 @@ public class BookingTransaction extends BaseEntity {
     private TransactionStatus status;
 
     public BookingTransaction() {
-
     }
 
     public BookingTransaction(String transactionId, String fanId, String matchId, String transactionDate,
@@ -25,16 +24,18 @@ public class BookingTransaction extends BaseEntity {
         this.totalAmount = totalAmount;
         this.ticketCount = ticketCount;
         this.status = status;
-
     }
-    @Override 
-    public String getId(){
+
+    @Override
+    public String getId() {
         return this.transactionId;
     }
-    @Override 
-    public String toCsvLine(){
-        return transactionId + "," + fanId + "," + matchId + "," + totalAmount + "," + ticketCount + "," + (transactionDate != null ? transactionDate : "") + "," + (status != null ? status.name() : "");
+
+    @Override
+    public String toCsvLine() {
+        return this.transactionId + "," + this.fanId + "," + this.matchId + "," + this.totalAmount + "," + this.ticketCount + "," + (this.transactionDate != null ? this.transactionDate : "") + "," + (this.status != null ? this.status.name() : "");
     }
+
     @Override
     public void fromCsvLine(String line) {
         String[] parts = line.split(",", -1);
@@ -49,7 +50,7 @@ public class BookingTransaction extends BaseEntity {
 
     // Getters and Setters
     public String getTransactionId() {
-        return transactionId;
+        return this.transactionId;
     }
 
     public void setTransactionId(String transactionId) {
@@ -57,7 +58,7 @@ public class BookingTransaction extends BaseEntity {
     }
 
     public String getFanId() {
-        return fanId;
+        return this.fanId;
     }
 
     public void setFanId(String fanId) {
@@ -65,7 +66,7 @@ public class BookingTransaction extends BaseEntity {
     }
 
     public String getMatchId() {
-        return matchId;
+        return this.matchId;
     }
 
     public void setMatchId(String matchId) {
@@ -73,7 +74,7 @@ public class BookingTransaction extends BaseEntity {
     }
 
     public String getTransactionDate() {
-        return transactionDate;
+        return this.transactionDate;
     }
 
     public void setTransactionDate(String transactionDate) {
@@ -81,7 +82,7 @@ public class BookingTransaction extends BaseEntity {
     }
 
     public double getTotalAmount() {
-        return totalAmount;
+        return this.totalAmount;
     }
 
     public void setTotalAmount(double totalAmount) {
@@ -89,7 +90,7 @@ public class BookingTransaction extends BaseEntity {
     }
 
     public int getTicketCount() {
-        return ticketCount;
+        return this.ticketCount;
     }
 
     public void setTicketCount(int ticketCount) {
@@ -97,7 +98,7 @@ public class BookingTransaction extends BaseEntity {
     }
 
     public TransactionStatus getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setStatus(TransactionStatus status) {

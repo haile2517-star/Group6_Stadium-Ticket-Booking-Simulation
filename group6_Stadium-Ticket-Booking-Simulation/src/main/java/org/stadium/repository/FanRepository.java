@@ -26,12 +26,12 @@ public class FanRepository extends CsvRepository<Fan> {
         if (username == null) {
             return null;
         }
-        List<Fan> result = findByCondition(fan -> username.equalsIgnoreCase(fan.getUsername()));
+        List<Fan> result = this.findByCondition(fan -> username.equalsIgnoreCase(fan.getUsername()));
         return result.isEmpty() ? null : result.get(0);
     }
 
     // Tìm danh sách Fan theo trạng thái (dùng cho Admin duyệt tài khoản)
     public List<Fan> findByStatus(AccountStatus status) {
-        return findByCondition(fan -> fan.getStatus() == status);
+        return this.findByCondition(fan -> fan.getStatus() == status);
     }
 }

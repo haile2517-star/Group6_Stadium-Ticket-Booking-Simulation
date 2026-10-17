@@ -7,21 +7,30 @@ public class AccountSearchCriteria {
     private UserRole role;
     private AccountStatus status;
 
+    public AccountSearchCriteria() {
+    }
+
+    public AccountSearchCriteria(String keyword, UserRole role, AccountStatus status) {
+        this.keyword = keyword;
+        this.role = role;
+        this.status = status;
+    }
+
     public boolean matchesCriteria(Account account) {
         if (account == null) {
             return false;
         }
-        if (status != null && account.getStatus() != status) {
+        if (this.status != null && account.getStatus() != this.status) {
             return false;
         }
-        if (role != null) {
+        if (this.role != null) {
             boolean roleMatches;
 
-            if (role == UserRole.FAN) {
+            if (this.role == UserRole.FAN) {
                 roleMatches = account instanceof Fan;
-            } else if (role == UserRole.ORGANIZER) {
+            } else if (this.role == UserRole.ORGANIZER) {
                 roleMatches = account instanceof Organizer;
-            } else if (role == UserRole.ADMIN) {
+            } else if (this.role == UserRole.ADMIN) {
                 roleMatches = account instanceof Admin;
             } else {
                 roleMatches = false;
@@ -32,10 +41,10 @@ public class AccountSearchCriteria {
             }
         }
 
-        if (keyword == null || keyword.trim().isEmpty()) {
+        if (this.keyword == null || this.keyword.trim().isEmpty()) {
             return true;
         }
-        String searchTerm = keyword.trim().toLowerCase(Locale.ROOT);
+        String searchTerm = this.keyword.trim().toLowerCase(Locale.ROOT);
         String accountId = account.getId();
         String username = account.getUsername();
 
@@ -61,5 +70,29 @@ public class AccountSearchCriteria {
                             && fullName.toLowerCase(Locale.ROOT).contains(searchTerm));
         }
         return keywordMatches;
+    }
+
+    public String getKeyword() {
+        return this.keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
+    public UserRole getRole() {
+        return this.role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public AccountStatus getStatus() {
+        return this.status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
     }
 }

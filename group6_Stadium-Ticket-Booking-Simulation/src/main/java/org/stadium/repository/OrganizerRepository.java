@@ -25,11 +25,11 @@ public class OrganizerRepository extends CsvRepository<Organizer> {
         if (username == null) {
             return null;
         }
-        List<Organizer> result = findByCondition(org -> username.equalsIgnoreCase(org.getUsername()));
+        List<Organizer> result = this.findByCondition(org -> username.equalsIgnoreCase(org.getUsername()));
         return result.isEmpty() ? null : result.get(0);
     }
 
     public List<Organizer> findPendingOrganizers() {
-        return findByCondition(org -> org.getStatus() == AccountStatus.PENDING);
+        return this.findByCondition(org -> org.getStatus() == AccountStatus.PENDING);
     }
 }

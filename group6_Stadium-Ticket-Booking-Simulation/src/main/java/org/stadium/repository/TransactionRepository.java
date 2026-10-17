@@ -15,13 +15,15 @@ public class TransactionRepository extends CsvRepository<BookingTransaction> {
     }
 
     @Override
-    public String getHeader(){
+    public String getHeader() {
         return "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status";
     }
-    public List<BookingTransaction> findByFanId(String fanId){
-        return findByCondition(t -> fanId != null && fanId.equals(t.getFanId()));
+
+    public List<BookingTransaction> findByFanId(String fanId) {
+        return this.findByCondition(t -> fanId != null && fanId.equals(t.getFanId()));
     }
-    public List<BookingTransaction> findByStatus(TransactionStatus status){
-        return findByCondition(t -> t.getStatus() == status);
+
+    public List<BookingTransaction> findByStatus(TransactionStatus status) {
+        return this.findByCondition(t -> t.getStatus() == status);
     }
 }

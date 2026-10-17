@@ -21,7 +21,7 @@ public class BookingController {
     private TicketRepository ticketRepository;
     private TransactionRepository transactionRepository;
     
-    public BookingController (SeatRepository seatRepository,TicketRepository ticketRepository, TransactionRepository transactionRepository){
+    public BookingController (SeatRepository seatRepository, TicketRepository ticketRepository, TransactionRepository transactionRepository){
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
         this.transactionRepository = transactionRepository;
@@ -39,20 +39,19 @@ public class BookingController {
         List<Seat> seats = new ArrayList<>();
         List<Ticket> tickets = new ArrayList<>();
         for(String seatId : seatIds){
-            Seat seat = seatRepository.findById(seatId);
+            Seat seat = this.seatRepository.findById(seatId);
             if (seat == null || !seat.isAvailable()) {
                 return false;
-                
-            }Ticket ticket = ticketRepository.findBySeatAndMatch(seatId, matchId);
+            }
+            Ticket ticket = this.ticketRepository.findBySeatAndMatch(seatId, matchId);
             if (ticket == null || !ticket.isAvailable()) {
                 return false;
             }
             seats.add(seat);
             tickets.add(ticket);
-
         }
         //tao giao dich
-        String transactionId = String.format("TXN%05d", transactionRepository.findAll().size()+1);
+        String transactionId = String.format("TXN%05d", this.transactionRepository.findAll().size()+1);
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         double totalAmount = 0;
 
@@ -68,18 +67,77 @@ public class BookingController {
             ticket.setStatus(TicketStatus.BOOKED);
             totalAmount += ticket.getPrice();
         }
-        seatRepository.saveToFile();
-        ticketRepository.saveToFile();
-        transactionRepository.save(new BookingTransaction(transactionId, fanId, matchId,now,totalAmount,seats.size(), TransactionStatus.SUCCESS));
+        this.seatRepository.saveToFile();
+        this.ticketRepository.saveToFile();
+        this.transactionRepository.save(new BookingTransaction(transactionId, fanId, matchId, now, totalAmount, seats.size(), TransactionStatus.SUCCESS));
         return true;
-
-
     }
+
+    /**
+     * Hủy vé đã đặt.
+     * Cập nhật trạng thái vé sang CANCELLED và trả lại ghế về AVAILABLE.
+     *
+     * @param ticketId mã vé cần hủy
+     * @param fanId mã fan sở hữu vé
+     * @return true nếu hủy thành công, false nếu không hợp lệ
+     */
+    public boolean cancelTicket(String ticketId, String fanId) {
+        if (ticketId == null || ticketId.trim().isEmpty() || fanId == null || fanId.trim().isEmpty()) {
+            return false;
+        }
+
+        Ticket ticket = this.ticketRepository.findById(ticketId.trim());
+        if (ticket == null) {
+            return false;
+        }
+
+        // Kiểm tra quyền sở hữu vé
+        if (!fanId.trim().equals(ticket.getFanId())) {
+            return false;
+        }
+
+        // Chỉ hủy được vé đang ở trạng thái BOOKED
+        if (ticket.getStatus() != TicketStatus.BOOKED) {
+            return false;
+        }
+
+        // Cập nhật trạng thái vé
+        ticket.setStatus(TicketStatus.CANCELLED);
+        this.ticketRepository.saveToFile();
+
+        // Trả lại ghế về trạng thái AVAILABLE
+        Seat seat = this.seatRepository.findById(ticket.getSeatId());
+        if (seat != null) {
+            seat.setStatus(SeatStatus.AVAILABLE);
+            seat.incrementVersion();
+            this.seatRepository.saveToFile();
+        }
+
+        return true;
+    }
+
+    /**
+     * Lấy danh sách vé chi tiết theo mã giao dịch.
+     *
+     * @param transactionId mã giao dịch
+     * @return danh sách Ticket thuộc giao dịch
+     */
+    public List<Ticket> getTicketDetails(String transactionId) {
+        if (transactionId == null || transactionId.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Ticket> allTickets = this.ticketRepository.findAll();
+        List<Ticket> result = new ArrayList<>();
+        for (Ticket ticket : allTickets) {
+            if (transactionId.trim().equals(ticket.getTransactionId())) {
+                result.add(ticket);
+            }
+        }
+        return result;
+    }
+
     public List<BookingTransaction> viewBookingHistory(String fanId){
-        return transactionRepository.findByFanId(fanId);
+        return this.transactionRepository.findByFanId(fanId);
     }
-
-
-
-
 }

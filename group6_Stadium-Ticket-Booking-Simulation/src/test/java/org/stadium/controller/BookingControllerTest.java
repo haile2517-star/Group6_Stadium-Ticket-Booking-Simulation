@@ -21,57 +21,57 @@ import org.stadium.repository.TransactionRepository;
 
 public class BookingControllerTest {
 
-  private static int testsRun;
-  private static int testsPassed;
-  private static String fanId;
-  private static String matchId;
-  private static double ticketPrice;
-  private static List<Fixture> fixtures = new ArrayList<>();
+  private int testsRun;
+  private int testsPassed;
+  private String fanId;
+  private String matchId;
+  private double ticketPrice;
+  private List<Fixture> fixtures = new ArrayList<>();
 
   public static void main(String[] args) {
-    runTests();
+    new BookingControllerTest().runTests();
   }
 
-  private static void runTests() {
-    testsRun = 0;
-    testsPassed = 0;
-    fixtures = new ArrayList<>();
-    setUp();
+  public void runTests() {
+    this.testsRun = 0;
+    this.testsPassed = 0;
+    this.fixtures = new ArrayList<>();
+    this.setUp();
     System.out.println("Running BookingController tests...\n");
 
-    runTest("Books one ticket", () -> booksOneTicketAndRecordsHistory());
-    runTest("Books four tickets", () -> booksFourTicketsInOneTransaction());
-    runTest("Rejects an already-booked seat", () -> rejectsAlreadyBookedSeat());
-    runTest("Rejects invalid booking input", () -> rejectsInvalidBookingInput());
-    runTest("Rejects an unknown seat", () -> rejectsUnknownSeat());
-    runTest("Rejects a seat with no available ticket", () -> rejectsSeatWithoutAvailableTicket());
-    runTest(
+    this.runTest("Books one ticket", () -> this.booksOneTicketAndRecordsHistory());
+    this.runTest("Books four tickets", () -> this.booksFourTicketsInOneTransaction());
+    this.runTest("Rejects an already-booked seat", () -> this.rejectsAlreadyBookedSeat());
+    this.runTest("Rejects invalid booking input", () -> this.rejectsInvalidBookingInput());
+    this.runTest("Rejects an unknown seat", () -> this.rejectsUnknownSeat());
+    this.runTest("Rejects a seat with no available ticket", () -> this.rejectsSeatWithoutAvailableTicket());
+    this.runTest(
         "Rejects unsupported synchronization mechanisms",
-        () -> rejectsUnsupportedSynchronizationMechanism());
+        () -> this.rejectsUnsupportedSynchronizationMechanism());
 
-    cleanUpFixtures();
+    this.cleanUpFixtures();
     System.out.println("\n------------------------------");
-    System.out.printf("Passed: %d/%d%n", testsPassed, testsRun);
+    System.out.printf("Passed: %d/%d%n", this.testsPassed, this.testsRun);
     System.out.println("------------------------------");
 
-    if (testsPassed != testsRun) {
+    if (this.testsPassed != this.testsRun) {
       throw new AssertionError("Some test cases failed");
     }
   }
 
-  private static void setUp() {
-    fanId = "FAN0001";
-    matchId = "MTH01";
-    ticketPrice = 100000.0;
+  private void setUp() {
+    this.fanId = "FAN0001";
+    this.matchId = "MTH01";
+    this.ticketPrice = 100000.0;
   }
 
-  private static void booksOneTicketAndRecordsHistory() {
-    Fixture fixture = createFixture("single-booking", 1, 1);
+  private void booksOneTicketAndRecordsHistory() {
+    Fixture fixture = this.createFixture("single-booking", 1, 1);
     fixture.transactionRepository.save(
         new BookingTransaction(
             "TXN00001",
             "FAN0002",
-            matchId,
+            this.matchId,
             "2026-10-10 10:00:00",
             50000.0,
             1,
@@ -79,217 +79,217 @@ public class BookingControllerTest {
 
     boolean booked =
         fixture.controller.bookTickets(
-            fanId, matchId, Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK);
+            this.fanId, this.matchId, Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK);
 
-    assertTrue("booking result: " + booked, booked);
+    this.assertTrue("booking result: " + booked, booked);
 
-    Seat seat = fixture.seatRepository.findById(seatId(1));
-    assertEquals("seat status", SeatStatus.BOOKED, seat.getStatus());
-    assertEquals("seat version", 1, seat.getVersion());
+    Seat seat = fixture.seatRepository.findById(this.seatId(1));
+    this.assertEquals("seat status", SeatStatus.BOOKED, seat.getStatus());
+    this.assertEquals("seat version", 1, seat.getVersion());
 
-    Ticket ticket = fixture.ticketRepository.findById(ticketId(1));
-    assertEquals("ticket status", TicketStatus.BOOKED, ticket.getStatus());
-    assertEquals("ticket fan ID", fanId, ticket.getFanId());
-    assertNotNull("ticket transaction ID", ticket.getTransactionId());
-    assertFalse("ticket booking date is empty", ticket.getBookingDate().isEmpty());
+    Ticket ticket = fixture.ticketRepository.findById(this.ticketId(1));
+    this.assertEquals("ticket status", TicketStatus.BOOKED, ticket.getStatus());
+    this.assertEquals("ticket fan ID", this.fanId, ticket.getFanId());
+    this.assertNotNull("ticket transaction ID", ticket.getTransactionId());
+    this.assertFalse("ticket booking date is empty", ticket.getBookingDate().isEmpty());
 
-    List<BookingTransaction> history = fixture.controller.viewBookingHistory(fanId);
-    assertEquals("transaction count", 1, history.size());
+    List<BookingTransaction> history = fixture.controller.viewBookingHistory(this.fanId);
+    this.assertEquals("transaction count", 1, history.size());
 
     BookingTransaction transaction = history.get(0);
-    assertEquals("transaction fan ID", fanId, transaction.getFanId());
-    assertEquals("transaction match ID", matchId, transaction.getMatchId());
-    assertEquals("ticket count", 1, transaction.getTicketCount());
-    assertEquals("transaction total", ticketPrice, transaction.getTotalAmount(), 0.0);
-    assertEquals("transaction status", TransactionStatus.SUCCESS, transaction.getStatus());
+    this.assertEquals("transaction fan ID", this.fanId, transaction.getFanId());
+    this.assertEquals("transaction match ID", this.matchId, transaction.getMatchId());
+    this.assertEquals("ticket count", 1, transaction.getTicketCount());
+    this.assertEquals("transaction total", this.ticketPrice, transaction.getTotalAmount(), 0.0);
+    this.assertEquals("transaction status", TransactionStatus.SUCCESS, transaction.getStatus());
   }
 
-  private static void booksFourTicketsInOneTransaction() {
-    Fixture fixture = createFixture("four-ticket-booking", 4, 4);
-    List<String> requestedSeats = Arrays.asList(seatId(1), seatId(2), seatId(3), seatId(4));
+  private void booksFourTicketsInOneTransaction() {
+    Fixture fixture = this.createFixture("four-ticket-booking", 4, 4);
+    List<String> requestedSeats = Arrays.asList(this.seatId(1), this.seatId(2), this.seatId(3), this.seatId(4));
 
     boolean booked =
         fixture.controller.bookTickets(
-            fanId, matchId, requestedSeats, SynchronizationMechanism.NO_LOCK);
+            this.fanId, this.matchId, requestedSeats, SynchronizationMechanism.NO_LOCK);
 
-    assertTrue("booking result: " + booked, booked);
+    this.assertTrue("booking result: " + booked, booked);
     for (int index = 1; index <= 4; index++) {
-      Seat seat = fixture.seatRepository.findById(seatId(index));
-      Ticket ticket = fixture.ticketRepository.findById(ticketId(index));
-      assertEquals("seat status", SeatStatus.BOOKED, seat.getStatus());
-      assertEquals("ticket status", TicketStatus.BOOKED, ticket.getStatus());
+      Seat seat = fixture.seatRepository.findById(this.seatId(index));
+      Ticket ticket = fixture.ticketRepository.findById(this.ticketId(index));
+      this.assertEquals("seat status", SeatStatus.BOOKED, seat.getStatus());
+      this.assertEquals("ticket status", TicketStatus.BOOKED, ticket.getStatus());
     }
 
-    List<BookingTransaction> history = fixture.controller.viewBookingHistory(fanId);
-    assertEquals("transaction count", 1, history.size());
-    assertEquals("ticket count", 4, history.get(0).getTicketCount());
-    assertEquals("transaction total", 4 * ticketPrice, history.get(0).getTotalAmount(), 0.0);
+    List<BookingTransaction> history = fixture.controller.viewBookingHistory(this.fanId);
+    this.assertEquals("transaction count", 1, history.size());
+    this.assertEquals("ticket count", 4, history.get(0).getTicketCount());
+    this.assertEquals("transaction total", 4 * this.ticketPrice, history.get(0).getTotalAmount(), 0.0);
   }
 
-  private static void rejectsAlreadyBookedSeat() {
-    Fixture fixture = createFixture("already-booked", 1, 1);
-    Seat seat = fixture.seatRepository.findById(seatId(1));
+  private void rejectsAlreadyBookedSeat() {
+    Fixture fixture = this.createFixture("already-booked", 1, 1);
+    Seat seat = fixture.seatRepository.findById(this.seatId(1));
     seat.setStatus(SeatStatus.BOOKED);
     fixture.seatRepository.saveToFile();
 
     boolean booked =
         fixture.controller.bookTickets(
-            fanId, matchId, Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK);
+            this.fanId, this.matchId, Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK);
 
-    assertFalse("booking result: " + booked, booked);
-    assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
-    assertEquals(
+    this.assertFalse("booking result: " + booked, booked);
+    this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
+    this.assertEquals(
         "ticket status",
         TicketStatus.AVAILABLE,
-        fixture.ticketRepository.findById(ticketId(1)).getStatus());
+        fixture.ticketRepository.findById(this.ticketId(1)).getStatus());
   }
 
-  private static void rejectsInvalidBookingInput() {
-    Fixture fixture = createFixture("invalid-input", 5, 5);
+  private void rejectsInvalidBookingInput() {
+    Fixture fixture = this.createFixture("invalid-input", 5, 5);
 
-    assertFalse(
+    this.assertFalse(
         "null fan ID was accepted",
         fixture.controller.bookTickets(
-            null, matchId, Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+            null, this.matchId, Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK));
+    this.assertFalse(
         "empty fan ID was accepted",
         fixture.controller.bookTickets(
-            "", matchId, Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+            "", this.matchId, Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK));
+    this.assertFalse(
         "null match ID was accepted",
         fixture.controller.bookTickets(
-            fanId, null, Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+            this.fanId, null, Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK));
+    this.assertFalse(
         "empty match ID was accepted",
         fixture.controller.bookTickets(
-            fanId, "", Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+            this.fanId, "", Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK));
+    this.assertFalse(
         "null seatIds was accepted",
-        fixture.controller.bookTickets(fanId, matchId, null, SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+        fixture.controller.bookTickets(this.fanId, this.matchId, null, SynchronizationMechanism.NO_LOCK));
+    this.assertFalse(
         "empty seatIds was accepted",
         fixture.controller.bookTickets(
-            fanId, matchId, Collections.<String>emptyList(), SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+            this.fanId, this.matchId, Collections.<String>emptyList(), SynchronizationMechanism.NO_LOCK));
+    this.assertFalse(
         "more than four seat IDs were accepted",
         fixture.controller.bookTickets(
-            fanId,
-            matchId,
-            Arrays.asList(seatId(1), seatId(2), seatId(3), seatId(4), seatId(5)),
+            this.fanId,
+            this.matchId,
+            Arrays.asList(this.seatId(1), this.seatId(2), this.seatId(3), this.seatId(4), this.seatId(5)),
             SynchronizationMechanism.NO_LOCK));
-    assertFalse(
+    this.assertFalse(
         "duplicate seat IDs were accepted",
         fixture.controller.bookTickets(
-            fanId, matchId, Arrays.asList(seatId(1), seatId(1)), SynchronizationMechanism.NO_LOCK));
+            this.fanId, this.matchId, Arrays.asList(this.seatId(1), this.seatId(1)), SynchronizationMechanism.NO_LOCK));
 
-    assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
+    this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
     for (int index = 1; index <= 5; index++) {
-      assertEquals(
+      this.assertEquals(
           "seat status",
           SeatStatus.AVAILABLE,
-          fixture.seatRepository.findById(seatId(index)).getStatus());
+          fixture.seatRepository.findById(this.seatId(index)).getStatus());
     }
   }
 
-  private static void runTest(String name, Runnable testBody) {
-    testsRun++;
+  private void runTest(String name, Runnable testBody) {
+    this.testsRun++;
     try {
       testBody.run();
-      testsPassed++;
+      this.testsPassed++;
       System.out.println("[PASS] " + name);
     } catch (AssertionError | RuntimeException exception) {
       System.err.println("[FAIL] " + name + " -> " + exception.getMessage());
     }
   }
 
-  private static void assertTrue(String message, boolean condition) {
-    assertCondition(condition, message);
+  private void assertTrue(String message, boolean condition) {
+    this.assertCondition(condition, message);
   }
 
-  private static void assertFalse(String message, boolean condition) {
-    assertCondition(!condition, message);
+  private void assertFalse(String message, boolean condition) {
+    this.assertCondition(!condition, message);
   }
 
-  private static void assertEquals(String message, Object expectedValue, Object actualValue) {
+  private void assertEquals(String message, Object expectedValue, Object actualValue) {
     boolean equal = expectedValue == null ? actualValue == null : expectedValue.equals(actualValue);
     if (!equal) {
       throw new AssertionError(message + ": " + actualValue);
     }
   }
 
-  private static void assertEquals(String message, int expectedValue, int actualValue) {
+  private void assertEquals(String message, int expectedValue, int actualValue) {
     if (expectedValue != actualValue) {
       throw new AssertionError(message + ": " + actualValue);
     }
   }
 
-  private static void assertEquals(
+  private void assertEquals(
       String message, double expectedValue, double actualValue, double delta) {
     if (Math.abs(expectedValue - actualValue) > delta) {
       throw new AssertionError(message + ": " + actualValue);
     }
   }
 
-  private static void assertNotNull(String message, Object value) {
+  private void assertNotNull(String message, Object value) {
     if (value == null) {
       throw new AssertionError(message + " is null");
     }
   }
 
-  private static void assertCondition(boolean condition, String message) {
+  private void assertCondition(boolean condition, String message) {
     if (!condition) {
       throw new AssertionError(message);
     }
   }
 
-  private static void cleanUpFixtures() {
-    for (Fixture fixture : fixtures) {
+  private void cleanUpFixtures() {
+    for (Fixture fixture : this.fixtures) {
       fixture.close();
     }
   }
 
-  private static void rejectsUnknownSeat() {
-    Fixture fixture = createFixture("missing-seat", 1, 1);
+  private void rejectsUnknownSeat() {
+    Fixture fixture = this.createFixture("missing-seat", 1, 1);
 
     boolean booked =
         fixture.controller.bookTickets(
-            fanId, matchId, Collections.singletonList("UNKNOWN"), SynchronizationMechanism.NO_LOCK);
+            this.fanId, this.matchId, Collections.singletonList("UNKNOWN"), SynchronizationMechanism.NO_LOCK);
 
-    assertFalse("booking result: " + booked, booked);
-    assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
+    this.assertFalse("booking result: " + booked, booked);
+    this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
   }
 
-  private static void rejectsSeatWithoutAvailableTicket() {
-    Fixture fixture = createFixture("missing-ticket", 1, 0);
+  private void rejectsSeatWithoutAvailableTicket() {
+    Fixture fixture = this.createFixture("missing-ticket", 1, 0);
 
     boolean booked =
         fixture.controller.bookTickets(
-            fanId, matchId, Collections.singletonList(seatId(1)), SynchronizationMechanism.NO_LOCK);
+            this.fanId, this.matchId, Collections.singletonList(this.seatId(1)), SynchronizationMechanism.NO_LOCK);
 
-    assertFalse("booking result: " + booked, booked);
-    assertEquals(
+    this.assertFalse("booking result: " + booked, booked);
+    this.assertEquals(
         "seat status",
         SeatStatus.AVAILABLE,
-        fixture.seatRepository.findById(seatId(1)).getStatus());
-    assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
+        fixture.seatRepository.findById(this.seatId(1)).getStatus());
+    this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
   }
 
-  private static void rejectsUnsupportedSynchronizationMechanism() {
-    Fixture fixture = createFixture("unsupported-mechanism", 1, 1);
+  private void rejectsUnsupportedSynchronizationMechanism() {
+    Fixture fixture = this.createFixture("unsupported-mechanism", 1, 1);
 
     try {
       fixture.controller.bookTickets(
-          fanId,
-          matchId,
-          Collections.singletonList(seatId(1)),
+          this.fanId,
+          this.matchId,
+          Collections.singletonList(this.seatId(1)),
           SynchronizationMechanism.SYNCHRONIZED);
       throw new AssertionError("Unsupported mechanism was accepted");
     } catch (UnsupportedOperationException exception) {
-      assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
+      this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
     }
   }
 
-  private static Fixture createFixture(String name, int seatCount, int ticketCount) {
+  private Fixture createFixture(String name, int seatCount, int ticketCount) {
     try {
       File rootDirectory = new File("target/test-data/booking-controller");
       if (!rootDirectory.mkdirs() && !rootDirectory.isDirectory()) {
@@ -307,29 +307,29 @@ public class BookingControllerTest {
           new StringBuilder("seatId,sectionId,rowNumber,seatNumber,seatType,status,version\n");
       for (int index = 1; index <= seatCount; index++) {
         seatsCsv
-            .append(seatId(index))
+            .append(this.seatId(index))
             .append(",SEC01,1,S")
             .append(index)
             .append(",STANDARD,AVAILABLE,0\n");
       }
-      writeCsv(seatsFile, seatsCsv.toString());
+      this.writeCsv(seatsFile, seatsCsv.toString());
 
       StringBuilder ticketsCsv =
           new StringBuilder(
               "ticketId,matchId,seatId,transactionId,fanId,price,bookingDate,status\n");
       for (int index = 1; index <= ticketCount; index++) {
         ticketsCsv
-            .append(ticketId(index))
+            .append(this.ticketId(index))
             .append(',')
-            .append(matchId)
+            .append(this.matchId)
             .append(',')
-            .append(seatId(index))
+            .append(this.seatId(index))
             .append(",,,")
-            .append(ticketPrice)
+            .append(this.ticketPrice)
             .append(",,AVAILABLE\n");
       }
-      writeCsv(ticketsFile, ticketsCsv.toString());
-      writeCsv(
+      this.writeCsv(ticketsFile, ticketsCsv.toString());
+      this.writeCsv(
           transactionsFile,
           "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status\n");
 
@@ -350,28 +350,28 @@ public class BookingControllerTest {
               ticketRepository,
               transactionRepository,
               controller);
-      fixtures.add(fixture);
+      this.fixtures.add(fixture);
       return fixture;
     } catch (IOException exception) {
       throw new UncheckedIOException(exception);
     }
   }
 
-  private static String seatId(int index) {
+  private String seatId(int index) {
     return String.format("SEAT%03d", index);
   }
 
-  private static String ticketId(int index) {
+  private String ticketId(int index) {
     return String.format("TCK%06d", index);
   }
 
-  private static void writeCsv(File file, String content) throws IOException {
+  private void writeCsv(File file, String content) throws IOException {
     try (FileWriter writer = new FileWriter(file)) {
       writer.write(content);
     }
   }
 
-  private static class Fixture {
+  private class Fixture {
     private File directory;
     private File seatsFile;
     private File ticketsFile;
@@ -401,10 +401,10 @@ public class BookingControllerTest {
     }
 
     private void close() {
-      seatsFile.delete();
-      ticketsFile.delete();
-      transactionsFile.delete();
-      directory.delete();
+      this.seatsFile.delete();
+      this.ticketsFile.delete();
+      this.transactionsFile.delete();
+      this.directory.delete();
     }
   }
 }

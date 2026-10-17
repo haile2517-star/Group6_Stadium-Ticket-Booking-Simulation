@@ -29,14 +29,15 @@ public class AuthController {
     }
 
     public AuthController() {
-        this(
-                new FanRepository(resolvePath("fans.csv")),
-                new OrganizerRepository(resolvePath("organizers.csv")),
-                new AdminRepository(resolvePath("admins.csv"))
-        );
+        String pathFans = new File("data/fans.csv").exists() ? "data/fans.csv" : (new File("../data/fans.csv").exists() ? "../data/fans.csv" : "data/fans.csv");
+        String pathOrgs = new File("data/organizers.csv").exists() ? "data/organizers.csv" : (new File("../data/organizers.csv").exists() ? "../data/organizers.csv" : "data/organizers.csv");
+        String pathAdmins = new File("data/admins.csv").exists() ? "data/admins.csv" : (new File("../data/admins.csv").exists() ? "../data/admins.csv" : "data/admins.csv");
+        this.fanRepo = new FanRepository(pathFans);
+        this.organizerRepo = new OrganizerRepository(pathOrgs);
+        this.adminRepo = new AdminRepository(pathAdmins);
     }
 
-    private static String resolvePath(String fileName) {
+    public String resolvePath(String fileName) {
         if (new File("data/" + fileName).exists()) {
             return "data/" + fileName;
         } else if (new File("../data/" + fileName).exists()) {
@@ -62,7 +63,7 @@ public class AuthController {
         String trimmedUser = username.trim();
 
         // 1. Kiểm tra Admin
-        Admin admin = adminRepo.findByUsername(trimmedUser);
+        Admin admin = this.adminRepo.findByUsername(trimmedUser);
         if (admin != null) {
             if (admin.getStatus() == AccountStatus.ACTIVE && admin.validatePassword(pass)) {
                 this.currentUser = admin;
@@ -72,7 +73,7 @@ public class AuthController {
         }
 
         // 2. Kiểm tra Fan
-        Fan fan = fanRepo.findByUsername(trimmedUser);
+        Fan fan = this.fanRepo.findByUsername(trimmedUser);
         if (fan != null) {
             if (fan.getStatus() == AccountStatus.ACTIVE && fan.validatePassword(pass)) {
                 this.currentUser = fan;
@@ -82,7 +83,7 @@ public class AuthController {
         }
 
         // 3. Kiểm tra Organizer
-        Organizer organizer = organizerRepo.findByUsername(trimmedUser);
+        Organizer organizer = this.organizerRepo.findByUsername(trimmedUser);
         if (organizer != null) {
             if (organizer.getStatus() == AccountStatus.ACTIVE && organizer.validatePassword(pass)) {
                 this.currentUser = organizer;
@@ -100,8 +101,8 @@ public class AuthController {
      * @param accountId mã tài khoản cần đăng xuất
      */
     public void logout(String accountId) {
-        if (currentUser != null) {
-            if (accountId == null || accountId.trim().isEmpty() || currentUser.getId().equalsIgnoreCase(accountId.trim())) {
+        if (this.currentUser != null) {
+            if (accountId == null || accountId.trim().isEmpty() || this.currentUser.getId().equalsIgnoreCase(accountId.trim())) {
                 this.currentUser = null;
             }
         }
@@ -129,11 +130,11 @@ public class AuthController {
         String trimmedUsername = username.trim();
 
         // Kiểm tra tính duy nhất của username trên toàn hệ thống
-        if (isUsernameExists(trimmedUsername)) {
+        if (this.isUsernameExists(trimmedUsername)) {
             return false;
         }
 
-        String newFanId = generateNextFanId();
+        String newFanId = this.generateNextFanId();
 
         Fan newFan = new Fan();
         newFan.setAccountId(newFanId);
@@ -145,7 +146,7 @@ public class AuthController {
         newFan.setFanType("STANDARD");
         newFan.setStatus(AccountStatus.ACTIVE);
 
-        return fanRepo.save(newFan);
+        return this.fanRepo.save(newFan);
     }
 
     /**
@@ -170,11 +171,11 @@ public class AuthController {
 
         String trimmedUsername = username.trim();
 
-        if (isUsernameExists(trimmedUsername)) {
+        if (this.isUsernameExists(trimmedUsername)) {
             return false;
         }
 
-        String newOrgId = generateNextOrganizerId();
+        String newOrgId = this.generateNextOrganizerId();
 
         Organizer newOrg = new Organizer();
         newOrg.setAccountId(newOrgId);
@@ -185,7 +186,7 @@ public class AuthController {
         newOrg.setPhone(phone.trim());
         newOrg.setStatus(AccountStatus.PENDING);
 
-        return organizerRepo.save(newOrg);
+        return this.organizerRepo.save(newOrg);
     }
 
     /**
@@ -200,13 +201,13 @@ public class AuthController {
         }
         String id = accountId.trim();
 
-        Account acc = fanRepo.findById(id);
+        Account acc = this.fanRepo.findById(id);
         if (acc != null) return acc;
 
-        acc = organizerRepo.findById(id);
+        acc = this.organizerRepo.findById(id);
         if (acc != null) return acc;
 
-        return adminRepo.findById(id);
+        return this.adminRepo.findById(id);
     }
 
     /**
@@ -225,24 +226,24 @@ public class AuthController {
         }
         String id = accountId.trim();
 
-        Fan fan = fanRepo.findById(id);
+        Fan fan = this.fanRepo.findById(id);
         if (fan != null) {
             fan.updateContactInfo(email.trim(), phone.trim());
-            fanRepo.saveToFile();
+            this.fanRepo.saveToFile();
             return true;
         }
 
-        Organizer org = organizerRepo.findById(id);
+        Organizer org = this.organizerRepo.findById(id);
         if (org != null) {
             org.updateContactInfo(email.trim(), phone.trim());
-            organizerRepo.saveToFile();
+            this.organizerRepo.saveToFile();
             return true;
         }
 
-        Admin admin = adminRepo.findById(id);
+        Admin admin = this.adminRepo.findById(id);
         if (admin != null) {
             admin.updateContactInfo(email.trim(), phone.trim());
-            adminRepo.saveToFile();
+            this.adminRepo.saveToFile();
             return true;
         }
 
@@ -265,7 +266,7 @@ public class AuthController {
         }
         String id = accountId.trim();
 
-        Account acc = viewProfile(id);
+        Account acc = this.viewProfile(id);
         if (acc == null) {
             return false;
         }
@@ -277,11 +278,11 @@ public class AuthController {
         acc.changePassword("hash_pass_" + newPass);
 
         if (acc instanceof Fan) {
-            fanRepo.saveToFile();
+            this.fanRepo.saveToFile();
         } else if (acc instanceof Organizer) {
-            organizerRepo.saveToFile();
+            this.organizerRepo.saveToFile();
         } else if (acc instanceof Admin) {
-            adminRepo.saveToFile();
+            this.adminRepo.saveToFile();
         }
 
         return true;
@@ -290,6 +291,7 @@ public class AuthController {
     /**
      * Kiểm tra username đã tồn tại trên bất kỳ repository tài khoản nào chưa.
      */
+<<<<<<< HEAD
     public boolean isUsernameExists(String username) {
         if (username == null || username.trim().isEmpty()) {
             return false;
@@ -298,6 +300,12 @@ public class AuthController {
         return fanRepo.findByUsername(u) != null
                 || organizerRepo.findByUsername(u) != null
                 || adminRepo.findByUsername(u) != null;
+=======
+    private boolean isUsernameExists(String username) {
+        return this.fanRepo.findByUsername(username) != null
+                || this.organizerRepo.findByUsername(username) != null
+                || this.adminRepo.findByUsername(username) != null;
+>>>>>>> 51e156ef998c7ebdc23ae92f7e19f70cc6d4d255
     }
 
     /**
@@ -305,7 +313,7 @@ public class AuthController {
      */
     private synchronized String generateNextFanId() {
         int maxId = 0;
-        for (Fan fan : fanRepo.findAll()) {
+        for (Fan fan : this.fanRepo.findAll()) {
             String id = fan.getId();
             if (id != null && id.toUpperCase().startsWith("FAN")) {
                 try {
@@ -325,7 +333,7 @@ public class AuthController {
      */
     private synchronized String generateNextOrganizerId() {
         int maxId = 0;
-        for (Organizer org : organizerRepo.findAll()) {
+        for (Organizer org : this.organizerRepo.findAll()) {
             String id = org.getId();
             if (id != null && id.toUpperCase().startsWith("ORG")) {
                 try {
@@ -341,7 +349,7 @@ public class AuthController {
     }
 
     public Account getCurrentUser() {
-        return currentUser;
+        return this.currentUser;
     }
 
     public void setCurrentUser(Account currentUser) {
@@ -349,14 +357,14 @@ public class AuthController {
     }
 
     public FanRepository getFanRepo() {
-        return fanRepo;
+        return this.fanRepo;
     }
 
     public OrganizerRepository getOrganizerRepo() {
-        return organizerRepo;
+        return this.organizerRepo;
     }
 
     public AdminRepository getAdminRepo() {
-        return adminRepo;
+        return this.adminRepo;
     }
 }

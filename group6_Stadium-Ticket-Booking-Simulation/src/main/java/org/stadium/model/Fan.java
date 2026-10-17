@@ -9,41 +9,41 @@ public class Fan extends Account {
 
     @Override
     public String getId() {
-        return getAccountId();
+        return this.getAccountId();
     }
 
     public String getFullName() {
-        return fullName;
+        return this.fullName;
     }
 
     public String getFanType() {
-        return fanType;
+        return this.fanType;
     }
 
     @Override
     public String toCsvLine() {
         return String.join(",",
-                getAccountId(),
-                getUsername(),
-                getPasswordHash(),
-                fullName,
-                getEmail(),
-                getPhone(),
-                fanType,
-                getStatus().name());
+                this.getAccountId(),
+                this.getUsername(),
+                this.getPasswordHash(),
+                this.fullName,
+                this.getEmail(),
+                this.getPhone(),
+                this.fanType,
+                this.getStatus().name());
     }
 
     @Override
     public void fromCsvLine(String line) {
         String[] parts = line.split(",", -1);
-        setAccountId(parts[0].trim());
-        setUsername(parts[1].trim());
-        setPasswordHash(parts[2].trim());
+        this.setAccountId(parts[0].trim());
+        this.setUsername(parts[1].trim());
+        this.setPasswordHash(parts[2].trim());
         this.fullName = parts[3].trim();
-        setEmail(parts[4].trim());
-        setPhone(parts[5].trim());
+        this.setEmail(parts[4].trim());
+        this.setPhone(parts[5].trim());
         this.fanType = parts[6].trim();
-        setStatus(AccountStatus.valueOf(parts[7].trim()));
+        this.setStatus(AccountStatus.valueOf(parts[7].trim()));
     }
 
     public void setFullName(String fullName) {
@@ -57,13 +57,13 @@ public class Fan extends Account {
     @Override
     public String toString() {
         return "Fan{" +
-                "fanId='" + getAccountId() + '\'' +
-                ", username='" + getUsername() + '\'' +
-                ", fullName='" + fullName + '\'' +
-                ", fanType='" + fanType + '\'' +
-                ", email='" + getEmail() + '\'' +
-                ", phone='" + getPhone() + '\'' +
-                ", status=" + getStatus() +
+                "fanId='" + this.getAccountId() + '\'' +
+                ", username='" + this.getUsername() + '\'' +
+                ", fullName='" + this.fullName + '\'' +
+                ", fanType='" + this.fanType + '\'' +
+                ", email='" + this.getEmail() + '\'' +
+                ", phone='" + this.getPhone() + '\'' +
+                ", status=" + this.getStatus() +
                 '}';
     }
 }

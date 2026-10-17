@@ -29,7 +29,9 @@ public abstract class Account extends BaseEntity {
     public boolean validatePassword(String rawPass) {
         if (rawPass == null || passwordHash == null)
             return false;
-        return passwordHash.equals(rawPass) || passwordHash.equals("hash_pass_" + rawPass);
+        return passwordHash.equals(rawPass)
+                || passwordHash.equals("hash_pass_" + rawPass)
+                || passwordHash.equals("hash_" + rawPass);
     }
 
     public void changePassword(String newHash) {

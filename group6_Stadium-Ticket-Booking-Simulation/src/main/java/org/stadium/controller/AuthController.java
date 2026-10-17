@@ -290,10 +290,14 @@ public class AuthController {
     /**
      * Kiểm tra username đã tồn tại trên bất kỳ repository tài khoản nào chưa.
      */
-    private boolean isUsernameExists(String username) {
-        return fanRepo.findByUsername(username) != null
-                || organizerRepo.findByUsername(username) != null
-                || adminRepo.findByUsername(username) != null;
+    public boolean isUsernameExists(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return false;
+        }
+        String u = username.trim();
+        return fanRepo.findByUsername(u) != null
+                || organizerRepo.findByUsername(u) != null
+                || adminRepo.findByUsername(u) != null;
     }
 
     /**

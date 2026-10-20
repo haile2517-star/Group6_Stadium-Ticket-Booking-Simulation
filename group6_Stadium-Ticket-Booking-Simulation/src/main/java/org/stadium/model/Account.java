@@ -30,7 +30,9 @@ public abstract class Account extends BaseEntity {
         if (rawPass == null || this.passwordHash == null) {
             return false;
         }
-        return this.passwordHash.equals(rawPass) || this.passwordHash.equals("hash_pass_" + rawPass);
+        return passwordHash.equals(rawPass)
+                || passwordHash.equals("hash_pass_" + rawPass)
+                || passwordHash.equals("hash_" + rawPass);
     }
 
     public void changePassword(String newHash) {

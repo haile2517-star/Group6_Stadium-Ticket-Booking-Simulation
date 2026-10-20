@@ -8,7 +8,7 @@ import org.stadium.view.MainView;
  */
 public class Main {
 
-    public void main(String[] args) {
+    public static void main(String[] args) {
         MainView mainView = new MainView();
         mainView.start();
     }

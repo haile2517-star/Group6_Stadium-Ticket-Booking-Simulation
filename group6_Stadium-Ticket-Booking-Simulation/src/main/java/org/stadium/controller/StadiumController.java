@@ -47,7 +47,7 @@ public class StadiumController {
      * Khởi tạo StadiumController với SectionRepository và SeatRepository.
      */
     public StadiumController(SectionRepository sectionRepository, SeatRepository seatRepository) {
-        String path = new File("data/stadiums.csv").exists() ? "data/stadiums.csv" : (new File("../data/stadiums.csv").exists() ? "../data/stadiums.csv" : "data/stadiums.csv");
+        String path = this.resolvePath("stadiums.csv");
         this.stadiumRepository = new StadiumRepository(path);
         this.sectionRepository = sectionRepository;
         this.seatRepository = seatRepository;
@@ -57,9 +57,9 @@ public class StadiumController {
      * Constructor mặc định tự động nạp dữ liệu từ thư mục data / ../data.
      */
     public StadiumController() {
-        String pathStadiums = new File("data/stadiums.csv").exists() ? "data/stadiums.csv" : (new File("../data/stadiums.csv").exists() ? "../data/stadiums.csv" : "data/stadiums.csv");
-        String pathSections = new File("data/sections.csv").exists() ? "data/sections.csv" : (new File("../data/sections.csv").exists() ? "../data/sections.csv" : "data/sections.csv");
-        String pathSeats = new File("data/seats.csv").exists() ? "data/seats.csv" : (new File("../data/seats.csv").exists() ? "../data/seats.csv" : "data/seats.csv");
+        String pathStadiums = this.resolvePath("stadiums.csv");
+        String pathSections = this.resolvePath("sections.csv");
+        String pathSeats = this.resolvePath("seats.csv");
         this.stadiumRepository = new StadiumRepository(pathStadiums);
         this.sectionRepository = new SectionRepository(pathSections);
         this.seatRepository = new SeatRepository(pathSeats);

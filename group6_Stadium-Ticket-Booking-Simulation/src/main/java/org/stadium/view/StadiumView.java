@@ -38,7 +38,7 @@ public class StadiumView {
      */
     public StadiumView(StadiumController stadiumController) {
         this.stadiumController = stadiumController;
-        this.seatMapView = new SeatMapView(stadiumController);
+        this.seatMapView = new SeatMapView(this.stadiumController);
     }
 
     /**
@@ -46,7 +46,7 @@ public class StadiumView {
      */
     public StadiumView(StadiumController stadiumController, SeatMapView seatMapView) {
         this.stadiumController = stadiumController;
-        this.seatMapView = seatMapView != null ? seatMapView : new SeatMapView(stadiumController);
+        this.seatMapView = seatMapView != null ? seatMapView : new SeatMapView(this.stadiumController);
     }
 
     /**

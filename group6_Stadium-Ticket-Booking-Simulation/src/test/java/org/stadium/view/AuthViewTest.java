@@ -33,6 +33,23 @@ public class AuthViewTest {
     private static int testsRun = 0;
     private static int testsPassed = 0;
 
+    private static PrintStream createPrintStream(ByteArrayOutputStream out) {
+        try {
+            return new PrintStream(out, true, "UTF-8");
+        } catch (Exception e) {
+            return new PrintStream(out, true);
+        }
+    }
+
+    private static String getOutput(ByteArrayOutputStream out) {
+        try {
+            return out.toString("UTF-8");
+        } catch (Exception e) {
+            return out.toString();
+        }
+    }
+
+
     public static void main(String[] args) {
         System.out.println("=== BAT DAU KIEM THU AUTHVIEW (TUAN 6 - KIET) ===\n");
 
@@ -57,14 +74,14 @@ public class AuthViewTest {
                 String simulatedInput = "namml1\nnamml1\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayLoginForm();
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("Đăng nhập thành công!"), "Thong bao dang nhap thanh cong phai xuat hien");
                     assertCondition(authController.getCurrentUser() != null, "CurrentUser phai duoc luu trong AuthController");
                     assertCondition("FAN0001".equals(authController.getCurrentUser().getId()), "ID nguoi dung phai la FAN0001");
@@ -79,14 +96,14 @@ public class AuthViewTest {
                 String simulatedInput = "namml1\nwrong_pass\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayLoginForm();
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("Đăng nhập thất bại!"), "Thong bao that bai phai xuat hien");
                     assertCondition(output.contains("Sai mật khẩu"), "Ly do sai mat khau phai xuat hien");
                     assertCondition(authController.getCurrentUser() == null, "CurrentUser phai la null");
@@ -100,14 +117,14 @@ public class AuthViewTest {
                 String simulatedInput = "kiet_fan6\npassword123\npassword123\nNguyen Tuan Kiet\nkiet.tuan@stadium.vn\n0987654321\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayFanRegisterForm();
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("Đăng ký tài khoản Fan thành công!"), "Phai bao thanh cong");
 
                     Fan created = fanRepo.findByUsername("kiet_fan6");
@@ -124,14 +141,14 @@ public class AuthViewTest {
                 String simulatedInput = "vff_event\npassword123\npassword123\nCong Ty To Chuc Su Kien VFF\nevent@vff.org.vn\n0912345678\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayOrganizerRegisterForm();
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("Đăng ký tài khoản Ban tổ chức thành công!"), "Phai bao thanh cong");
                     assertCondition(output.contains("PENDING"), "Phai thong bao trang thai PENDING");
 
@@ -151,14 +168,14 @@ public class AuthViewTest {
                 String simulatedInput = "0\n"; // Chon [0] Quay lai
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayProfile(fan);
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("FAN0001"), "Output phai co ma FAN0001");
                     assertCondition(output.contains("namml1"), "Output phai co username namml1");
                     assertCondition(output.contains("Le Minh Nam"), "Output phai co ho ten");
@@ -176,14 +193,14 @@ public class AuthViewTest {
                 String simulatedInput = "namml1\nnewsecret123\nnewsecret123\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayChangePasswordForm();
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("Đổi mật khẩu thành công!"), "Phai co thong bao doi mat khau thanh cong");
 
                     // Thu login bang mat khau moi
@@ -202,14 +219,14 @@ public class AuthViewTest {
                 String simulatedInput = "nam.new@gmail.com\n0988776655\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
-                System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+                System.setOut(createPrintStream(outContent));
 
                 try {
                     Scanner scanner = new Scanner(new ByteArrayInputStream(simulatedInput.getBytes(StandardCharsets.UTF_8)));
                     AuthView authView = new AuthView(authController, scanner);
                     authView.displayUpdateProfileForm();
 
-                    String output = outContent.toString(StandardCharsets.UTF_8);
+                    String output = getOutput(outContent);
                     assertCondition(output.contains("Cập nhật thông tin liên hệ thành công!"), "Phai bao cap nhat thanh cong");
                     assertCondition("nam.new@gmail.com".equals(fan.getEmail()), "Email phai duoc cap nhat");
                     assertCondition("0988776655".equals(fan.getPhone()), "Phone phai duoc cap nhat");

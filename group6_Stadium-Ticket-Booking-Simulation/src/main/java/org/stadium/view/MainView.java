@@ -43,6 +43,8 @@ public class MainView {
     private MatchView matchView;
     private BookingView bookingView;
     private OrganizerView organizerView;
+    private SeatMapView seatMapView;
+    private StadiumView stadiumView;
     private Account currentUser;
     private boolean running;
 
@@ -80,6 +82,8 @@ public class MainView {
         this.matchView = new MatchView(this.scanner, this.matchController);
         this.bookingView = new BookingView(this.scanner, this.bookingController);
         this.organizerView = new OrganizerView(this.scanner, this.ticketController);
+        this.seatMapView = new SeatMapView(this.stadiumController);
+        this.stadiumView = new StadiumView(this.stadiumController, this.seatMapView);
         this.currentUser = null;
         this.running = true;
     }
@@ -121,6 +125,10 @@ public class MainView {
         System.out.println("0. Thoát chương trình");
         System.out.println("============================================================");
         System.out.print("Vui lòng chọn chức năng (0-9): ");
+        if (!this.scanner.hasNextLine()) {
+            this.running = false;
+            return;
+        }
         String choice = this.scanner.nextLine().trim();
 
         if ("1".equals(choice)) {
@@ -147,29 +155,25 @@ public class MainView {
             this.matchView.displayMatches(filtered);
         } else if ("5".equals(choice)) {
             List<Stadium> stadiums = this.stadiumController.getAllStadiums();
-            System.out.println("\n============= DANH SÁCH SÂN VẬN ĐỘNG =============");
-            for (Stadium s : stadiums) {
-                System.out.printf("%-10s | %-35s | %-12d | %s%n",
-                        s.getStadiumId(), s.getStadiumName(), s.getCapacity(), s.getAddress());
-            }
+            this.stadiumView.displayStadiumList(stadiums);
         } else if ("6".equals(choice)) {
             System.out.print("Nhập mã sân vận động (VD: STD01): ");
+            if (!this.scanner.hasNextLine()) {
+                this.running = false;
+                return;
+            }
             String stadiumId = this.scanner.nextLine().trim();
             List<SeatSection> sections = this.stadiumController.getSections(stadiumId);
-            if (sections.isEmpty()) {
-                System.out.println("[INFO] Không tìm thấy khán đài nào thuộc sân " + stadiumId);
-            } else {
-                System.out.println("============= DANH SÁCH KHÁN ĐÀI (" + stadiumId + ") =============");
-                for (SeatSection sec : sections) {
-                    System.out.printf("%-15s | %-25s | %-12s | %d ghế%n",
-                            sec.getSectionId(), sec.getSectionName(),
-                            sec.getSectionType() != null ? sec.getSectionType().name() : "N/A",
-                            sec.getTotalSeats());
-                }
+            this.stadiumView.displaySectionList(stadiumId, sections);
+            if (!sections.isEmpty()) {
                 System.out.print("Nhập mã khán đài muốn xem sơ đồ ghế ASCII (VD: " + sections.get(0).getSectionId() + "): ");
+                if (!this.scanner.hasNextLine()) {
+                    this.running = false;
+                    return;
+                }
                 String secId = this.scanner.nextLine().trim();
                 String map = this.stadiumController.buildSeatMap(secId);
-                System.out.println(map);
+                this.seatMapView.displaySeatMap(map);
             }
         } else if ("7".equals(choice)) {
             System.out.println("\n============= ĐĂNG NHẬP =============");
@@ -243,6 +247,10 @@ public class MainView {
         System.out.println("0. Đăng xuất");
         System.out.println("=================================================================");
         System.out.print("Vui lòng chọn chức năng (0-9): ");
+        if (!this.scanner.hasNextLine()) {
+            this.running = false;
+            return;
+        }
         String choice = this.scanner.nextLine().trim();
 
         if ("1".equals(choice)) {
@@ -253,8 +261,13 @@ public class MainView {
             this.matchView.displayMatches(this.matchController.filterMatches(this.matchView.promptFilterCriteria()));
         } else if ("4".equals(choice)) {
             System.out.print("Nhập mã khán đài muốn xem sơ đồ ghế (VD: SEC_STD01_A): ");
+            if (!this.scanner.hasNextLine()) {
+                this.running = false;
+                return;
+            }
             String secId = this.scanner.nextLine().trim();
-            System.out.println(this.stadiumController.buildSeatMap(secId));
+            String map = this.stadiumController.buildSeatMap(secId);
+            this.seatMapView.displaySeatMap(map);
         } else if ("5".equals(choice)) {
             System.out.print("Nhập mã khán đài bạn muốn chọn ghế (VD: SEC_STD01_A): ");
             String sectionId = this.scanner.nextLine().trim();
@@ -317,6 +330,10 @@ public class MainView {
         System.out.println("0. Đăng xuất");
         System.out.println("======================================================================");
         System.out.print("Vui lòng chọn chức năng (0-9): ");
+        if (!this.scanner.hasNextLine()) {
+            this.running = false;
+            return;
+        }
         String choice = this.scanner.nextLine().trim();
 
         if ("1".equals(choice)) {
@@ -388,16 +405,26 @@ public class MainView {
         System.out.println("0. Đăng xuất");
         System.out.println("====================================================================");
         System.out.print("Vui lòng chọn chức năng (0-3): ");
+        if (!this.scanner.hasNextLine()) {
+            this.running = false;
+            return;
+        }
         String choice = this.scanner.nextLine().trim();
 
         if ("1".equals(choice)) {
             this.matchView.displayMatches(this.matchController.viewAllMatches());
         } else if ("2".equals(choice)) {
             List<Stadium> stadiums = this.stadiumController.getAllStadiums();
-            System.out.println("\n============= DANH SÁCH SÂN VẬN ĐỘNG =============");
-            for (Stadium s : stadiums) {
-                System.out.printf("%-10s | %-35s | %-12d | %s%n",
-                        s.getStadiumId(), s.getStadiumName(), s.getCapacity(), s.getAddress());
+            this.stadiumView.displayStadiumList(stadiums);
+            System.out.print("Nhập mã sân vận động để xem khán đài (VD: STD01, Enter để bỏ qua): ");
+            if (!this.scanner.hasNextLine()) {
+                this.running = false;
+                return;
+            }
+            String stdId = this.scanner.nextLine().trim();
+            if (!stdId.isEmpty()) {
+                List<SeatSection> sections = this.stadiumController.getSections(stdId);
+                this.stadiumView.displaySectionList(stdId, sections);
             }
         } else if ("3".equals(choice)) {
             Account acc = this.authController.viewProfile(this.currentUser.getId());

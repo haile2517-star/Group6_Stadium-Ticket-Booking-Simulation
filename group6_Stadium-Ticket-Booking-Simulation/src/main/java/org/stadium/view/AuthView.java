@@ -15,11 +15,11 @@ import java.util.regex.Pattern;
  * Thành viên phụ trách: Kiệt (Tuần 6 - View Layer).
  * 
  * Các chức năng chính:
- * 1. displayLoginForm(): Đăng nhập vào hệ thống
- * 2. displayFanRegisterForm(): Đăng ký tài khoản người hâm mộ (Fan)
- * 3. displayOrganizerRegisterForm(): Đăng ký tài khoản ban tổ chức (Organizer)
- * 4. displayProfile(Account account): Xem và cập nhật hồ sơ cá nhân
- * 5. displayChangePasswordForm(): Đổi mật khẩu
+ * 1. this.displayLoginForm(): Đăng nhập vào hệ thống
+ * 2. this.displayFanRegisterForm(): Đăng ký tài khoản người hâm mộ (Fan)
+ * 3. this.displayOrganizerRegisterForm(): Đăng ký tài khoản ban tổ chức (Organizer)
+ * 4. this.displayProfile(Account account): Xem và cập nhật hồ sơ cá nhân
+ * 5. this.displayChangePasswordForm(): Đổi mật khẩu
  */
 public class AuthView {
 
@@ -27,9 +27,9 @@ public class AuthView {
     private final Scanner scanner;
 
     // Regex biểu thức chính quy cho dữ liệu đầu vào
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^0[0-9]{9,10}$");
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{3,20}$");
+    private final Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+    private final Pattern phonePattern = Pattern.compile("^0[0-9]{9,10}$");
+    private final Pattern usernamePattern = Pattern.compile("^[a-zA-Z0-9_]{3,20}$");
 
     public AuthView() {
         this(new AuthController(), new Scanner(System.in));
@@ -45,7 +45,7 @@ public class AuthView {
     }
 
     public AuthController getAuthController() {
-        return authController;
+        return this.authController;
     }
 
     /**
@@ -53,7 +53,7 @@ public class AuthView {
      * Cho phép kiểm thử toàn diện luồng nghiệp vụ của Tuần 6.
      */
     public void start() {
-        displayAuthMenu();
+        this.displayAuthMenu();
     }
 
     /**
@@ -62,16 +62,16 @@ public class AuthView {
     public void displayAuthMenu() {
         boolean running = true;
         while (running) {
-            Account current = authController.getCurrentUser();
+            Account current = this.authController.getCurrentUser();
             String userInfo = (current != null)
-                    ? current.getUsername() + " (" + getRoleName(current) + " - " + current.getStatus() + ")"
+                    ? current.getUsername() + " (" + this.getRoleName(current) + " - " + current.getStatus() + ")"
                     : "Chưa đăng nhập";
 
             System.out.println();
             System.out.println("╔══════════════════════════════════════════════════════════════╗");
             System.out.println("║         HỆ THỐNG XÁC THỰC TÀI KHOẢN - STADIUM BOOKING        ║");
             System.out.println("╠══════════════════════════════════════════════════════════════╣");
-            System.out.println("║ Trạng thái: " + padRight(userInfo, 49) + "║");
+            System.out.println("║ Trạng thái: " + this.padRight(userInfo, 49) + "║");
             System.out.println("╠══════════════════════════════════════════════════════════════╣");
             System.out.println("║ 1. Đăng nhập hệ thống (Login)                                ║");
             System.out.println("║ 2. Đăng ký tài khoản Fan (Register Fan)                      ║");
@@ -84,25 +84,25 @@ public class AuthView {
             System.out.println("╚══════════════════════════════════════════════════════════════╝");
             System.out.print("👉 Vui lòng chọn chức năng [0-7]: ");
 
-            String choice = scanner.nextLine().trim();
+            String choice = this.scanner.nextLine().trim();
             switch (choice) {
                 case "1":
-                    displayLoginForm();
+                    this.displayLoginForm();
                     break;
                 case "2":
-                    displayFanRegisterForm();
+                    this.displayFanRegisterForm();
                     break;
                 case "3":
-                    displayOrganizerRegisterForm();
+                    this.displayOrganizerRegisterForm();
                     break;
                 case "4":
-                    displayProfile(authController.getCurrentUser());
+                    this.displayProfile(this.authController.getCurrentUser());
                     break;
                 case "5":
-                    displayChangePasswordForm();
+                    this.displayChangePasswordForm();
                     break;
                 case "6":
-                    displayUpdateProfileForm();
+                    this.displayUpdateProfileForm();
                     break;
                 case "7":
                     handleLogout();
@@ -126,12 +126,12 @@ public class AuthView {
         System.out.println("│                     ĐĂNG NHẬP HỆ THỐNG                       │");
         System.out.println("└──────────────────────────────────────────────────────────────┘");
 
-        if (authController.getCurrentUser() != null) {
-            System.out.println("⚠️ Bạn đang đăng nhập với tài khoản: " + authController.getCurrentUser().getUsername());
+        if (this.authController.getCurrentUser() != null) {
+            System.out.println("⚠️ Bạn đang đăng nhập với tài khoản: " + this.authController.getCurrentUser().getUsername());
             System.out.print("Bạn có muốn đăng xuất để đăng nhập tài khoản khác? (y/n): ");
-            String ans = scanner.nextLine().trim();
+            String ans = this.scanner.nextLine().trim();
             if (ans.equalsIgnoreCase("y")) {
-                authController.logout(authController.getCurrentUser().getId());
+                this.authController.logout(this.authController.getCurrentUser().getId());
                 System.out.println("ℹ️ Đã đăng xuất thành công.");
             } else {
                 return;
@@ -151,13 +151,13 @@ public class AuthView {
         }
 
         System.out.println("⏳ Đang xác thực thông tin đăng nhập...");
-        Account account = authController.login(username, password);
+        Account account = this.authController.login(username, password);
 
         if (account != null) {
             System.out.println();
             System.out.println("🎉 [THÀNH CÔNG] Đăng nhập thành công!");
             System.out.println("👤 Xin chào: " + getDisplayName(account));
-            System.out.println("🏷️ Vai trò: " + getRoleName(account));
+            System.out.println("🏷️ Vai trò: " + this.getRoleName(account));
             System.out.println("📌 Mã tài khoản: " + account.getId());
         } else {
             System.out.println();
@@ -179,7 +179,7 @@ public class AuthView {
         String username;
         while (true) {
             username = promptString("Tên đăng nhập (3-20 ký tự, chữ/số/_)", false);
-            if (!USERNAME_PATTERN.matcher(username).matches()) {
+            if (!this.usernamePattern.matcher(username).matches()) {
                 System.out.println("❌ Tên đăng nhập không hợp lệ! Chỉ gồm 3-20 ký tự chữ, số hoặc dấu gạch dưới.");
                 continue;
             }
@@ -187,10 +187,10 @@ public class AuthView {
                 System.out.println("❌ Tên đăng nhập không được chứa dấu phẩy (,)!");
                 continue;
             }
-            if (authController.isUsernameExists(username)) {
+            if (this.authController.isUsernameExists(username)) {
                 System.out.println("❌ Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên khác.");
                 System.out.print("Bạn có muốn nhập lại? (y/n): ");
-                if (!scanner.nextLine().trim().equalsIgnoreCase("y")) {
+                if (!this.scanner.nextLine().trim().equalsIgnoreCase("y")) {
                     System.out.println("ℹ️ Đã hủy đăng ký.");
                     return;
                 }
@@ -239,7 +239,7 @@ public class AuthView {
         String email;
         while (true) {
             email = promptString("Địa chỉ email (vd: user@example.com)", false);
-            if (!EMAIL_PATTERN.matcher(email).matches()) {
+            if (!this.emailPattern.matcher(email).matches()) {
                 System.out.println("❌ Định dạng email không hợp lệ! Vui lòng nhập đúng cú pháp.");
                 continue;
             }
@@ -254,7 +254,7 @@ public class AuthView {
         String phone;
         while (true) {
             phone = promptString("Số điện thoại (10-11 số, bắt đầu bằng 0)", false);
-            if (!PHONE_PATTERN.matcher(phone).matches()) {
+            if (!this.phonePattern.matcher(phone).matches()) {
                 System.out.println("❌ Số điện thoại không hợp lệ! Phải có 10-11 chữ số và bắt đầu bằng số 0.");
                 continue;
             }
@@ -266,7 +266,7 @@ public class AuthView {
         }
 
         System.out.println("⏳ Đang xử lý đăng ký tài khoản Fan...");
-        boolean success = authController.registerFan(username, password, fullName, email, phone);
+        boolean success = this.authController.registerFan(username, password, fullName, email, phone);
 
         if (success) {
             System.out.println();
@@ -291,7 +291,7 @@ public class AuthView {
         String username;
         while (true) {
             username = promptString("Tên đăng nhập (3-20 ký tự, chữ/số/_)", false);
-            if (!USERNAME_PATTERN.matcher(username).matches()) {
+            if (!this.usernamePattern.matcher(username).matches()) {
                 System.out.println("❌ Tên đăng nhập không hợp lệ! Chỉ gồm 3-20 ký tự chữ, số hoặc dấu gạch dưới.");
                 continue;
             }
@@ -299,10 +299,10 @@ public class AuthView {
                 System.out.println("❌ Tên đăng nhập không được chứa dấu phẩy (,)!");
                 continue;
             }
-            if (authController.isUsernameExists(username)) {
+            if (this.authController.isUsernameExists(username)) {
                 System.out.println("❌ Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên khác.");
                 System.out.print("Bạn có muốn nhập lại? (y/n): ");
-                if (!scanner.nextLine().trim().equalsIgnoreCase("y")) {
+                if (!this.scanner.nextLine().trim().equalsIgnoreCase("y")) {
                     System.out.println("ℹ️ Đã hủy đăng ký.");
                     return;
                 }
@@ -351,7 +351,7 @@ public class AuthView {
         String email;
         while (true) {
             email = promptString("Địa chỉ email liên hệ (vd: contact@org.vn)", false);
-            if (!EMAIL_PATTERN.matcher(email).matches()) {
+            if (!this.emailPattern.matcher(email).matches()) {
                 System.out.println("❌ Định dạng email không hợp lệ! Vui lòng nhập đúng cú pháp.");
                 continue;
             }
@@ -366,7 +366,7 @@ public class AuthView {
         String phone;
         while (true) {
             phone = promptString("Số điện thoại liên hệ (10-11 số, bắt đầu bằng 0)", false);
-            if (!PHONE_PATTERN.matcher(phone).matches()) {
+            if (!this.phonePattern.matcher(phone).matches()) {
                 System.out.println("❌ Số điện thoại không hợp lệ! Phải có 10-11 chữ số và bắt đầu bằng số 0.");
                 continue;
             }
@@ -378,7 +378,7 @@ public class AuthView {
         }
 
         System.out.println("⏳ Đang xử lý đăng ký tài khoản Ban tổ chức...");
-        boolean success = authController.registerOrganizer(username, password, orgName, email, phone);
+        boolean success = this.authController.registerOrganizer(username, password, orgName, email, phone);
 
         if (success) {
             System.out.println();
@@ -403,7 +403,7 @@ public class AuthView {
         System.out.println("└──────────────────────────────────────────────────────────────┘");
 
         if (account == null) {
-            account = authController.getCurrentUser();
+            account = this.authController.getCurrentUser();
         }
 
         if (account == null) {
@@ -412,13 +412,13 @@ public class AuthView {
         }
 
         // Làm mới dữ liệu từ repository thông qua viewProfile của Controller
-        Account freshAccount = authController.viewProfile(account.getId());
+        Account freshAccount = this.authController.viewProfile(account.getId());
         if (freshAccount != null) {
             account = freshAccount;
         }
 
-        String role = getRoleName(account);
-        String name = getDisplayName(account);
+        String role = this.getRoleName(account);
+        String name = this.getDisplayName(account);
 
         System.out.println("┌───────────────────────┬──────────────────────────────────────┐");
         System.out.printf("│ %-21s │ %-36s │%n", "Mã tài khoản", account.getId());
@@ -442,11 +442,11 @@ public class AuthView {
         System.out.println(" [0] Quay lại");
         System.out.print("👉 Lựa chọn: ");
 
-        String subChoice = scanner.nextLine().trim();
+        String subChoice = this.scanner.nextLine().trim();
         if ("1".equals(subChoice)) {
-            displayUpdateProfileForm();
+            this.displayUpdateProfileForm();
         } else if ("2".equals(subChoice)) {
-            displayChangePasswordForm();
+            this.displayChangePasswordForm();
         }
     }
 
@@ -459,7 +459,7 @@ public class AuthView {
         System.out.println("│                        ĐỔI MẬT KHẨU                          │");
         System.out.println("└──────────────────────────────────────────────────────────────┘");
 
-        Account current = authController.getCurrentUser();
+        Account current = this.authController.getCurrentUser();
         if (current == null) {
             System.out.println("⚠️ Bạn chưa đăng nhập! Vui lòng đăng nhập trước khi thực hiện đổi mật khẩu.");
             return;
@@ -496,7 +496,7 @@ public class AuthView {
         }
 
         System.out.println("⏳ Đang tiến hành thay đổi mật khẩu...");
-        boolean success = authController.changePassword(current.getId(), oldPass, newPass);
+        boolean success = this.authController.changePassword(current.getId(), oldPass, newPass);
 
         if (success) {
             System.out.println();
@@ -517,7 +517,7 @@ public class AuthView {
         System.out.println("│                 CẬP NHẬT THÔNG TIN LIÊN HỆ                   │");
         System.out.println("└──────────────────────────────────────────────────────────────┘");
 
-        Account current = authController.getCurrentUser();
+        Account current = this.authController.getCurrentUser();
         if (current == null) {
             System.out.println("⚠️ Bạn chưa đăng nhập! Vui lòng đăng nhập để cập nhật thông tin.");
             return;
@@ -531,7 +531,7 @@ public class AuthView {
                 newEmail = current.getEmail();
                 break;
             }
-            if (!EMAIL_PATTERN.matcher(newEmail).matches()) {
+            if (!this.emailPattern.matcher(newEmail).matches()) {
                 System.out.println("❌ Định dạng email không hợp lệ!");
                 continue;
             }
@@ -550,7 +550,7 @@ public class AuthView {
                 newPhone = current.getPhone();
                 break;
             }
-            if (!PHONE_PATTERN.matcher(newPhone).matches()) {
+            if (!this.phonePattern.matcher(newPhone).matches()) {
                 System.out.println("❌ Số điện thoại không hợp lệ! Phải có 10-11 chữ số và bắt đầu bằng số 0.");
                 continue;
             }
@@ -567,7 +567,7 @@ public class AuthView {
         }
 
         System.out.println("⏳ Đang lưu cập nhật thông tin...");
-        boolean success = authController.updateProfile(current.getId(), newEmail, newPhone);
+        boolean success = this.authController.updateProfile(current.getId(), newEmail, newPhone);
 
         if (success) {
             System.out.println();
@@ -582,13 +582,13 @@ public class AuthView {
      * Xử lý đăng xuất tài khoản hiện tại.
      */
     private void handleLogout() {
-        Account current = authController.getCurrentUser();
+        Account current = this.authController.getCurrentUser();
         if (current == null) {
             System.out.println("ℹ️ Bạn chưa đăng nhập!");
             return;
         }
         String username = current.getUsername();
-        authController.logout(current.getId());
+        this.authController.logout(current.getId());
         System.out.println("✅ [THÀNH CÔNG] Đã đăng xuất khỏi tài khoản: " + username);
     }
 
@@ -597,9 +597,9 @@ public class AuthView {
      */
     private void explainLoginFailure(String username) {
         String trimmed = username.trim();
-        Account acc = authController.getAdminRepo().findByUsername(trimmed);
-        if (acc == null) acc = authController.getFanRepo().findByUsername(trimmed);
-        if (acc == null) acc = authController.getOrganizerRepo().findByUsername(trimmed);
+        Account acc = this.authController.getAdminRepo().findByUsername(trimmed);
+        if (acc == null) acc = this.authController.getFanRepo().findByUsername(trimmed);
+        if (acc == null) acc = this.authController.getOrganizerRepo().findByUsername(trimmed);
 
         if (acc == null) {
             System.out.println("👉 Lý do: Tên đăng nhập không tồn tại trong hệ thống.");
@@ -635,7 +635,7 @@ public class AuthView {
     private String promptString(String label, boolean allowEmpty) {
         while (true) {
             System.out.print("👉 " + label + ": ");
-            String input = scanner.nextLine().trim();
+            String input = this.scanner.nextLine().trim();
             if (allowEmpty || !input.isEmpty()) {
                 return input;
             }

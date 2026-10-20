@@ -296,9 +296,9 @@ public class AuthController {
             return false;
         }
         String u = username.trim();
-        return fanRepo.findByUsername(u) != null
-                || organizerRepo.findByUsername(u) != null
-                || adminRepo.findByUsername(u) != null;
+        return this.fanRepo.findByUsername(u) != null
+                || this.organizerRepo.findByUsername(u) != null
+                || this.adminRepo.findByUsername(u) != null;
     }
 
     /**

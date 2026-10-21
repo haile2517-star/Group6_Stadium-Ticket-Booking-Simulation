@@ -45,6 +45,31 @@ public class TicketController {
         this.ticketPricingRepository = ticketPricingRepository;
         this.transactionRepository = transactionRepository;
     }
+
+    public TicketController() {
+        String pathMatches = this.resolvePath("matches.csv");
+        String pathSections = this.resolvePath("sections.csv");
+        String pathSeats = this.resolvePath("seats.csv");
+        String pathTickets = this.resolvePath("tickets.csv");
+        String pathPricings = this.resolvePath("ticket_pricings.csv");
+        String pathTransactions = this.resolvePath("transactions.csv");
+
+        this.matchRepository = new MatchRepository(pathMatches);
+        this.sectionRepository = new SectionRepository(pathSections);
+        this.seatRepository = new SeatRepository(pathSeats);
+        this.ticketRepository = new TicketRepository(pathTickets);
+        this.ticketPricingRepository = new TicketPricingRepository(pathPricings);
+        this.transactionRepository = new TransactionRepository(pathTransactions);
+    }
+
+    public String resolvePath(String fileName) {
+        if (new java.io.File("data/" + fileName).exists()) {
+            return "data/" + fileName;
+        } else if (new java.io.File("../data/" + fileName).exists()) {
+            return "../data/" + fileName;
+        }
+        return "data/" + fileName;
+    }
  
     // Dat/sua gia ve cho 1 khu vuc trong 1 tran. Gia ap dung cho cac ve sinh SAU khi cau hinh.
     public boolean configureTicketPricing(String matchId, String sectionId, double price) {

@@ -21,10 +21,28 @@ public class BookingController {
     private TicketRepository ticketRepository;
     private TransactionRepository transactionRepository;
     
-    public BookingController (SeatRepository seatRepository, TicketRepository ticketRepository, TransactionRepository transactionRepository){
+    public BookingController(SeatRepository seatRepository, TicketRepository ticketRepository, TransactionRepository transactionRepository){
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
         this.transactionRepository = transactionRepository;
+    }
+
+    public BookingController() {
+        String pathSeats = this.resolvePath("seats.csv");
+        String pathTickets = this.resolvePath("tickets.csv");
+        String pathTransactions = this.resolvePath("transactions.csv");
+        this.seatRepository = new SeatRepository(pathSeats);
+        this.ticketRepository = new TicketRepository(pathTickets);
+        this.transactionRepository = new TransactionRepository(pathTransactions);
+    }
+
+    public String resolvePath(String fileName) {
+        if (new java.io.File("data/" + fileName).exists()) {
+            return "data/" + fileName;
+        } else if (new java.io.File("../data/" + fileName).exists()) {
+            return "../data/" + fileName;
+        }
+        return "data/" + fileName;
     }
 
     public boolean bookTickets(String fanId, String matchId, List<String> seatIds, SynchronizationMechanism mech){
@@ -51,7 +69,7 @@ public class BookingController {
             tickets.add(ticket);
         }
         //tao giao dich
-        String transactionId = String.format("TXN%05d", this.transactionRepository.findAll().size()+1);
+        String transactionId = this.generateNextTransactionId();
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         double totalAmount = 0;
 
@@ -139,5 +157,32 @@ public class BookingController {
 
     public List<BookingTransaction> viewBookingHistory(String fanId){
         return this.transactionRepository.findByFanId(fanId);
+    }
+
+    /**
+     * Tự động sinh ID giao dịch kế tiếp (TXN00001, TXN00002, ...) tránh trùng lặp.
+     * Quét toàn bộ repository để tìm số thứ tự lớn nhất, và kiểm tra tính duy nhất.
+     */
+    public synchronized String generateNextTransactionId() {
+        int maxId = 0;
+        for (BookingTransaction txn : this.transactionRepository.findAll()) {
+            String id = txn.getId();
+            if (id != null && id.toUpperCase().startsWith("TXN")) {
+                try {
+                    int num = Integer.parseInt(id.substring(3).trim());
+                    if (num > maxId) {
+                        maxId = num;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        int nextId = maxId + 1;
+        String candidateId = String.format("TXN%05d", nextId);
+        while (this.transactionRepository.findById(candidateId) != null) {
+            nextId++;
+            candidateId = String.format("TXN%05d", nextId);
+        }
+        return candidateId;
     }
 }

@@ -64,6 +64,23 @@ public class OrganizerView {
             System.out.println("[FAILED] No tickets were generated for match " + matchId + ".");
         }
     }
+
+    public void displayCancelTicketsForm() {
+        System.out.println();
+        System.out.println("======== HỦY TOÀN BỘ VÉ TRẬN ĐẤU (CANCEL ALL TICKETS) ========");
+        System.out.print("Enter Match ID: ");
+        String matchId = this.scanner.nextLine().trim();
+        if (matchId.isEmpty()) {
+            System.out.println("[FAILED] Match ID is required.");
+            return;
+        }
+        boolean success = this.ticketController.cancelTickets(matchId);
+        if (success) {
+            System.out.println("[SUCCESS] Cancelled all tickets for match " + matchId + " (Đã hủy toàn bộ vé thành công).");
+        } else {
+            System.out.println("[FAILED] Could not cancel tickets for match " + matchId + " (Không tìm thấy vé hoặc vé đã bị hủy).");
+        }
+    }
     public void displaySalesReport(Map<String, Object> salesData){
         System.out.println();
         System.out.println("=========== TICKET SALES REPORT ===========");

@@ -26,7 +26,7 @@ public class BookingView {
             return;
         }
         System.out.println("Available seats:");
-        System.out.printf("-12s %-14s %-5s %-6s %-10s%n", "Seat ID", "Section", "Row", "Seat", "Type");
+        System.out.printf("%-12s %-14s %-5s %-6s %-10s%n", "Seat ID", "Section", "Row", "Seat", "Type");
         System.out.println("---------------------------------------------------");
     
     for(Seat seat : seats){
@@ -46,12 +46,12 @@ public class BookingView {
         }
     }
     if (fanId.isEmpty() || matchId.isEmpty() || seatIds.isEmpty()){
-        this.showBookingResult(false, "Fan ID, Mattch ID and at least one seat are required.");
+        this.showBookingResult(false, "Fan ID, Match ID and at least one seat are required.");
         return;
 
     }
     if(seatIds.size() > 4){
-        this.showBookingResult(false, "You can book at most 4 tickets per bookinmg");
+        this.showBookingResult(false, "You can book at most 4 tickets per booking");
         return;
     }
     if(new HashSet<>(seatIds).size() != seatIds.size()){

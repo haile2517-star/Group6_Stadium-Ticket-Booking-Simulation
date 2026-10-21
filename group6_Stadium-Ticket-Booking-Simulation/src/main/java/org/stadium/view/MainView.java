@@ -324,12 +324,13 @@ public class MainView {
         System.out.println("4. Xóa trận đấu");
         System.out.println("5. Cấu hình giá vé theo khán đài");
         System.out.println("6. Tự động phát hành vé cho trận đấu");
-        System.out.println("7. Xem báo cáo doanh thu bán vé");
-        System.out.println("8. Xem hồ sơ đơn vị");
-        System.out.println("9. Đổi mật khẩu");
+        System.out.println("7. Hủy toàn bộ vé trận đấu");
+        System.out.println("8. Xem báo cáo doanh thu bán vé");
+        System.out.println("9. Xem hồ sơ đơn vị");
+        System.out.println("10. Đổi mật khẩu");
         System.out.println("0. Đăng xuất");
         System.out.println("======================================================================");
-        System.out.print("Vui lòng chọn chức năng (0-9): ");
+        System.out.print("Vui lòng chọn chức năng (0-10): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
@@ -356,11 +357,13 @@ public class MainView {
         } else if ("6".equals(choice)) {
             this.organizerView.displayGenerateTicketsForm();
         } else if ("7".equals(choice)) {
+            this.organizerView.displayCancelTicketsForm();
+        } else if ("8".equals(choice)) {
             System.out.print("Nhập mã trận đấu cần xem báo cáo doanh thu (VD: MTH01): ");
             String matchId = this.scanner.nextLine().trim();
             Map<String, Object> sales = this.ticketController.viewTicketSalesReport(matchId);
             this.organizerView.displaySalesReport(sales);
-        } else if ("8".equals(choice)) {
+        } else if ("9".equals(choice)) {
             Account acc = this.authController.viewProfile(this.currentUser.getId());
             if (acc != null) {
                 System.out.println("\n============= THÔNG TIN ĐƠN VỊ =============");
@@ -374,7 +377,7 @@ public class MainView {
                 }
                 System.out.println("============================================");
             }
-        } else if ("9".equals(choice)) {
+        } else if ("10".equals(choice)) {
             System.out.println("\n============= ĐỔI MẬT KHẨU =============");
             System.out.print("Mật khẩu hiện tại: ");
             String oldPass = this.scanner.nextLine().trim();

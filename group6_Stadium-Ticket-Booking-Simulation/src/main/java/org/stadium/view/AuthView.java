@@ -2,650 +2,294 @@ package org.stadium.view;
 
 import org.stadium.controller.AuthController;
 import org.stadium.model.Account;
-import org.stadium.model.AccountStatus;
 import org.stadium.model.Admin;
 import org.stadium.model.Fan;
 import org.stadium.model.Organizer;
 
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 /**
- * View xử lý giao diện Console cho phân hệ Xác thực và Quản lý Tài khoản (Auth / Account).
+ * View phụ trách giao diện xác thực và quản lý tài khoản người dùng (Auth / Account UI).
+ * Bao gồm: Đăng nhập, Đăng ký Fan, Đăng ký Ban tổ chức, Xem hồ sơ, Đổi mật khẩu, Cập nhật liên hệ.
  * Thành viên phụ trách: Kiệt (Tuần 6 - View Layer).
- * 
- * Các chức năng chính:
- * 1. this.displayLoginForm(): Đăng nhập vào hệ thống
- * 2. this.displayFanRegisterForm(): Đăng ký tài khoản người hâm mộ (Fan)
- * 3. this.displayOrganizerRegisterForm(): Đăng ký tài khoản ban tổ chức (Organizer)
- * 4. this.displayProfile(Account account): Xem và cập nhật hồ sơ cá nhân
- * 5. this.displayChangePasswordForm(): Đổi mật khẩu
+ * Chuẩn mô hình MVC và tuân thủ nguyên tắc Bàn Tay Sắt.
  */
 public class AuthView {
 
     private final AuthController authController;
     private final Scanner scanner;
 
-    // Regex biểu thức chính quy cho dữ liệu đầu vào
-    private final Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
-    private final Pattern phonePattern = Pattern.compile("^0[0-9]{9,10}$");
-    private final Pattern usernamePattern = Pattern.compile("^[a-zA-Z0-9_]{3,20}$");
-
-    public AuthView() {
-        this(new AuthController(), new Scanner(System.in));
+    public AuthView(AuthController authController, Scanner scanner) {
+        this.authController = authController;
+        this.scanner = scanner;
     }
 
     public AuthView(AuthController authController) {
         this(authController, new Scanner(System.in));
     }
 
-    public AuthView(AuthController authController, Scanner scanner) {
-        this.authController = authController;
-        this.scanner = scanner;
-    }
-
-    public AuthController getAuthController() {
-        return this.authController;
+    public AuthView() {
+        this(new AuthController(), new Scanner(System.in));
     }
 
     /**
-     * Khởi chạy Menu xác thực tương tác trên Console (Auth Portal).
-     * Cho phép kiểm thử toàn diện luồng nghiệp vụ của Tuần 6.
-     */
-    public void start() {
-        this.displayAuthMenu();
-    }
-
-    /**
-     * Hiển thị menu điều hướng xác thực trên Console.
-     */
-    public void displayAuthMenu() {
-        boolean running = true;
-        while (running) {
-            Account current = this.authController.getCurrentUser();
-            String userInfo = (current != null)
-                    ? current.getUsername() + " (" + this.getRoleName(current) + " - " + current.getStatus() + ")"
-                    : "Chưa đăng nhập";
-
-            System.out.println();
-            System.out.println("╔══════════════════════════════════════════════════════════════╗");
-            System.out.println("║         HỆ THỐNG XÁC THỰC TÀI KHOẢN - STADIUM BOOKING        ║");
-            System.out.println("╠══════════════════════════════════════════════════════════════╣");
-            System.out.println("║ Trạng thái: " + this.padRight(userInfo, 49) + "║");
-            System.out.println("╠══════════════════════════════════════════════════════════════╣");
-            System.out.println("║ 1. Đăng nhập hệ thống (Login)                                ║");
-            System.out.println("║ 2. Đăng ký tài khoản Fan (Register Fan)                      ║");
-            System.out.println("║ 3. Đăng ký tài khoản Ban tổ chức (Register Organizer)        ║");
-            System.out.println("║ 4. Xem thông tin hồ sơ (View Profile)                        ║");
-            System.out.println("║ 5. Đổi mật khẩu (Change Password)                            ║");
-            System.out.println("║ 6. Cập nhật thông tin liên hệ (Update Contact Info)          ║");
-            System.out.println("║ 7. Đăng xuất (Logout)                                        ║");
-            System.out.println("║ 0. Thoát menu xác thực                                       ║");
-            System.out.println("╚══════════════════════════════════════════════════════════════╝");
-            System.out.print("👉 Vui lòng chọn chức năng [0-7]: ");
-
-            String choice = this.scanner.nextLine().trim();
-            switch (choice) {
-                case "1":
-                    this.displayLoginForm();
-                    break;
-                case "2":
-                    this.displayFanRegisterForm();
-                    break;
-                case "3":
-                    this.displayOrganizerRegisterForm();
-                    break;
-                case "4":
-                    this.displayProfile(this.authController.getCurrentUser());
-                    break;
-                case "5":
-                    this.displayChangePasswordForm();
-                    break;
-                case "6":
-                    this.displayUpdateProfileForm();
-                    break;
-                case "7":
-                    handleLogout();
-                    break;
-                case "0":
-                    running = false;
-                    System.out.println("👋 Đã thoát khỏi trình quản lý xác thực.");
-                    break;
-                default:
-                    System.out.println("❌ Lựa chọn không hợp lệ! Vui lòng chọn số từ 0 đến 7.");
-            }
-        }
-    }
-
-    /**
-     * Form Đăng nhập hệ thống (chuẩn Sơ đồ lớp & Nhiệm vụ T6).
+     * Form đăng nhập hệ thống (Login).
+     * Nhập username và password, gọi AuthController.login() để xác thực.
      */
     public void displayLoginForm() {
         System.out.println();
-        System.out.println("┌──────────────────────────────────────────────────────────────┐");
-        System.out.println("│                     ĐĂNG NHẬP HỆ THỐNG                       │");
-        System.out.println("└──────────────────────────────────────────────────────────────┘");
+        System.out.println("========================== ĐĂNG NHẬP HỆ THỐNG ==========================");
+        System.out.print("👉 Nhập tên đăng nhập (Username): ");
+        String username = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập mật khẩu (Password): ");
+        String password = this.scanner.nextLine().trim();
 
-        if (this.authController.getCurrentUser() != null) {
-            System.out.println("⚠️ Bạn đang đăng nhập với tài khoản: " + this.authController.getCurrentUser().getUsername());
-            System.out.print("Bạn có muốn đăng xuất để đăng nhập tài khoản khác? (y/n): ");
-            String ans = this.scanner.nextLine().trim();
-            if (ans.equalsIgnoreCase("y")) {
-                this.authController.logout(this.authController.getCurrentUser().getId());
-                System.out.println("ℹ️ Đã đăng xuất thành công.");
-            } else {
-                return;
-            }
-        }
-
-        String username = promptString("Tên đăng nhập (Username)", false);
-        if (username.isEmpty()) {
-            System.out.println("❌ Tên đăng nhập không được để trống!");
+        if (username.isEmpty() || password.isEmpty()) {
+            System.out.println("❌ Tên đăng nhập và mật khẩu không được để trống!");
             return;
         }
 
-        String password = promptString("Mật khẩu (Password)", false);
-        if (password.isEmpty()) {
+        Account account = this.authController.login(username, password);
+        if (account != null) {
+            System.out.println("✅ Đăng nhập thành công! Xin chào, " + this.getDisplayName(account) + "!");
+            System.out.println("   Vai trò: " + this.getRoleName(account));
+        } else {
+            String reason = this.authController.getLoginFailureReason(username);
+            System.out.println("❌ Đăng nhập thất bại!");
+            System.out.println("   Lý do: " + reason);
+        }
+    }
+
+    /**
+     * Form đăng ký tài khoản Fan (Người hâm mộ).
+     * Nhập thông tin cá nhân, kiểm tra xác nhận mật khẩu, gọi AuthController.registerFan().
+     */
+    public void displayFanRegisterForm() {
+        System.out.println();
+        System.out.println("====================== ĐĂNG KÝ TÀI KHOẢN FAN ======================");
+        System.out.print("👉 Nhập tên đăng nhập (Username): ");
+        String username = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập mật khẩu: ");
+        String password = this.scanner.nextLine().trim();
+        System.out.print("👉 Xác nhận mật khẩu: ");
+        String confirmPass = this.scanner.nextLine().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            System.out.println("❌ Tên đăng nhập và mật khẩu không được để trống!");
+            return;
+        }
+
+        if (!password.equals(confirmPass)) {
+            System.out.println("❌ Mật khẩu xác nhận không khớp! Vui lòng thử lại.");
+            return;
+        }
+
+        System.out.print("👉 Nhập họ và tên đầy đủ: ");
+        String fullName = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập địa chỉ email: ");
+        String email = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập số điện thoại: ");
+        String phone = this.scanner.nextLine().trim();
+
+        if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+            System.out.println("❌ Thông tin không được để trống!");
+            return;
+        }
+
+        boolean success = this.authController.registerFan(username, password, fullName, email, phone);
+        if (success) {
+            System.out.println("🎉 Đăng ký tài khoản Fan thành công! Bạn có thể đăng nhập ngay.");
+        } else {
+            System.out.println("❌ Đăng ký thất bại! Tên đăng nhập đã tồn tại hoặc dữ liệu không hợp lệ.");
+        }
+    }
+
+    /**
+     * Form đăng ký tài khoản Ban tổ chức (Organizer).
+     * Tài khoản mới sẽ ở trạng thái PENDING chờ Admin phê duyệt.
+     */
+    public void displayOrganizerRegisterForm() {
+        System.out.println();
+        System.out.println("================ ĐĂNG KÝ TÀI KHOẢN BAN TỔ CHỨC ================");
+        System.out.print("👉 Nhập tên đăng nhập (Username): ");
+        String username = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập mật khẩu: ");
+        String password = this.scanner.nextLine().trim();
+        System.out.print("👉 Xác nhận mật khẩu: ");
+        String confirmPass = this.scanner.nextLine().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            System.out.println("❌ Tên đăng nhập và mật khẩu không được để trống!");
+            return;
+        }
+
+        if (!password.equals(confirmPass)) {
+            System.out.println("❌ Mật khẩu xác nhận không khớp! Vui lòng thử lại.");
+            return;
+        }
+
+        System.out.print("👉 Nhập tên đơn vị tổ chức: ");
+        String orgName = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập địa chỉ email: ");
+        String email = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập số điện thoại: ");
+        String phone = this.scanner.nextLine().trim();
+
+        if (orgName.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+            System.out.println("❌ Thông tin không được để trống!");
+            return;
+        }
+
+        boolean success = this.authController.registerOrganizer(username, password, orgName, email, phone);
+        if (success) {
+            System.out.println("🎉 Đăng ký tài khoản Ban tổ chức thành công!");
+            System.out.println("ℹ️ Tài khoản đang ở trạng thái PENDING — Vui lòng chờ Admin phê duyệt trước khi đăng nhập.");
+        } else {
+            System.out.println("❌ Đăng ký thất bại! Tên đăng nhập đã tồn tại hoặc dữ liệu không hợp lệ.");
+        }
+    }
+
+    /**
+     * Hiển thị thông tin hồ sơ cá nhân của tài khoản.
+     * Bao gồm tuỳ chọn cập nhật thông tin liên hệ.
+     *
+     * @param account Đối tượng tài khoản cần hiển thị
+     */
+    public void displayProfile(Account account) {
+        System.out.println();
+        System.out.println("========================= THÔNG TIN HỒ SƠ CÁ NHÂN =========================");
+        if (account == null) {
+            System.out.println("⚠️ Không có thông tin tài khoản để hiển thị.");
+            return;
+        }
+
+        System.out.printf("%-20s: %s%n", "Mã tài khoản", account.getId());
+        System.out.printf("%-20s: %s%n", "Tên đăng nhập", account.getUsername());
+        System.out.printf("%-20s: %s%n", "Email", account.getEmail());
+        System.out.printf("%-20s: %s%n", "Số điện thoại", account.getPhone());
+        System.out.printf("%-20s: %s%n", "Trạng thái", account.getStatus() != null ? account.getStatus().name() : "N/A");
+
+        if (account instanceof Fan) {
+            Fan fan = (Fan) account;
+            System.out.printf("%-20s: %s%n", "Họ và tên", fan.getFullName());
+            System.out.printf("%-20s: %s%n", "Hạng thành viên", fan.getFanType() != null ? fan.getFanType() : "N/A");
+            System.out.printf("%-20s: %s%n", "Vai trò", "FAN");
+        } else if (account instanceof Organizer) {
+            Organizer org = (Organizer) account;
+            System.out.printf("%-20s: %s%n", "Tên đơn vị", org.getOrgName());
+            System.out.printf("%-20s: %s%n", "Vai trò", "ORGANIZER");
+        } else if (account instanceof Admin) {
+            Admin admin = (Admin) account;
+            System.out.printf("%-20s: %s%n", "Họ và tên", admin.getFullName());
+            System.out.printf("%-20s: %s%n", "Vai trò", "ADMIN");
+        }
+
+        System.out.println("=============================================================================");
+
+        System.out.println("\n [1] Cập nhật thông tin liên hệ (Email & SĐT)");
+        System.out.println(" [0] Quay lại");
+        System.out.print("👉 Lựa chọn: ");
+        String choice = this.scanner.nextLine().trim();
+        if ("1".equals(choice)) {
+            this.displayUpdateProfileForm();
+        }
+    }
+
+    /**
+     * Form đổi mật khẩu tài khoản hiện tại.
+     * Nhập mật khẩu cũ, mật khẩu mới và xác nhận mật khẩu mới.
+     */
+    public void displayChangePasswordForm() {
+        System.out.println();
+        System.out.println("========================== ĐỔI MẬT KHẨU ==========================");
+
+        Account currentUser = this.authController.getCurrentUser();
+        if (currentUser == null) {
+            System.out.println("❌ Bạn chưa đăng nhập! Không thể đổi mật khẩu.");
+            return;
+        }
+
+        System.out.print("👉 Nhập mật khẩu hiện tại: ");
+        String oldPass = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập mật khẩu mới: ");
+        String newPass = this.scanner.nextLine().trim();
+        System.out.print("👉 Xác nhận mật khẩu mới: ");
+        String confirmPass = this.scanner.nextLine().trim();
+
+        if (oldPass.isEmpty() || newPass.isEmpty()) {
             System.out.println("❌ Mật khẩu không được để trống!");
             return;
         }
 
-        System.out.println("⏳ Đang xác thực thông tin đăng nhập...");
-        Account account = this.authController.login(username, password);
-
-        if (account != null) {
-            System.out.println();
-            System.out.println("🎉 [THÀNH CÔNG] Đăng nhập thành công!");
-            System.out.println("👤 Xin chào: " + getDisplayName(account));
-            System.out.println("🏷️ Vai trò: " + this.getRoleName(account));
-            System.out.println("📌 Mã tài khoản: " + account.getId());
-        } else {
-            System.out.println();
-            System.out.println("❌ [LỖI] Đăng nhập thất bại!");
-            explainLoginFailure(username);
-        }
-    }
-
-    /**
-     * Form Đăng ký tài khoản Người hâm mộ - Fan (chuẩn Sơ đồ lớp & Nhiệm vụ T6).
-     */
-    public void displayFanRegisterForm() {
-        System.out.println();
-        System.out.println("┌──────────────────────────────────────────────────────────────┐");
-        System.out.println("│                ĐĂNG KÝ TÀI KHOẢN NGƯỜI HÂM MỘ (FAN)          │");
-        System.out.println("└──────────────────────────────────────────────────────────────┘");
-
-        // 1. Nhập và kiểm tra Username
-        String username;
-        while (true) {
-            username = promptString("Tên đăng nhập (3-20 ký tự, chữ/số/_)", false);
-            if (!this.usernamePattern.matcher(username).matches()) {
-                System.out.println("❌ Tên đăng nhập không hợp lệ! Chỉ gồm 3-20 ký tự chữ, số hoặc dấu gạch dưới.");
-                continue;
-            }
-            if (username.contains(",")) {
-                System.out.println("❌ Tên đăng nhập không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            if (this.authController.isUsernameExists(username)) {
-                System.out.println("❌ Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên khác.");
-                System.out.print("Bạn có muốn nhập lại? (y/n): ");
-                if (!this.scanner.nextLine().trim().equalsIgnoreCase("y")) {
-                    System.out.println("ℹ️ Đã hủy đăng ký.");
-                    return;
-                }
-                continue;
-            }
-            break;
-        }
-
-        // 2. Nhập và xác nhận Mật khẩu
-        String password;
-        while (true) {
-            password = promptString("Mật khẩu (tối thiểu 6 ký tự)", false);
-            if (password.length() < 6) {
-                System.out.println("❌ Mật khẩu phải có ít nhất 6 ký tự!");
-                continue;
-            }
-            if (password.contains(",")) {
-                System.out.println("❌ Mật khẩu không được chứa dấu phẩy (,)!");
-                continue;
-            }
-
-            String confirmPass = promptString("Xác nhận lại mật khẩu", false);
-            if (!password.equals(confirmPass)) {
-                System.out.println("❌ Mật khẩu xác nhận không khớp! Vui lòng nhập lại.");
-                continue;
-            }
-            break;
-        }
-
-        // 3. Nhập Họ và tên
-        String fullName;
-        while (true) {
-            fullName = promptString("Họ và tên đầy đủ", false);
-            if (fullName.isEmpty()) {
-                System.out.println("❌ Họ và tên không được để trống!");
-                continue;
-            }
-            if (fullName.contains(",")) {
-                System.out.println("❌ Họ và tên không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        // 4. Nhập Email
-        String email;
-        while (true) {
-            email = promptString("Địa chỉ email (vd: user@example.com)", false);
-            if (!this.emailPattern.matcher(email).matches()) {
-                System.out.println("❌ Định dạng email không hợp lệ! Vui lòng nhập đúng cú pháp.");
-                continue;
-            }
-            if (email.contains(",")) {
-                System.out.println("❌ Email không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        // 5. Nhập Số điện thoại
-        String phone;
-        while (true) {
-            phone = promptString("Số điện thoại (10-11 số, bắt đầu bằng 0)", false);
-            if (!this.phonePattern.matcher(phone).matches()) {
-                System.out.println("❌ Số điện thoại không hợp lệ! Phải có 10-11 chữ số và bắt đầu bằng số 0.");
-                continue;
-            }
-            if (phone.contains(",")) {
-                System.out.println("❌ Số điện thoại không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        System.out.println("⏳ Đang xử lý đăng ký tài khoản Fan...");
-        boolean success = this.authController.registerFan(username, password, fullName, email, phone);
-
-        if (success) {
-            System.out.println();
-            System.out.println("🎉 [THÀNH CÔNG] Đăng ký tài khoản Fan thành công!");
-            System.out.println("✅ Trạng thái tài khoản: ACTIVE (Bạn có thể đăng nhập và đặt vé ngay lập tức).");
-        } else {
-            System.out.println();
-            System.out.println("❌ [LỖI] Đăng ký tài khoản Fan thất bại! Vui lòng thử lại.");
-        }
-    }
-
-    /**
-     * Form Đăng ký tài khoản Ban tổ chức - Organizer (chuẩn Sơ đồ lớp & Nhiệm vụ T6).
-     */
-    public void displayOrganizerRegisterForm() {
-        System.out.println();
-        System.out.println("┌──────────────────────────────────────────────────────────────┐");
-        System.out.println("│             ĐĂNG KÝ TÀI KHOẢN BAN TỔ CHỨC (ORGANIZER)         │");
-        System.out.println("└──────────────────────────────────────────────────────────────┘");
-
-        // 1. Nhập và kiểm tra Username
-        String username;
-        while (true) {
-            username = promptString("Tên đăng nhập (3-20 ký tự, chữ/số/_)", false);
-            if (!this.usernamePattern.matcher(username).matches()) {
-                System.out.println("❌ Tên đăng nhập không hợp lệ! Chỉ gồm 3-20 ký tự chữ, số hoặc dấu gạch dưới.");
-                continue;
-            }
-            if (username.contains(",")) {
-                System.out.println("❌ Tên đăng nhập không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            if (this.authController.isUsernameExists(username)) {
-                System.out.println("❌ Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên khác.");
-                System.out.print("Bạn có muốn nhập lại? (y/n): ");
-                if (!this.scanner.nextLine().trim().equalsIgnoreCase("y")) {
-                    System.out.println("ℹ️ Đã hủy đăng ký.");
-                    return;
-                }
-                continue;
-            }
-            break;
-        }
-
-        // 2. Nhập và xác nhận Mật khẩu
-        String password;
-        while (true) {
-            password = promptString("Mật khẩu (tối thiểu 6 ký tự)", false);
-            if (password.length() < 6) {
-                System.out.println("❌ Mật khẩu phải có ít nhất 6 ký tự!");
-                continue;
-            }
-            if (password.contains(",")) {
-                System.out.println("❌ Mật khẩu không được chứa dấu phẩy (,)!");
-                continue;
-            }
-
-            String confirmPass = promptString("Xác nhận lại mật khẩu", false);
-            if (!password.equals(confirmPass)) {
-                System.out.println("❌ Mật khẩu xác nhận không khớp! Vui lòng nhập lại.");
-                continue;
-            }
-            break;
-        }
-
-        // 3. Nhập Tên Ban tổ chức / Doanh nghiệp
-        String orgName;
-        while (true) {
-            orgName = promptString("Tên đơn vị / Ban tổ chức (Organization Name)", false);
-            if (orgName.isEmpty()) {
-                System.out.println("❌ Tên đơn vị tổ chức không được để trống!");
-                continue;
-            }
-            if (orgName.contains(",")) {
-                System.out.println("❌ Tên đơn vị không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        // 4. Nhập Email
-        String email;
-        while (true) {
-            email = promptString("Địa chỉ email liên hệ (vd: contact@org.vn)", false);
-            if (!this.emailPattern.matcher(email).matches()) {
-                System.out.println("❌ Định dạng email không hợp lệ! Vui lòng nhập đúng cú pháp.");
-                continue;
-            }
-            if (email.contains(",")) {
-                System.out.println("❌ Email không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        // 5. Nhập Số điện thoại
-        String phone;
-        while (true) {
-            phone = promptString("Số điện thoại liên hệ (10-11 số, bắt đầu bằng 0)", false);
-            if (!this.phonePattern.matcher(phone).matches()) {
-                System.out.println("❌ Số điện thoại không hợp lệ! Phải có 10-11 chữ số và bắt đầu bằng số 0.");
-                continue;
-            }
-            if (phone.contains(",")) {
-                System.out.println("❌ Số điện thoại không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        System.out.println("⏳ Đang xử lý đăng ký tài khoản Ban tổ chức...");
-        boolean success = this.authController.registerOrganizer(username, password, orgName, email, phone);
-
-        if (success) {
-            System.out.println();
-            System.out.println("🎉 [THÀNH CÔNG] Đăng ký tài khoản Ban tổ chức thành công!");
-            System.out.println("📋 Trạng thái tài khoản: PENDING (Chờ phê duyệt).");
-            System.out.println("🔔 Lưu ý: Tài khoản của bạn cần được Quản trị viên (Admin) phê duyệt trước khi có thể đăng nhập.");
-        } else {
-            System.out.println();
-            System.out.println("❌ [LỖI] Đăng ký Ban tổ chức thất bại! Vui lòng thử lại.");
-        }
-    }
-
-    /**
-     * Hiển thị thông tin hồ sơ tài khoản (chuẩn Sơ đồ lớp & Nhiệm vụ T6).
-     *
-     * @param account Tài khoản cần xem hồ sơ
-     */
-    public void displayProfile(Account account) {
-        System.out.println();
-        System.out.println("┌──────────────────────────────────────────────────────────────┐");
-        System.out.println("│                   THÔNG TIN HỒ SƠ CÁ NHÂN                    │");
-        System.out.println("└──────────────────────────────────────────────────────────────┘");
-
-        if (account == null) {
-            account = this.authController.getCurrentUser();
-        }
-
-        if (account == null) {
-            System.out.println("⚠️ Bạn chưa đăng nhập! Vui lòng đăng nhập để xem thông tin hồ sơ.");
+        if (!newPass.equals(confirmPass)) {
+            System.out.println("❌ Mật khẩu mới và xác nhận không khớp!");
             return;
         }
 
-        // Làm mới dữ liệu từ repository thông qua viewProfile của Controller
-        Account freshAccount = this.authController.viewProfile(account.getId());
-        if (freshAccount != null) {
-            account = freshAccount;
-        }
-
-        String role = this.getRoleName(account);
-        String name = this.getDisplayName(account);
-
-        System.out.println("┌───────────────────────┬──────────────────────────────────────┐");
-        System.out.printf("│ %-21s │ %-36s │%n", "Mã tài khoản", account.getId());
-        System.out.printf("│ %-21s │ %-36s │%n", "Tên đăng nhập", account.getUsername());
-        System.out.printf("│ %-21s │ %-36s │%n", "Vai trò hệ thống", role);
-        System.out.printf("│ %-21s │ %-36s │%n", "Tên hiển thị", name);
-
-        if (account instanceof Fan) {
-            Fan fan = (Fan) account;
-            System.out.printf("│ %-21s │ %-36s │%n", "Hạng thành viên", fan.getFanType());
-        }
-
-        System.out.printf("│ %-21s │ %-36s │%n", "Địa chỉ Email", account.getEmail());
-        System.out.printf("│ %-21s │ %-36s │%n", "Số điện thoại", account.getPhone());
-        System.out.printf("│ %-21s │ %-36s │%n", "Trạng thái", account.getStatus());
-        System.out.println("└───────────────────────┴──────────────────────────────────────┘");
-
-        System.out.println("Tùy chọn:");
-        System.out.println(" [1] Cập nhật thông tin liên hệ (Email, Số điện thoại)");
-        System.out.println(" [2] Đổi mật khẩu");
-        System.out.println(" [0] Quay lại");
-        System.out.print("👉 Lựa chọn: ");
-
-        String subChoice = this.scanner.nextLine().trim();
-        if ("1".equals(subChoice)) {
-            this.displayUpdateProfileForm();
-        } else if ("2".equals(subChoice)) {
-            this.displayChangePasswordForm();
-        }
-    }
-
-    /**
-     * Form Đổi mật khẩu (chuẩn Sơ đồ lớp & Nhiệm vụ T6).
-     */
-    public void displayChangePasswordForm() {
-        System.out.println();
-        System.out.println("┌──────────────────────────────────────────────────────────────┐");
-        System.out.println("│                        ĐỔI MẬT KHẨU                          │");
-        System.out.println("└──────────────────────────────────────────────────────────────┘");
-
-        Account current = this.authController.getCurrentUser();
-        if (current == null) {
-            System.out.println("⚠️ Bạn chưa đăng nhập! Vui lòng đăng nhập trước khi thực hiện đổi mật khẩu.");
-            return;
-        }
-
-        String oldPass = promptString("Mật khẩu hiện tại", false);
-        if (oldPass.isEmpty()) {
-            System.out.println("❌ Mật khẩu hiện tại không được để trống!");
-            return;
-        }
-
-        String newPass;
-        while (true) {
-            newPass = promptString("Mật khẩu mới (tối thiểu 6 ký tự)", false);
-            if (newPass.length() < 6) {
-                System.out.println("❌ Mật khẩu mới phải có tối thiểu 6 ký tự!");
-                continue;
-            }
-            if (newPass.contains(",")) {
-                System.out.println("❌ Mật khẩu không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            if (newPass.equals(oldPass)) {
-                System.out.println("❌ Mật khẩu mới không được trùng với mật khẩu hiện tại!");
-                continue;
-            }
-
-            String confirmPass = promptString("Xác nhận mật khẩu mới", false);
-            if (!newPass.equals(confirmPass)) {
-                System.out.println("❌ Xác nhận mật khẩu không khớp! Vui lòng nhập lại.");
-                continue;
-            }
-            break;
-        }
-
-        System.out.println("⏳ Đang tiến hành thay đổi mật khẩu...");
-        boolean success = this.authController.changePassword(current.getId(), oldPass, newPass);
-
+        boolean success = this.authController.changePassword(currentUser.getId(), oldPass, newPass);
         if (success) {
-            System.out.println();
-            System.out.println("🎉 [THÀNH CÔNG] Đổi mật khẩu thành công!");
-            System.out.println("ℹ️ Mật khẩu mới đã được cập nhật an toàn vào hệ thống.");
+            System.out.println("✅ Đổi mật khẩu thành công!");
         } else {
-            System.out.println();
-            System.out.println("❌ [LỖI] Đổi mật khẩu thất bại! Sai mật khẩu hiện tại hoặc tài khoản không tồn tại.");
+            System.out.println("❌ Đổi mật khẩu thất bại! Mật khẩu hiện tại không đúng.");
         }
     }
 
     /**
-     * Form Cập nhật thông tin liên hệ (Email và Số điện thoại).
+     * Form cập nhật thông tin liên hệ (email, số điện thoại) cho tài khoản đang đăng nhập.
      */
     public void displayUpdateProfileForm() {
         System.out.println();
-        System.out.println("┌──────────────────────────────────────────────────────────────┐");
-        System.out.println("│                 CẬP NHẬT THÔNG TIN LIÊN HỆ                   │");
-        System.out.println("└──────────────────────────────────────────────────────────────┘");
+        System.out.println("==================== CẬP NHẬT THÔNG TIN LIÊN HỆ ====================");
 
-        Account current = this.authController.getCurrentUser();
-        if (current == null) {
-            System.out.println("⚠️ Bạn chưa đăng nhập! Vui lòng đăng nhập để cập nhật thông tin.");
+        Account currentUser = this.authController.getCurrentUser();
+        if (currentUser == null) {
+            System.out.println("❌ Bạn chưa đăng nhập!");
             return;
         }
 
-        System.out.println("Email hiện tại: " + current.getEmail());
-        String newEmail;
-        while (true) {
-            newEmail = promptString("Email mới (nhấn Enter để giữ nguyên)", true);
-            if (newEmail.isEmpty()) {
-                newEmail = current.getEmail();
-                break;
-            }
-            if (!this.emailPattern.matcher(newEmail).matches()) {
-                System.out.println("❌ Định dạng email không hợp lệ!");
-                continue;
-            }
-            if (newEmail.contains(",")) {
-                System.out.println("❌ Email không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
+        System.out.print("👉 Nhập email mới: ");
+        String newEmail = this.scanner.nextLine().trim();
+        System.out.print("👉 Nhập số điện thoại mới: ");
+        String newPhone = this.scanner.nextLine().trim();
 
-        System.out.println("Số điện thoại hiện tại: " + current.getPhone());
-        String newPhone;
-        while (true) {
-            newPhone = promptString("Số điện thoại mới (nhấn Enter để giữ nguyên)", true);
-            if (newPhone.isEmpty()) {
-                newPhone = current.getPhone();
-                break;
-            }
-            if (!this.phonePattern.matcher(newPhone).matches()) {
-                System.out.println("❌ Số điện thoại không hợp lệ! Phải có 10-11 chữ số và bắt đầu bằng số 0.");
-                continue;
-            }
-            if (newPhone.contains(",")) {
-                System.out.println("❌ Số điện thoại không được chứa dấu phẩy (,)!");
-                continue;
-            }
-            break;
-        }
-
-        if (newEmail.equals(current.getEmail()) && newPhone.equals(current.getPhone())) {
-            System.out.println("ℹ️ Không có thông tin nào thay đổi.");
+        if (newEmail.isEmpty() || newPhone.isEmpty()) {
+            System.out.println("❌ Email và số điện thoại không được để trống!");
             return;
         }
 
-        System.out.println("⏳ Đang lưu cập nhật thông tin...");
-        boolean success = this.authController.updateProfile(current.getId(), newEmail, newPhone);
-
+        boolean success = this.authController.updateProfile(currentUser.getId(), newEmail, newPhone);
         if (success) {
-            System.out.println();
-            System.out.println("🎉 [THÀNH CÔNG] Cập nhật thông tin liên hệ thành công!");
+            System.out.println("✅ Cập nhật thông tin liên hệ thành công!");
         } else {
-            System.out.println();
-            System.out.println("❌ [LỖI] Cập nhật thông tin thất bại!");
+            System.out.println("❌ Cập nhật thất bại!");
         }
     }
 
     /**
-     * Xử lý đăng xuất tài khoản hiện tại.
+     * Lấy tên hiển thị thân thiện cho Account tuỳ theo loại tài khoản.
      */
-    private void handleLogout() {
-        Account current = this.authController.getCurrentUser();
-        if (current == null) {
-            System.out.println("ℹ️ Bạn chưa đăng nhập!");
-            return;
+    private String getDisplayName(Account account) {
+        if (account instanceof Fan) {
+            return ((Fan) account).getFullName();
+        } else if (account instanceof Organizer) {
+            return ((Organizer) account).getOrgName();
+        } else if (account instanceof Admin) {
+            return ((Admin) account).getFullName();
         }
-        String username = current.getUsername();
-        this.authController.logout(current.getId());
-        System.out.println("✅ [THÀNH CÔNG] Đã đăng xuất khỏi tài khoản: " + username);
+        return account.getUsername();
     }
 
     /**
-     * Hỗ trợ giải thích lý do đăng nhập thất bại một cách chi tiết và thân thiện.
+     * Lấy tên vai trò dạng chuỗi cho Account.
      */
-    private void explainLoginFailure(String username) {
-        String trimmed = username.trim();
-        Account acc = this.authController.getAdminRepo().findByUsername(trimmed);
-        if (acc == null) acc = this.authController.getFanRepo().findByUsername(trimmed);
-        if (acc == null) acc = this.authController.getOrganizerRepo().findByUsername(trimmed);
-
-        if (acc == null) {
-            System.out.println("👉 Lý do: Tên đăng nhập không tồn tại trong hệ thống.");
-        } else if (acc.getStatus() == AccountStatus.PENDING) {
-            System.out.println("👉 Lý do: Tài khoản đang ở trạng thái [PENDING - Chờ duyệt]. Vui lòng liên hệ Admin!");
-        } else if (acc.getStatus() == AccountStatus.BLOCKED) {
-            System.out.println("👉 Lý do: Tài khoản đã bị [BLOCKED - Khóa]. Vui lòng liên hệ hỗ trợ!");
-        } else if (acc.getStatus() == AccountStatus.REJECTED) {
-            System.out.println("👉 Lý do: Tài khoản đã bị [REJECTED - Từ chối phê duyệt].");
-        } else {
-            System.out.println("👉 Lý do: Sai mật khẩu! Vui lòng kiểm tra lại mật khẩu đã nhập.");
+    private String getRoleName(Account account) {
+        if (account instanceof Admin) {
+            return "ADMIN (Quản trị viên)";
+        } else if (account instanceof Organizer) {
+            return "ORGANIZER (Ban tổ chức)";
+        } else if (account instanceof Fan) {
+            return "FAN (Người hâm mộ)";
         }
-    }
-
-    private String getDisplayName(Account acc) {
-        if (acc instanceof Fan) {
-            return ((Fan) acc).getFullName();
-        } else if (acc instanceof Organizer) {
-            return ((Organizer) acc).getOrgName();
-        } else if (acc instanceof Admin) {
-            return ((Admin) acc).getFullName();
-        }
-        return acc.getUsername();
-    }
-
-    private String getRoleName(Account acc) {
-        if (acc instanceof Admin) return "ADMIN";
-        if (acc instanceof Organizer) return "ORGANIZER";
-        if (acc instanceof Fan) return "FAN";
-        return "USER";
-    }
-
-    private String promptString(String label, boolean allowEmpty) {
-        while (true) {
-            System.out.print("👉 " + label + ": ");
-            String input = this.scanner.nextLine().trim();
-            if (allowEmpty || !input.isEmpty()) {
-                return input;
-            }
-            System.out.println("❌ Trường này không được để trống!");
-        }
-    }
-
-    private String padRight(String s, int n) {
-        if (s == null) s = "";
-        if (s.length() >= n) return s.substring(0, n);
-        return String.format("%-" + n + "s", s);
+        return "UNKNOWN";
     }
 }

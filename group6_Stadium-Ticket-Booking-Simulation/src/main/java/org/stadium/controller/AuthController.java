@@ -10,6 +10,7 @@ import org.stadium.repository.FanRepository;
 import org.stadium.repository.OrganizerRepository;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Controller phụ trách xác thực và quản lý tài khoản người dùng (Auth / Account domain).
@@ -302,6 +303,35 @@ public class AuthController {
     }
 
     /**
+     * Hỗ trợ View lấy lý do đăng nhập thất bại mà không cần View truy cập trực tiếp Repository (MVC compliance).
+     */
+    public String getLoginFailureReason(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return "Tên đăng nhập không được để trống.";
+        }
+        String trimmed = username.trim();
+        Account acc = this.adminRepo.findByUsername(trimmed);
+        if (acc == null) {
+            acc = this.fanRepo.findByUsername(trimmed);
+        }
+        if (acc == null) {
+            acc = this.organizerRepo.findByUsername(trimmed);
+        }
+
+        if (acc == null) {
+            return "Tên đăng nhập không tồn tại trong hệ thống.";
+        } else if (acc.getStatus() == AccountStatus.PENDING) {
+            return "Tài khoản đang ở trạng thái [PENDING - Chờ duyệt]. Vui lòng liên hệ Admin!";
+        } else if (acc.getStatus() == AccountStatus.BLOCKED) {
+            return "Tài khoản đã bị [BLOCKED - Khóa]. Vui lòng liên hệ hỗ trợ!";
+        } else if (acc.getStatus() == AccountStatus.REJECTED) {
+            return "Tài khoản đã bị [REJECTED - Từ chối phê duyệt].";
+        } else {
+            return "Sai mật khẩu! Vui lòng kiểm tra lại mật khẩu đã nhập.";
+        }
+    }
+
+    /**
      * Tự động sinh ID tiếp theo cho Fan theo định dạng FAN + 4 chữ số (ví dụ: FAN0251).
      */
     private synchronized String generateNextFanId() {
@@ -347,6 +377,47 @@ public class AuthController {
 
     public void setCurrentUser(Account currentUser) {
         this.currentUser = currentUser;
+    }
+
+    /**
+     * Lấy danh sách các tài khoản Ban tổ chức đang chờ phê duyệt (PENDING).
+     */
+    public List<Organizer> getPendingOrganizers() {
+        return this.organizerRepo.findPendingOrganizers();
+    }
+
+    /**
+     * Phê duyệt tài khoản Ban tổ chức (chuyển sang ACTIVE).
+     */
+    public boolean approveOrganizer(String organizerId) {
+        if (organizerId == null || organizerId.trim().isEmpty()) {
+            return false;
+        }
+        Organizer org = this.organizerRepo.findById(organizerId.trim());
+        if (org == null) {
+            return false;
+        }
+        org.setStatus(AccountStatus.ACTIVE);
+        this.organizerRepo.save(org);
+        this.organizerRepo.saveToFile();
+        return true;
+    }
+
+    /**
+     * Từ chối tài khoản Ban tổ chức (chuyển sang REJECTED).
+     */
+    public boolean rejectOrganizer(String organizerId) {
+        if (organizerId == null || organizerId.trim().isEmpty()) {
+            return false;
+        }
+        Organizer org = this.organizerRepo.findById(organizerId.trim());
+        if (org == null) {
+            return false;
+        }
+        org.setStatus(AccountStatus.REJECTED);
+        this.organizerRepo.save(org);
+        this.organizerRepo.saveToFile();
+        return true;
     }
 
     public FanRepository getFanRepo() {

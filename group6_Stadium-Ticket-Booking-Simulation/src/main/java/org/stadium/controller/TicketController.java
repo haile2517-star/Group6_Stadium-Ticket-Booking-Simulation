@@ -130,10 +130,9 @@ public class TicketController {
             }
         }
  
-        // Them hang loat roi ghi file 1 lan (save tung ve se ghi lai ca file moi lan -> rat cham)
+        // Them hang loat roi ghi file 1 lan qua saveAll() thread-safe
         if (!newTickets.isEmpty()) {
-            this.ticketRepository.getItems().addAll(newTickets);
-            this.ticketRepository.saveToFile();
+            this.ticketRepository.saveAll(newTickets);
         }
         return newTickets.size();
     }

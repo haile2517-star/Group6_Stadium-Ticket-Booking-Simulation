@@ -14,6 +14,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Supplier;
+
 import org.stadium.model.enums.SeatStatus;
 
 public class BookingController {
@@ -46,13 +48,78 @@ public class BookingController {
     }
 
     public boolean bookTickets(String fanId, String matchId, List<String> seatIds, SynchronizationMechanism mech){
-        if(mech != SynchronizationMechanism.NO_LOCK){
-            throw new UnsupportedOperationException("No Support "+ mech);
-        } //ktra dau vao + toi da 4 ve / 1 lan mua
+        if(mech == null){
+            return false;
+        }
+        //ktra dau vao + toi da 4 ve / 1 lan mua
         if(fanId == null || fanId.isEmpty() || matchId == null || matchId.isEmpty() || seatIds == null || seatIds.isEmpty() || seatIds.size() > 4 || new HashSet<>(seatIds).size() != seatIds.size() ){
             return false;
         }
+        if(mech == SynchronizationMechanism.OPTIMISTIC){
+            int maxRetries = 5;
+            List<Seat> claimedSeats = new ArrayList<>();
+            boolean completed = false;
+            try{
+                List<Ticket> tickets = new ArrayList<>();
+                for(String seatId : seatIds){
+                    boolean claimed = false;
+                    for(int attempt = 0; attempt < maxRetries && !claimed; attempt++){
+                        Seat seat = this.seatRepository.findById(seatId);
+                        if (seat == null){
+                            break;
+                        }
+                        int expectedVersion = seat.getVersion(); // doc version truoc khi doc trang thai ghe
+                        if (!seat.isAvailable()){
+                            break;
+                        }
+                        Seat booked = new Seat(seat.getSeatId(), seat.getSectionId(), seat.getRowNumber(), seat.getSeatNumber(), seat.getSeatType(), SeatStatus.BOOKED, expectedVersion);
+                        if(this.seatRepository.updateWithOptimisticLock(booked, expectedVersion)){
+                            claimed = true;
+                            claimedSeats.add(booked);
+                        }
+                    }
+                    if(!claimed){
+                        return false;
+                    }
+                    Ticket ticket = this.ticketRepository.findBySeatAndMatch(seatId, matchId);
+                    if (ticket == null || !ticket.isAvailable()) {
+                        return false;
+                        
+                    }
+                    tickets.add(ticket);
+                }
+                //Ghi ve+ Giao DIch
+                synchronized(this.transactionRepository){
+                    String transactionId = this.generateNextTransactionId();
+                    String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    double totalAmount = 0;
+                    for (Ticket ticket : tickets){
+                        ticket.setFanId(fanId);
+                        ticket.setTransactionId(transactionId);
+                        ticket.setBookingDate(now);
+                        ticket.setStatus(TicketStatus.BOOKED);
+                        totalAmount += ticket.getPrice();
 
+                    }
+                    this.ticketRepository.saveToFile();
+                    this.transactionRepository.save(new BookingTransaction(transactionId,fanId,matchId,now,totalAmount,tickets.size(), TransactionStatus.SUCCESS));
+
+                }
+                completed = true;
+                return true;
+            } finally{
+                if(!completed){
+                    for(Seat booked : claimedSeats){
+                        int bookedVersion = booked.getVersion() + 1;
+                        Seat released = new Seat(booked.getSeatId(), booked.getSectionId(), booked.getRowNumber(), booked.getSeatNumber(), booked.getSeatType(), SeatStatus.AVAILABLE,bookedVersion);
+                        this.seatRepository.updateWithOptimisticLock(released, bookedVersion);
+                    
+                    }
+                }
+            }
+        }
+
+        Supplier<Boolean> criticalSection = () ->{
         // ktra ve con trong
         List<Seat> seats = new ArrayList<>();
         List<Ticket> tickets = new ArrayList<>();
@@ -89,7 +156,22 @@ public class BookingController {
         this.ticketRepository.saveToFile();
         this.transactionRepository.save(new BookingTransaction(transactionId, fanId, matchId, now, totalAmount, seats.size(), TransactionStatus.SUCCESS));
         return true;
+    };
+    if (mech == SynchronizationMechanism.SYNCHRONIZED){
+        synchronized(this.seatRepository){
+            return criticalSection.get();
+        }
     }
+    if(mech == SynchronizationMechanism.FILE_LOCK){
+        this.seatRepository.acquireFileLock();
+        try {
+            return criticalSection.get();
+        }finally{
+            this.seatRepository.releaseFileLock();
+        }
+    }
+    return criticalSection.get();
+}
 
     /**
      * Hủy vé đã đặt.
@@ -99,30 +181,48 @@ public class BookingController {
      * @param fanId mã fan sở hữu vé
      * @return true nếu hủy thành công, false nếu không hợp lệ
      */
-    public boolean cancelTicket(String ticketId, String fanId) {
+  public boolean cancelTicket(String ticketId, String fanId) {
         if (ticketId == null || ticketId.trim().isEmpty() || fanId == null || fanId.trim().isEmpty()) {
             return false;
         }
-
+ 
         Ticket ticket = this.ticketRepository.findById(ticketId.trim());
         if (ticket == null) {
             return false;
         }
-
+ 
         // Kiểm tra quyền sở hữu vé
         if (!fanId.trim().equals(ticket.getFanId())) {
             return false;
         }
-
+ 
         // Chỉ hủy được vé đang ở trạng thái BOOKED
         if (ticket.getStatus() != TicketStatus.BOOKED) {
             return false;
         }
-
-        // Cập nhật trạng thái vé
-        ticket.setStatus(TicketStatus.CANCELLED);
+ 
+        // Trả vé về kho (AVAILABLE) và xóa thông tin người mua để vé có thể bán lại.
+        // (CANCELLED dành cho vé bị Organizer hủy cả trận -> không bán lại)
+        String originalTransactionId = ticket.getTransactionId();
+        double refundedPrice = ticket.getPrice();
+        ticket.setStatus(TicketStatus.AVAILABLE);
+        ticket.setFanId("");
+        ticket.setTransactionId("");
+        ticket.setBookingDate("");
         this.ticketRepository.saveToFile();
-
+ 
+        // Cập nhật giao dịch gốc: giảm số vé + số tiền; hết vé thì giao dịch CANCELLED
+        BookingTransaction originalTransaction = this.transactionRepository.findById(originalTransactionId);
+        if (originalTransaction != null) {
+            int remainingTickets = Math.max(0, originalTransaction.getTicketCount() - 1);
+            originalTransaction.setTicketCount(remainingTickets);
+            originalTransaction.setTotalAmount(Math.max(0, originalTransaction.getTotalAmount() - refundedPrice));
+            if (remainingTickets == 0) {
+                originalTransaction.setStatus(TransactionStatus.CANCELLED);
+            }
+            this.transactionRepository.saveToFile();
+        }
+ 
         // Trả lại ghế về trạng thái AVAILABLE
         Seat seat = this.seatRepository.findById(ticket.getSeatId());
         if (seat != null) {
@@ -130,10 +230,9 @@ public class BookingController {
             seat.incrementVersion();
             this.seatRepository.saveToFile();
         }
-
+ 
         return true;
     }
-
     /**
      * Lấy danh sách vé chi tiết theo mã giao dịch.
      *

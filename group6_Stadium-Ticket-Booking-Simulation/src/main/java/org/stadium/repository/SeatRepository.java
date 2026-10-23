@@ -32,11 +32,17 @@ public class SeatRepository extends CsvRepository<Seat> {
         return this.findByCondition(s -> s.getSectionId().equals(sectionId) && s.isAvailable());
     }
 
+    @Override
+    public synchronized Seat findById(String id) {
+        return super.findById(id);
+    }
+
     // Chỉ cập nhật khi version hiện tại vẫn bằng expectedVersion (Optimistic Locking)
     public synchronized boolean updateWithOptimisticLock(Seat seat, int expectedVersion) {
-        if (seat == null) {
+        if (seat == null || seat.getId() == null || expectedVersion < 0) {
             return false;
         }
+        this.loadFromFile();
         Seat current = this.findById(seat.getId());
         if (current == null || current.getVersion() != expectedVersion) {
             return false;
@@ -44,6 +50,7 @@ public class SeatRepository extends CsvRepository<Seat> {
         current.setSeatType(seat.getSeatType());
         current.setStatus(seat.getStatus());
         current.incrementVersion();
+        seat.setVersion(current.getVersion());
         this.saveToFile();
         return true;
     }

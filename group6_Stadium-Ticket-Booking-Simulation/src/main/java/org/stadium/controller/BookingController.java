@@ -110,9 +110,11 @@ public class BookingController {
             } finally{
                 if(!completed){
                     for(Seat booked : claimedSeats){
-                        int bookedVersion = booked.getVersion() + 1;
+                        int bookedVersion = booked.getVersion();
                         Seat released = new Seat(booked.getSeatId(), booked.getSectionId(), booked.getRowNumber(), booked.getSeatNumber(), booked.getSeatType(), SeatStatus.AVAILABLE,bookedVersion);
-                        this.seatRepository.updateWithOptimisticLock(released, bookedVersion);
+                        if (!this.seatRepository.updateWithOptimisticLock(released, bookedVersion)) {
+                            throw new IllegalStateException("Could not release seat after optimistic booking failure: " + booked.getId());
+                        }
                     
                     }
                 }

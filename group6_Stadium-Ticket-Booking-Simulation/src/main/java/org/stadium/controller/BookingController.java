@@ -262,28 +262,14 @@ public class BookingController {
 
     /**
      * Tự động sinh ID giao dịch kế tiếp (TXN00001, TXN00002, ...) tránh trùng lặp.
-     * Quét toàn bộ repository để tìm số thứ tự lớn nhất, và kiểm tra tính duy nhất.
+     * Ủy quyền cho TransactionRepository.generateNextTransactionId() — đã được
+     * bảo vệ thread-safe bằng synchronized trên instance monitor của repository.
+     * <p>
+     * Tuần 7 - Kiệt: Chuyển logic sinh ID về repository để có 1 nguồn duy nhất (single source of truth),
+     * tránh race condition khi nhiều thread trong BookingController cùng gọi đồng thời.
+     * </p>
      */
-    public synchronized String generateNextTransactionId() {
-        int maxId = 0;
-        for (BookingTransaction txn : this.transactionRepository.findAll()) {
-            String id = txn.getId();
-            if (id != null && id.toUpperCase().startsWith("TXN")) {
-                try {
-                    int num = Integer.parseInt(id.substring(3).trim());
-                    if (num > maxId) {
-                        maxId = num;
-                    }
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-        int nextId = maxId + 1;
-        String candidateId = String.format("TXN%05d", nextId);
-        while (this.transactionRepository.findById(candidateId) != null) {
-            nextId++;
-            candidateId = String.format("TXN%05d", nextId);
-        }
-        return candidateId;
+    public String generateNextTransactionId() {
+        return this.transactionRepository.generateNextTransactionId();
     }
 }

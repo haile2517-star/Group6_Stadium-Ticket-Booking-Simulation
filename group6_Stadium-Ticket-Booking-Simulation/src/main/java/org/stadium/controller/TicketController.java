@@ -110,7 +110,8 @@ public class TicketController {
             ticketedSeatIds.add(existing.getSeatId());
         }
  
-        int nextNumber = this.ticketRepository.findAll().size() + 1;
+        // Tuần 7 - Kiệt: Sử dụng generateNextTicketId() thread-safe từ TicketRepository
+        // thay vì tính nextNumber từ size (dễ trùng ID khi đa luồng)
         List<Ticket> newTickets = new ArrayList<>();
         for (SeatSection section : this.sectionRepository.findByStadiumId(match.getStadiumId())) {
             TicketPricing pricing = this.ticketPricingRepository.findByMatchAndSection(matchId,
@@ -122,10 +123,10 @@ public class TicketController {
                 if (ticketedSeatIds.contains(seat.getSeatId())) {
                     continue;
                 }
-                Ticket ticket = new Ticket(String.format("TCK%06d", nextNumber), matchId, seat.getSeatId(),
+                String nextTicketId = this.ticketRepository.generateNextTicketId();
+                Ticket ticket = new Ticket(nextTicketId, matchId, seat.getSeatId(),
                         "", "", pricing.getPrice(), "", TicketStatus.AVAILABLE);
                 newTickets.add(ticket);
-                nextNumber++;
             }
         }
  

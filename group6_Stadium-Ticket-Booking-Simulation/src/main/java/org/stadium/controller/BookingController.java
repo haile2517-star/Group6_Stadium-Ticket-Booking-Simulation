@@ -38,7 +38,7 @@ public class BookingController {
         this.transactionRepository = new TransactionRepository(pathTransactions);
     }
 
-    public String resolvePath(String fileName) {
+    private String resolvePath(String fileName) {
         if (new java.io.File("data/" + fileName).exists()) {
             return "data/" + fileName;
         } else if (new java.io.File("../data/" + fileName).exists()) {
@@ -269,7 +269,7 @@ public class BookingController {
      * tránh race condition khi nhiều thread trong BookingController cùng gọi đồng thời.
      * </p>
      */
-    public String generateNextTransactionId() {
+    private String generateNextTransactionId() {
         return this.transactionRepository.generateNextTransactionId();
     }
 }

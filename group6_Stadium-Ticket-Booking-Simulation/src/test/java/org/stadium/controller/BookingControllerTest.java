@@ -277,16 +277,14 @@ public class BookingControllerTest {
   private void rejectsUnsupportedSynchronizationMechanism() {
     Fixture fixture = this.createFixture("unsupported-mechanism", 1, 1);
 
-    try {
-      fixture.controller.bookTickets(
-          this.fanId,
-          this.matchId,
-          Collections.singletonList(this.seatId(1)),
-          SynchronizationMechanism.SYNCHRONIZED);
-      throw new AssertionError("Unsupported mechanism was accepted");
-    } catch (UnsupportedOperationException exception) {
-      this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
-    }
+    boolean booked =
+        fixture.controller.bookTickets(
+            this.fanId,
+            this.matchId,
+            Collections.singletonList(this.seatId(1)),
+            null);
+    this.assertFalse("null mechanism was accepted", booked);
+    this.assertTrue("transaction count", fixture.transactionRepository.findAll().isEmpty());
   }
 
   private Fixture createFixture(String name, int seatCount, int ticketCount) {

@@ -178,9 +178,9 @@ public class TicketController {
         return true;
     }
  
-    // Bao cao ban ve cua 1 tran. Tra ve map rong neu tran khong ton tai.
+    // Xem báo cáo thống kê doanh thu bán vé của trận đấu (tổng vé, vé đã bán, doanh thu, tỷ lệ lấp đầy)
     public Map<String, Object> viewTicketSalesReport(String matchId) {
-        Map<String, Object> report = new LinkedHashMap<>();
+        Map<String, Object> report = new LinkedHashMap<>(); // Dùng LinkedHashMap để bảo toàn thứ tự hiển thị các trường thống kê
         if (matchId == null || matchId.isEmpty()) {
             return report;
         }

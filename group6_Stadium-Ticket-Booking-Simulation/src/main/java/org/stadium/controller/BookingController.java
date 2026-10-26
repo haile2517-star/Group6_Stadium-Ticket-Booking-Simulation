@@ -256,8 +256,9 @@ public class BookingController {
         return result;
     }
 
-    public List<BookingTransaction> viewBookingHistory(String fanId){
-        return this.transactionRepository.findByFanId(fanId);
+    // Xem lịch sử đặt vé của Fan (truy vấn danh sách giao dịch từ TransactionRepository)
+    public List<BookingTransaction> viewBookingHistory(String fanId) {
+        return this.transactionRepository.findByFanId(fanId); // Lọc giao dịch theo fanId
     }
 
     /**

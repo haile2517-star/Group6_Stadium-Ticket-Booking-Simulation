@@ -2,6 +2,7 @@ package org.stadium.model;
 
 import org.stadium.model.enums.MatchStatus;
 
+// Thực thể biểu diễn thông tin trận đấu trong hệ thống
 public class Match extends BaseEntity {
     private String matchId;
     private String organizerId;
@@ -16,17 +17,20 @@ public class Match extends BaseEntity {
     public Match() {
     }
 
+    // Trả về mã định danh duy nhất của trận đấu (khóa chính)
     @Override
     public String getId() {
         return this.matchId;
     }
 
+    // Cập nhật thông tin chi tiết trận đấu (tiêu đề, thời gian bắt đầu và kết thúc)
     public void updateMatchDetails(String title, String start, String end) {
         this.matchTitle = title;
         this.startTime = start;
         this.endTime = end;
     }
 
+    // Chuyển đổi đối tượng Match thành dòng định dạng CSV để ghi vào file matches.csv
     @Override
     public String toCsvLine() {
         return this.matchId + "," + this.organizerId + "," + this.stadiumId + ","
@@ -34,9 +38,10 @@ public class Match extends BaseEntity {
                 + this.startTime + "," + this.endTime + "," + this.status.name();
     }
 
+    // Parse một dòng chuỗi từ file CSV và gán giá trị cho từng thuộc tính
     @Override
     public void fromCsvLine(String line) {
-        String[] parts = line.split(",", -1);
+        String[] parts = line.split(",", -1); // split -1 để không bỏ sót các trường rỗng ở cuối dòng
         this.matchId = parts[0];
         this.organizerId = parts[1];
         this.stadiumId = parts[2];
@@ -45,7 +50,7 @@ public class Match extends BaseEntity {
         this.teamB = parts[5];
         this.startTime = parts[6];
         this.endTime = parts[7];
-        this.status = MatchStatus.valueOf(parts[8]);
+        this.status = MatchStatus.valueOf(parts[8]); // valueOf ép kiểu chuỗi sang Enum MatchStatus
     }
 
     public String getMatchId() {

@@ -27,3 +27,7 @@ Thumbs.db
 
 # Custom additions
 .agents/
+
+# Personal local files
+.information/Nhiem-vu-sau-tuan-8.txt
+~$*

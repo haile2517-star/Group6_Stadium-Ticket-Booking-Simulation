@@ -26,11 +26,7 @@ public class AdminView {
     public AdminView() {
         this(new AuthController(), new Scanner(System.in));
     }
-
-<<<<<<< HEAD
-=======
     // Bảng điều khiển quản trị (Admin Dashboard) duyệt tài khoản Ban tổ chức
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
     public void displayAdminDashboard() {
         boolean inAdmin = true;
         // Vòng lặp giao diện Admin Dashboard
@@ -71,10 +67,7 @@ public class AdminView {
         }
     }
 
-<<<<<<< HEAD
-=======
     // Hiển thị danh sách các tài khoản Ban tổ chức đang ở trạng thái PENDING
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
     public void displayPendingOrganizers(List<Organizer> pendingList) {
         System.out.println();
         System.out.println("================= DANH SÁCH BAN TỔ CHỨC CHỜ DUYỆT =================");
@@ -100,10 +93,7 @@ public class AdminView {
         System.out.println("Tổng số đơn chờ duyệt: " + pendingList.size());
     }
 
-<<<<<<< HEAD
-=======
     // Form nhập mã Ban tổ chức và thực hiện phê duyệt (chuyển sang ACTIVE)
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
     public void approveOrganizer() {
         System.out.println();
         System.out.println("--- PHÊ DUYỆT TÀI KHOẢN BAN TỔ CHỨC ---");
@@ -123,10 +113,7 @@ public class AdminView {
         }
     }
 
-<<<<<<< HEAD
-=======
     // Form nhập mã Ban tổ chức và thực hiện từ chối (chuyển sang REJECTED)
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
     public void rejectOrganizer() {
         System.out.println();
         System.out.println("--- TỪ CHỐI TÀI KHOẢN BAN TỔ CHỨC ---");

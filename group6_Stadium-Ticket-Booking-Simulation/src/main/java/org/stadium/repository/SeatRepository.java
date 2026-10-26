@@ -12,15 +12,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class SeatRepository extends CsvRepository<Seat> {
 
-<<<<<<< HEAD
-    private final ReentrantLock fileLock = new ReentrantLock();
-=======
     // Khóa điều phối giữa các luồng trong cùng JVM trước khi chiếm FileLock cấp OS
     private final ReentrantLock jvmLock = new ReentrantLock();
     private RandomAccessFile lockRaf;
     private FileChannel lockChannel;
     private FileLock currentFileLock;
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
 
     public SeatRepository(String filePath) {
         super(filePath);

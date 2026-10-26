@@ -169,12 +169,8 @@ public class TicketController {
         this.transactionRepository.saveToFile();
         return true;
     }
-<<<<<<< HEAD
 
-=======
- 
     // Xem báo cáo thống kê doanh thu bán vé của trận đấu (tổng vé, vé đã bán, doanh thu, tỷ lệ lấp đầy)
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
     public Map<String, Object> viewTicketSalesReport(String matchId) {
         Map<String, Object> report = new LinkedHashMap<>(); // Dùng LinkedHashMap để bảo toàn thứ tự hiển thị các trường thống kê
         if (matchId == null || matchId.isEmpty()) {

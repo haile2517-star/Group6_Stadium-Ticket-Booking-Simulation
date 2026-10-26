@@ -50,12 +50,7 @@ public class SeatMapViewTest {
             StadiumController controller = new StadiumController(stadiumRepo, sectionRepo, seatRepo);
             SeatMapView seatMapView = new SeatMapView(controller);
             StadiumView stadiumView = new StadiumView(controller, seatMapView);
-
-<<<<<<< HEAD
-=======
-            // Test 1: SeatMapView.displaySeatMap với asciiMap hợp lệ chứa chuẩn [O], [X],
-            // [L]
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
+            // Test 1: SeatMapView.displaySeatMap với asciiMap hợp lệ chứa chuẩn [O], [X], [L]
             test("1. Test displaySeatMap với ký hiệu chuẩn [O], [X], [L]", () -> {
                 String sampleAscii = controller.buildSeatMap("SEC_A");
                 ByteArrayOutputStream out = new ByteArrayOutputStream();

@@ -241,20 +241,7 @@ public class BookingController {
         return this.transactionRepository.findByFanId(fanId); // Lọc giao dịch theo fanId
     }
 
-<<<<<<< HEAD
     public String generateNextTransactionId() {
-=======
-    /**
-     * Tự động sinh ID giao dịch kế tiếp (TXN00001, TXN00002, ...) tránh trùng lặp.
-     * Ủy quyền cho TransactionRepository.generateNextTransactionId() — đã được
-     * bảo vệ thread-safe bằng synchronized trên instance monitor của repository.
-     * <p>
-     * Tuần 7 - Kiệt: Chuyển logic sinh ID về repository để có 1 nguồn duy nhất (single source of truth),
-     * tránh race condition khi nhiều thread trong BookingController cùng gọi đồng thời.
-     * </p>
-     */
-    private String generateNextTransactionId() {
->>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
         return this.transactionRepository.generateNextTransactionId();
     }
 }

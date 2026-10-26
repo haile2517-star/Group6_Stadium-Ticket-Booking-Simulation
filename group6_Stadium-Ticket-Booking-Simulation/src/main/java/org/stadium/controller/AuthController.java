@@ -12,10 +12,7 @@ import org.stadium.repository.OrganizerRepository;
 import java.io.File;
 import java.util.List;
 
-/**
- * Controller phụ trách xác thực và quản lý tài khoản người dùng (Auth / Account domain).
- * Thành viên phụ trách: Kiệt (Tuần 5 - Controller Layer).
- */
+
 public class AuthController {
 
     private final FanRepository fanRepo;
@@ -47,15 +44,6 @@ public class AuthController {
         return "data/" + fileName;
     }
 
-    /**
-     * Đăng nhập hệ thống bằng username và password.
-     * Kiểm tra lần lượt trong AdminRepository, FanRepository, OrganizerRepository.
-     * Chỉ cho phép đăng nhập nếu tài khoản có trạng thái ACTIVE và mật khẩu hợp lệ.
-     *
-     * @param username tên đăng nhập
-     * @param pass mật khẩu nhập vào
-     * @return Account nếu đăng nhập thành công, null nếu thất bại
-     */
     public Account login(String username, String pass) {
         if (username == null || username.trim().isEmpty() || pass == null || pass.isEmpty()) {
             return null;
@@ -63,7 +51,7 @@ public class AuthController {
 
         String trimmedUser = username.trim();
 
-        // 1. Kiểm tra Admin
+
         Admin admin = this.adminRepo.findByUsername(trimmedUser);
         if (admin != null) {
             if (admin.getStatus() == AccountStatus.ACTIVE && admin.validatePassword(pass)) {
@@ -73,7 +61,7 @@ public class AuthController {
             return null;
         }
 
-        // 2. Kiểm tra Fan
+
         Fan fan = this.fanRepo.findByUsername(trimmedUser);
         if (fan != null) {
             if (fan.getStatus() == AccountStatus.ACTIVE && fan.validatePassword(pass)) {
@@ -83,7 +71,7 @@ public class AuthController {
             return null;
         }
 
-        // 3. Kiểm tra Organizer
+
         Organizer organizer = this.organizerRepo.findByUsername(trimmedUser);
         if (organizer != null) {
             if (organizer.getStatus() == AccountStatus.ACTIVE && organizer.validatePassword(pass)) {
@@ -96,11 +84,6 @@ public class AuthController {
         return null;
     }
 
-    /**
-     * Đăng xuất tài khoản khỏi phiên hiện tại.
-     *
-     * @param accountId mã tài khoản cần đăng xuất
-     */
     public void logout(String accountId) {
         if (this.currentUser != null) {
             if (accountId == null || accountId.trim().isEmpty() || this.currentUser.getId().equalsIgnoreCase(accountId.trim())) {
@@ -109,16 +92,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Đăng ký tài khoản người hâm mộ (Fan).
-     *
-     * @param username tên đăng nhập
-     * @param pass mật khẩu
-     * @param name họ và tên đầy đủ
-     * @param email địa chỉ email
-     * @param phone số điện thoại
-     * @return true nếu đăng ký thành công, false nếu thông tin không hợp lệ hoặc username đã tồn tại
-     */
     public boolean registerFan(String username, String pass, String name, String email, String phone) {
         if (username == null || username.trim().isEmpty()
                 || pass == null || pass.trim().isEmpty()
@@ -130,7 +103,6 @@ public class AuthController {
 
         String trimmedUsername = username.trim();
 
-        // Kiểm tra tính duy nhất của username trên toàn hệ thống
         if (this.isUsernameExists(trimmedUsername)) {
             return false;
         }
@@ -150,17 +122,6 @@ public class AuthController {
         return this.fanRepo.save(newFan);
     }
 
-    /**
-     * Đăng ký tài khoản ban tổ chức (Organizer).
-     * Mặc định tài khoản Organizer sau khi đăng ký sẽ ở trạng thái PENDING chờ Admin duyệt.
-     *
-     * @param username tên đăng nhập
-     * @param pass mật khẩu
-     * @param orgName tên đơn vị tổ chức
-     * @param email địa chỉ email
-     * @param phone số điện thoại
-     * @return true nếu đăng ký thành công, false nếu không hợp lệ
-     */
     public boolean registerOrganizer(String username, String pass, String orgName, String email, String phone) {
         if (username == null || username.trim().isEmpty()
                 || pass == null || pass.trim().isEmpty()
@@ -190,12 +151,6 @@ public class AuthController {
         return this.organizerRepo.save(newOrg);
     }
 
-    /**
-     * Xem thông tin hồ sơ tài khoản theo ID.
-     *
-     * @param accountId mã tài khoản
-     * @return Account nếu tìm thấy, null nếu không tồn tại
-     */
     public Account viewProfile(String accountId) {
         if (accountId == null || accountId.trim().isEmpty()) {
             return null;
@@ -211,14 +166,6 @@ public class AuthController {
         return this.adminRepo.findById(id);
     }
 
-    /**
-     * Cập nhật thông tin liên hệ (email, phone).
-     *
-     * @param accountId mã tài khoản
-     * @param email email mới
-     * @param phone số điện thoại mới
-     * @return true nếu cập nhật thành công, false nếu thất bại
-     */
     public boolean updateProfile(String accountId, String email, String phone) {
         if (accountId == null || accountId.trim().isEmpty()
                 || email == null || email.trim().isEmpty()
@@ -251,14 +198,6 @@ public class AuthController {
         return false;
     }
 
-    /**
-     * Thay đổi mật khẩu tài khoản.
-     *
-     * @param accountId mã tài khoản
-     * @param oldPass mật khẩu cũ
-     * @param newPass mật khẩu mới
-     * @return true nếu đổi mật khẩu thành công, false nếu sai mật khẩu cũ hoặc không tìm thấy tài khoản
-     */
     public boolean changePassword(String accountId, String oldPass, String newPass) {
         if (accountId == null || accountId.trim().isEmpty()
                 || oldPass == null || oldPass.isEmpty()
@@ -289,9 +228,6 @@ public class AuthController {
         return true;
     }
 
-    /**
-     * Kiểm tra username đã tồn tại trên bất kỳ repository tài khoản nào chưa.
-     */
     public boolean isUsernameExists(String username) {
         if (username == null || username.trim().isEmpty()) {
             return false;
@@ -302,9 +238,6 @@ public class AuthController {
                 || this.adminRepo.findByUsername(u) != null;
     }
 
-    /**
-     * Hỗ trợ View lấy lý do đăng nhập thất bại mà không cần View truy cập trực tiếp Repository (MVC compliance).
-     */
     public String getLoginFailureReason(String username) {
         if (username == null || username.trim().isEmpty()) {
             return "Tên đăng nhập không được để trống.";
@@ -331,9 +264,7 @@ public class AuthController {
         }
     }
 
-    /**
-     * Tự động sinh ID tiếp theo cho Fan theo định dạng FAN + 4 chữ số (ví dụ: FAN0251).
-     */
+  
     private synchronized String generateNextFanId() {
         int maxId = 0;
         for (Fan fan : this.fanRepo.findAll()) {
@@ -351,9 +282,7 @@ public class AuthController {
         return String.format("FAN%04d", maxId + 1);
     }
 
-    /**
-     * Tự động sinh ID tiếp theo cho Organizer theo định dạng ORG + 2 chữ số (ví dụ: ORG07).
-     */
+
     private synchronized String generateNextOrganizerId() {
         int maxId = 0;
         for (Organizer org : this.organizerRepo.findAll()) {
@@ -379,16 +308,10 @@ public class AuthController {
         this.currentUser = currentUser;
     }
 
-    /**
-     * Lấy danh sách các tài khoản Ban tổ chức đang chờ phê duyệt (PENDING).
-     */
     public List<Organizer> getPendingOrganizers() {
         return this.organizerRepo.findPendingOrganizers();
     }
 
-    /**
-     * Phê duyệt tài khoản Ban tổ chức (chuyển sang ACTIVE).
-     */
     public boolean approveOrganizer(String organizerId) {
         if (organizerId == null || organizerId.trim().isEmpty()) {
             return false;
@@ -403,9 +326,6 @@ public class AuthController {
         return true;
     }
 
-    /**
-     * Từ chối tài khoản Ban tổ chức (chuyển sang REJECTED).
-     */
     public boolean rejectOrganizer(String organizerId) {
         if (organizerId == null || organizerId.trim().isEmpty()) {
             return false;

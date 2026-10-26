@@ -4,8 +4,6 @@ import org.stadium.controller.StadiumController;
 import org.stadium.model.Seat;
 import org.stadium.model.SeatSection;
 import org.stadium.model.Stadium;
-import org.stadium.model.enums.SeatStatus;
-import org.stadium.model.enums.SeatType;
 import org.stadium.repository.SeatRepository;
 import org.stadium.repository.SectionRepository;
 import org.stadium.repository.StadiumRepository;
@@ -16,7 +14,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +51,11 @@ public class SeatMapViewTest {
             SeatMapView seatMapView = new SeatMapView(controller);
             StadiumView stadiumView = new StadiumView(controller, seatMapView);
 
+<<<<<<< HEAD
+=======
+            // Test 1: SeatMapView.displaySeatMap với asciiMap hợp lệ chứa chuẩn [O], [X],
+            // [L]
+>>>>>>> 1b0a3cb1b1da0b5859ecff4abbf20e243a6a6e92
             test("1. Test displaySeatMap với ký hiệu chuẩn [O], [X], [L]", () -> {
                 String sampleAscii = controller.buildSeatMap("SEC_A");
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -120,7 +122,8 @@ public class SeatMapViewTest {
                 }
 
                 String output = new String(out.toByteArray(), StandardCharsets.UTF_8);
-                assertCondition(output.contains("Không có ghế trống nào khả dụng"), "Phải thông báo khi không có ghế trống");
+                assertCondition(output.contains("Không có ghế trống nào khả dụng"),
+                        "Phải thông báo khi không có ghế trống");
             });
 
             test("5. Test StadiumView.displayStadiumList", () -> {

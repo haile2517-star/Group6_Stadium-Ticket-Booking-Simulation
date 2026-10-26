@@ -30,7 +30,9 @@ public class ConcurrencyHarnessTest {
     int testsRun = 0;
     for (SynchronizationMechanism mechanism :
         new SynchronizationMechanism[] {
-          SynchronizationMechanism.SYNCHRONIZED, SynchronizationMechanism.OPTIMISTIC
+          SynchronizationMechanism.FILE_LOCK,
+          SynchronizationMechanism.SYNCHRONIZED,
+          SynchronizationMechanism.OPTIMISTIC
         }) {
       for (int threadCount = 2; threadCount <= 10; threadCount++) {
         this.testConcurrentBooking(mechanism, threadCount);
@@ -221,6 +223,7 @@ public class ConcurrencyHarnessTest {
     }
 
     private void close() {
+      new File(this.seatsFile.getPath() + ".lock").delete();
       this.seatsFile.delete();
       this.ticketsFile.delete();
       this.transactionsFile.delete();

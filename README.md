@@ -42,7 +42,7 @@ Dựa theo bài toán gốc và sơ đồ Usecase, hệ thống tập trung gi�
 
 ### 2. 🎟️ Fan (Người hâm mộ - Trọng tâm bài toán)
 - **Quản lý hồ sơ:** Xem, cập nhật thông tin cá nhân và đổi mật khẩu.
-- **Giao dịch Đặt vé (Core Flow):** Đặt mua vé (giới hạn **tối đa 4 vé/lần giao dịch** theo yêu cầu đề bài). Quá trình đặt vé tuân thủ vòng đời ghế: `AVAILABLE` → `LOCKED` → `BOOKED` (không bán lại ghế đã BOOKED).
+- **Giao dịch Đặt vé (Core Flow):** Chọn trận đấu và khán đài trước khi chọn ghế; hệ thống phát hành bổ sung vé từ giá đã cấu hình nếu trận đấu chưa có vé. Giới hạn **tối đa 4 vé/lần giao dịch** theo yêu cầu đề bài. Quá trình đặt vé tuân thủ vòng đời ghế: `AVAILABLE` → `LOCKED` → `BOOKED` (không bán lại ghế đã BOOKED).
 - **Lịch sử:** Hủy vé và xem lịch sử giao dịch vé đã mua (`View Booking History`).
 
 ### 3. 🏢 Organizer (Ban tổ chức)

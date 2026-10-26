@@ -8,13 +8,19 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import org.stadium.controller.AuthController;
 import org.stadium.controller.BookingController;
 import org.stadium.controller.StadiumController;
+import org.stadium.controller.TicketController;
 import org.stadium.model.Account;
+import org.stadium.model.Seat;
 import org.stadium.model.SeatSection;
+import org.stadium.model.enums.SynchronizationMechanism;
+import org.stadium.model.enums.TicketStatus;
+import org.stadium.repository.MatchRepository;
 import org.stadium.repository.AdminRepository;
 import org.stadium.repository.FanRepository;
 import org.stadium.repository.OrganizerRepository;
@@ -22,6 +28,7 @@ import org.stadium.repository.SeatRepository;
 import org.stadium.repository.SectionRepository;
 import org.stadium.repository.StadiumRepository;
 import org.stadium.repository.TicketRepository;
+import org.stadium.repository.TicketPricingRepository;
 import org.stadium.repository.TransactionRepository;
 
 public class EndToEndBookingTest {
@@ -46,6 +53,9 @@ public class EndToEndBookingTest {
         this.runTest(
                 "Rejects duplicate seat input without changing CSV data",
                 () -> this.rejectsDuplicateSeatInput());
+        this.runTest(
+                "Generates missing tickets for a priced match before booking",
+                () -> this.generatesMissingTicketsBeforeBooking());
 
         System.out.println();
         System.out.printf("Passed: %d/%d%n", this.testsPassed, this.testsRun);
@@ -65,7 +75,7 @@ public class EndToEndBookingTest {
         try {
             System.setOut(testOutput);
 
-            String input = "fan.one\nsecret\nFAN0001\nMTH01\nSEAT001\n";
+            String input = "fan.one\nsecret\nSEAT001\n";
             try (Scanner scanner = this.createScanner(input)) {
                 AuthView authView = new AuthView(fixture.authController, scanner);
                 authView.displayLoginForm();
@@ -97,8 +107,10 @@ public class EndToEndBookingTest {
                 BookingView bookingView =
                         new BookingView(scanner, fixture.bookingController);
                 bookingView.displayBookingForm(
-                        fixture.stadiumController.getAvailableSeats(
-                                selectedSection.getSectionId()));
+                        fixture.ticketController.getAvailableSeatsForMatch(
+                                "MTH01", selectedSection.getSectionId()),
+                        "FAN0001",
+                        "MTH01");
             }
 
             List<String> seatRows = this.readCsv(fixture.seatsFile);
@@ -199,7 +211,7 @@ public class EndToEndBookingTest {
         try {
             System.setOut(testOutput);
 
-            String input = "fan.one\nsecret\nFAN0001\nMTH01\nSEAT001,SEAT001\n";
+            String input = "fan.one\nsecret\nSEAT001,SEAT001\n";
             try (Scanner scanner = this.createScanner(input)) {
                 AuthView authView = new AuthView(fixture.authController, scanner);
                 authView.displayLoginForm();
@@ -207,7 +219,9 @@ public class EndToEndBookingTest {
                 BookingView bookingView =
                         new BookingView(scanner, fixture.bookingController);
                 bookingView.displayBookingForm(
-                        fixture.stadiumController.getAvailableSeats("SEC01"));
+                        fixture.stadiumController.getAvailableSeats("SEC01"),
+                        "FAN0001",
+                        "MTH01");
             }
 
             this.assertEquals(
@@ -237,6 +251,36 @@ public class EndToEndBookingTest {
                 "Duplicate seat IDs are not allowed.");
     }
 
+    private void generatesMissingTicketsBeforeBooking() {
+        Fixture fixture = this.createFixture();
+
+        try {
+            int generated = fixture.ticketController.generateTickets("MTH02");
+            this.assertEquals("Generated ticket count", 2, generated);
+            this.assertEquals("Repeated generation should not create duplicates", 0,
+                    fixture.ticketController.generateTickets("MTH02"));
+
+            List<Seat> availableSeats =
+                    fixture.ticketController.getAvailableSeatsForMatch("MTH02", "SEC01");
+            this.assertEquals("Available seats for the priced match", 2, availableSeats.size());
+            this.assertTrue(
+                    "An unknown section should not expose tickets",
+                    fixture.ticketController.getAvailableSeatsForMatch("MTH02", "NO_SECTION").isEmpty());
+
+            boolean booked = fixture.bookingController.bookTickets(
+                    "FAN0001",
+                    "MTH02",
+                    Collections.singletonList(availableSeats.get(0).getSeatId()),
+                    SynchronizationMechanism.NO_LOCK);
+            this.assertTrue("Booking result", booked);
+            this.assertEquals("Ticket status", TicketStatus.BOOKED,
+                    fixture.ticketRepository.findBySeatAndMatch(
+                            availableSeats.get(0).getSeatId(), "MTH02").getStatus());
+        } finally {
+            fixture.close();
+        }
+    }
+
     private void runTest(String name, Runnable testCase) {
         this.testsRun++;
 
@@ -260,6 +304,8 @@ public class EndToEndBookingTest {
             Path seatsFile = directory.resolve("seats.csv");
             Path ticketsFile = directory.resolve("tickets.csv");
             Path transactionsFile = directory.resolve("transactions.csv");
+            Path matchesFile = directory.resolve("matches.csv");
+            Path pricingsFile = directory.resolve("ticket_pricings.csv");
 
             this.writeCsv(
                 fansFile,
@@ -291,6 +337,15 @@ public class EndToEndBookingTest {
                 + "TCK000001,MTH01,SEAT001,,,125000.0,,AVAILABLE\n"
                 + "TCK000002,MTH01,SEAT002,,,125000.0,,AVAILABLE\n");
             this.writeCsv(
+                matchesFile,
+                "matchId,organizerId,stadiumId,matchTitle,teamA,teamB,startTime,endTime,status\n"
+                + "MTH01,ORG01,STD01,Test Match,Team A,Team B,2026-10-10 10:00:00,2026-10-10 12:00:00,SCHEDULED\n"
+                + "MTH02,ORG01,STD01,Second Match,Team C,Team D,2026-10-11 10:00:00,2026-10-11 12:00:00,SCHEDULED\n");
+            this.writeCsv(
+                pricingsFile,
+                "pricingId,matchId,sectionId,price\n"
+                + "PRC_MTH02_SEC01,MTH02,SEC01,150000.0\n");
+            this.writeCsv(
                 transactionsFile,
                 "transactionId,fanId,matchId,totalAmount,ticketCount,"
                 + "transactionDate,status\n");
@@ -305,6 +360,13 @@ public class EndToEndBookingTest {
             StadiumController stadiumController = new StadiumController(stadiumRepository, sectionRepository, seatRepository);
             TicketRepository ticketRepository = new TicketRepository(ticketsFile.toString());
             TransactionRepository transactionRepository = new TransactionRepository(transactionsFile.toString());
+            TicketController ticketController = new TicketController(
+                    new MatchRepository(matchesFile.toString()),
+                    sectionRepository,
+                    seatRepository,
+                    ticketRepository,
+                    new TicketPricingRepository(pricingsFile.toString()),
+                    transactionRepository);
             BookingController bookingController = new BookingController(seatRepository, ticketRepository, transactionRepository);
 
             return new Fixture(
@@ -317,8 +379,12 @@ public class EndToEndBookingTest {
                 seatsFile,
                 ticketsFile,
                 transactionsFile,
+                matchesFile,
+                pricingsFile,
                 authController,
                 stadiumController,
+                ticketController,
+                ticketRepository,
                 bookingController,
                 new StadiumView());
         } catch (IOException exception) {
@@ -389,8 +455,12 @@ public class EndToEndBookingTest {
         private Path seatsFile;
         private Path ticketsFile;
         private Path transactionsFile;
+        private Path matchesFile;
+        private Path pricingsFile;
         private AuthController authController;
         private StadiumController stadiumController;
+        private TicketController ticketController;
+        private TicketRepository ticketRepository;
         private BookingController bookingController;
         private StadiumView stadiumView;
 
@@ -404,8 +474,12 @@ public class EndToEndBookingTest {
                 Path seatsFile,
                 Path ticketsFile,
                 Path transactionsFile,
+                Path matchesFile,
+                Path pricingsFile,
                 AuthController authController,
                 StadiumController stadiumController,
+                TicketController ticketController,
+                TicketRepository ticketRepository,
                 BookingController bookingController,
                 StadiumView stadiumView) {
                         this.directory = directory;
@@ -417,8 +491,12 @@ public class EndToEndBookingTest {
                         this.seatsFile = seatsFile;
                         this.ticketsFile = ticketsFile;
                         this.transactionsFile = transactionsFile;
+                        this.matchesFile = matchesFile;
+                        this.pricingsFile = pricingsFile;
                         this.authController = authController;
                         this.stadiumController = stadiumController;
+                        this.ticketController = ticketController;
+                        this.ticketRepository = ticketRepository;
                         this.bookingController = bookingController;
                         this.stadiumView = stadiumView;
                 }
@@ -433,6 +511,8 @@ public class EndToEndBookingTest {
                                 Files.deleteIfExists(this.seatsFile);
                                 Files.deleteIfExists(this.ticketsFile);
                                 Files.deleteIfExists(this.transactionsFile);
+                                Files.deleteIfExists(this.matchesFile);
+                                Files.deleteIfExists(this.pricingsFile);
                                 Files.deleteIfExists(this.directory);
                         } catch (IOException exception) {
                                 throw new UncheckedIOException("Could not clean up end to end test fixture", exception);

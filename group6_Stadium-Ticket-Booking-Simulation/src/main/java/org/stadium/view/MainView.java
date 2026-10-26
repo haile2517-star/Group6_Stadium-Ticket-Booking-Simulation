@@ -265,10 +265,7 @@ public class MainView {
             String map = this.stadiumController.buildSeatMap(secId);
             this.seatMapView.displaySeatMap(map);
         } else if ("5".equals(choice)) {
-            System.out.print("Nhập mã khán đài bạn muốn chọn ghế (VD: SEC_STD01_A): ");
-            String sectionId = this.scanner.nextLine().trim();
-            List<Seat> availableSeats = this.stadiumController.getAvailableSeats(sectionId);
-            this.bookingView.displayBookingForm(availableSeats);
+            this.displayFanBookingForm();
         } else if ("6".equals(choice)) {
             List<BookingTransaction> txns = this.bookingController.viewBookingHistory(this.currentUser.getId());
             this.bookingView.displayBookingHistory(txns);
@@ -308,6 +305,45 @@ public class MainView {
         } else {
             System.out.println("[WARNING] Lựa chọn không hợp lệ, vui lòng thử lại.");
         }
+    }
+
+    private void displayFanBookingForm() {
+        this.matchView.displayMatches(this.matchController.viewAllMatches());
+        System.out.print("Nhập mã trận đấu muốn đặt vé: ");
+        if (!this.scanner.hasNextLine()) {
+            this.running = false;
+            return;
+        }
+        String requestedMatchId = this.scanner.nextLine().trim();
+        Match selectedMatch = null;
+        for (Match match : this.matchController.viewAllMatches()) {
+            if (match.getMatchId().equalsIgnoreCase(requestedMatchId)) {
+                selectedMatch = match;
+                break;
+            }
+        }
+        if (selectedMatch == null) {
+            System.out.println("[FAILED] Không tìm thấy trận đấu với mã đã nhập.");
+            return;
+        }
+
+        this.ticketController.generateTickets(selectedMatch.getMatchId());
+        List<SeatSection> sections = this.stadiumController.getSections(selectedMatch.getStadiumId());
+        this.stadiumView.displaySectionList(selectedMatch.getStadiumId(), sections);
+        System.out.print("Nhập mã khán đài muốn chọn ghế: ");
+        if (!this.scanner.hasNextLine()) {
+            this.running = false;
+            return;
+        }
+        String sectionId = this.scanner.nextLine().trim();
+        List<Seat> availableSeats =
+                this.ticketController.getAvailableSeatsForMatch(selectedMatch.getMatchId(), sectionId);
+        if (availableSeats.isEmpty()) {
+            System.out.println("[FAILED] Không còn vé khả dụng cho trận đấu và khán đài đã chọn. "
+                    + "Vui lòng kiểm tra giá vé đã được cấu hình.");
+            return;
+        }
+        this.bookingView.displayBookingForm(availableSeats, this.currentUser.getId(), selectedMatch.getMatchId());
     }
 
     public void displayOrganizerMenu() {

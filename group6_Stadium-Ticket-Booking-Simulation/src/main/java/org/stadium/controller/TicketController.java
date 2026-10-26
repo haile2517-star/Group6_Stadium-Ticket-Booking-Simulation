@@ -131,6 +131,34 @@ public class TicketController {
         return newTickets.size();
     }
 
+    public List<Seat> getAvailableSeatsForMatch(String matchId, String sectionId) {
+        if (matchId == null || matchId.trim().isEmpty()
+                || sectionId == null || sectionId.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Match match = this.matchRepository.findById(matchId.trim());
+        SeatSection section = this.sectionRepository.findById(sectionId.trim());
+        if (match == null || section == null || !match.getStadiumId().equals(section.getStadiumId())) {
+            return new ArrayList<>();
+        }
+
+        Set<String> availableTicketSeatIds = new HashSet<>();
+        for (Ticket ticket : this.ticketRepository.findByMatchId(matchId.trim())) {
+            if (ticket.isAvailable()) {
+                availableTicketSeatIds.add(ticket.getSeatId());
+            }
+        }
+
+        List<Seat> availableSeats = new ArrayList<>();
+        for (Seat seat : this.seatRepository.findAvailableBySection(sectionId.trim())) {
+            if (availableTicketSeatIds.contains(seat.getSeatId())) {
+                availableSeats.add(seat);
+            }
+        }
+        return availableSeats;
+    }
+
     public boolean cancelTickets(String matchId) {
         if (matchId == null || matchId.isEmpty()) {
             return false;

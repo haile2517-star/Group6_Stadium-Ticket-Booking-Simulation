@@ -18,11 +18,15 @@ public class BookingView {
         this.bookingController = bookingController;
     }
 
-    public void displayBookingForm(List<Seat> seats){
+    public void displayBookingForm(List<Seat> seats, String fanId, String matchId){
         System.out.println();
         System.out.println("============ BOOK TICKETS ============");
         if (seats == null || seats.isEmpty()){
             System.out.println("No available seats to book");
+            return;
+        }
+        if (fanId == null || fanId.trim().isEmpty() || matchId == null || matchId.trim().isEmpty()) {
+            this.showBookingResult(false, "Fan ID and Match ID are required.");
             return;
         }
         System.out.println("Available seats:");
@@ -33,10 +37,6 @@ public class BookingView {
         System.out.printf("%-12s %-14s %-5d %-6s %-10s%n", seat.getSeatId(), seat.getSectionId(), seat.getRowNumber(), seat.getSeatNumber(), seat.getSeatType());
     }
     System.out.println("---------------------------------------------------");
-    System.out.print("Enter your Fan ID: ");
-    String fanId = this.scanner.nextLine().trim();
-    System.out.print("Enter Match ID: ");
-    String matchId = this.scanner.nextLine().trim();
     System.out.println("Enter seat IDs separated by commas(max 4): ");
     String seatInput = this.scanner.nextLine().trim();
     List<String> seatIds = new ArrayList<>();
@@ -58,12 +58,12 @@ public class BookingView {
         this.showBookingResult(false, "Duplicate seat IDs are not allowed. ");
         return;
     }
-    boolean success = this.bookingController.bookTickets(fanId, matchId, seatIds, SynchronizationMechanism.NO_LOCK);
+    boolean success = this.bookingController.bookTickets(fanId.trim(), matchId.trim(), seatIds, SynchronizationMechanism.NO_LOCK);
     if(!success){
-        this.showBookingResult(false, "Booking failed. A seat may be unavailable, the ticket may not exist for this match, " + "or the request is invalid.");
+        this.showBookingResult(false, "Booking failed. A selected seat may have just been booked or the request is invalid.");
     return;
     }
-    List<BookingTransaction> history = this.bookingController.viewBookingHistory(fanId);
+    List<BookingTransaction> history = this.bookingController.viewBookingHistory(fanId.trim());
     BookingTransaction latest = history.get(history.size() - 1);
     List<Ticket> tickets = this.bookingController.getTicketDetails(latest.getId());
     StringBuilder message = new StringBuilder();

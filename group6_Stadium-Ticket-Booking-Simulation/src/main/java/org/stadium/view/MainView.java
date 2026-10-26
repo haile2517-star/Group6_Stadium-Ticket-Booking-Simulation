@@ -85,10 +85,10 @@ public class MainView {
     }
 
     public void start() {
-        System.out.println("======================================================================");
-        System.out.println("   HỆ THỐNG MÔ PHỎNG ĐẶT VÉ SÂN VẬN ĐỘNG (STADIUM TICKET BOOKING)");
+        System.out.println("============================================================");
+        System.out.println("   HỆ THỐNG MÔ PHỎNG ĐẶT VÉ SÂN VẬN ĐỘNG (STADIUM BOOKING)");
         System.out.println("                  NHÓM 6 - LAB211 (SEMESTER 3)");
-        System.out.println("======================================================================");
+        System.out.println("============================================================");
 
         while (this.running) {
             if (this.currentUser == null) {
@@ -229,7 +229,7 @@ public class MainView {
 
     public void displayFanMenu() {
         System.out.println();
-        System.out.println("==================== MENU NGƯỜI HÂM MỘ (FAN) ====================");
+        System.out.println("================= MENU NGƯỜI HÂM MỘ (FAN) ==================");
         System.out.println("Tài khoản: " + this.currentUser.getUsername() + " | ID: " + this.currentUser.getId());
         System.out.println("1. Xem danh sách trận đấu");
         System.out.println("2. Tìm kiếm trận đấu");
@@ -241,7 +241,7 @@ public class MainView {
         System.out.println("8. Xem hồ sơ cá nhân");
         System.out.println("9. Đổi mật khẩu");
         System.out.println("0. Đăng xuất");
-        System.out.println("=================================================================");
+        System.out.println("============================================================");
         System.out.print("Vui lòng chọn chức năng (0-9): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
@@ -312,7 +312,7 @@ public class MainView {
 
     public void displayOrganizerMenu() {
         System.out.println();
-        System.out.println("==================== MENU BAN TỔ CHỨC (ORGANIZER) ====================");
+        System.out.println("=============== MENU BAN TỔ CHỨC (ORGANIZER) ===============");
         System.out.println("Đơn vị: " + this.currentUser.getUsername() + " | ID: " + this.currentUser.getId());
         System.out.println("1. Xem danh sách trận đấu");
         System.out.println("2. Tạo sự kiện trận đấu mới");
@@ -325,7 +325,7 @@ public class MainView {
         System.out.println("9. Xem hồ sơ đơn vị");
         System.out.println("10. Đổi mật khẩu");
         System.out.println("0. Đăng xuất");
-        System.out.println("======================================================================");
+        System.out.println("============================================================");
         System.out.print("Vui lòng chọn chức năng (0-10): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
@@ -396,13 +396,13 @@ public class MainView {
 
     public void displayAdminMenu() {
         System.out.println();
-        System.out.println("==================== MENU QUẢN TRỊ VIÊN (ADMIN) ====================");
+        System.out.println("================ MENU QUẢN TRỊ VIÊN (ADMIN) ================");
         System.out.println("Quản trị viên: " + this.currentUser.getUsername() + " | ID: " + this.currentUser.getId());
         System.out.println("1. Xem danh sách toàn bộ trận đấu");
         System.out.println("2. Xem danh sách sân vận động & khán đài");
         System.out.println("3. Xem hồ sơ cá nhân");
         System.out.println("0. Đăng xuất");
-        System.out.println("====================================================================");
+        System.out.println("============================================================");
         System.out.print("Vui lòng chọn chức năng (0-3): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;

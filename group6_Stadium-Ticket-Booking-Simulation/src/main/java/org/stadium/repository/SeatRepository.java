@@ -7,7 +7,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class SeatRepository extends CsvRepository<Seat> {
 
-    // Khóa dùng cho cơ chế FILE_LOCK (các thread trong cùng JVM dùng chung seats.csv)
     private final ReentrantLock fileLock = new ReentrantLock();
 
     public SeatRepository(String filePath) {
@@ -37,7 +36,6 @@ public class SeatRepository extends CsvRepository<Seat> {
         return super.findById(id);
     }
 
-    // Chỉ cập nhật khi version hiện tại vẫn bằng expectedVersion (Optimistic Locking)
     public synchronized boolean updateWithOptimisticLock(Seat seat, int expectedVersion) {
         if (seat == null || seat.getId() == null || expectedVersion < 0) {
             return false;

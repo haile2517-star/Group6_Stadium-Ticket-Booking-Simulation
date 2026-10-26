@@ -19,19 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Bộ kiểm thử toàn diện tính an toàn dữ liệu đa luồng (Tuần 7 - Kiệt: Account & Data Safety).
- * <p>
- * Kiểm chứng các yêu cầu cốt lõi trong phân công Tuần 7:
- * <ol>
- *   <li>Rà soát quá trình sinh mã transactionId và ticketId khi nhiều luồng cùng gọi đồng thời, tránh trùng mã ID.</li>
- *   <li>Đảm bảo file transactions.csv và tickets.csv không bị hỏng dòng (corrupted lines) khi ghi dồn dập.</li>
- *   <li>Deliverable: File CSV dữ liệu toàn vẹn sau khi thử nghiệm luồng.</li>
- * </ol>
- * </p>
- *
- * @author Kiệt — Account & Data Safety
- */
 public class DataSafetyConcurrencyTest {
 
     private int testsRun;
@@ -95,10 +82,6 @@ public class DataSafetyConcurrencyTest {
         }
     }
 
-    /**
-     * Test 1: Cho 20 thread chạy đồng thời sinh transactionId.
-     * Kiểm tra: không có bất kỳ ID nào bị trùng, đúng định dạng TXNxxxxx.
-     */
     private void testConcurrentTransactionIdGeneration() {
         File tempFile = new File("target/test-data/data-safety/txn_id_test.csv");
         this.prepareCleanFile(tempFile, "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status");
@@ -146,10 +129,6 @@ public class DataSafetyConcurrencyTest {
         }
     }
 
-    /**
-     * Test 2: Cho 20 thread chạy đồng thời sinh ticketId.
-     * Kiểm tra: không có bất kỳ ID nào bị trùng, đúng định dạng TCKxxxxxx.
-     */
     private void testConcurrentTicketIdGeneration() {
         File tempFile = new File("target/test-data/data-safety/ticket_id_test.csv");
         this.prepareCleanFile(tempFile, "ticketId,matchId,seatId,transactionId,fanId,price,bookingDate,status");
@@ -197,10 +176,6 @@ public class DataSafetyConcurrencyTest {
         }
     }
 
-    /**
-     * Test 3: Ghi dồn dập vào transactions.csv với 10 threads chạy song song.
-     * Kiểm tra: File CSV không bị hỏng dòng, số dòng khớp chính xác, các trường dữ liệu nguyên vẹn.
-     */
     private void testConcurrentTransactionSavingAndFileIntegrity() {
         File tempFile = new File("target/test-data/data-safety/transactions_stress.csv");
         this.prepareCleanFile(tempFile, "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status");
@@ -228,8 +203,7 @@ public class DataSafetyConcurrencyTest {
                                 "2026-10-23 20:00:00",
                                 250000.0,
                                 1,
-                                TransactionStatus.SUCCESS
-                        );
+                                TransactionStatus.SUCCESS);
                         repo.save(txn);
                     }
                 } catch (Exception e) {
@@ -244,18 +218,16 @@ public class DataSafetyConcurrencyTest {
         this.awaitLatch(doneLatch);
         executor.shutdown();
 
-        // Kiểm tra bộ nhớ trong repo
         this.assertCondition(repo.findAll().size() == totalExpected,
                 "So items trong repo phai la " + totalExpected + ", thuc te: " + repo.findAll().size());
 
-        // Kiểm tra tính toàn vẹn của file CSV thực tế trên đĩa
         List<String> lines = this.readFileLines(tempFile);
         this.assertCondition(lines.size() == totalExpected + 1,
                 "File CSV phai co dung " + (totalExpected + 1) + " dong (gom header), thuc te: " + lines.size());
-        this.assertCondition(lines.get(0).equals("transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status"),
+        this.assertCondition(
+                lines.get(0).equals("transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status"),
                 "Header file CSV bi hong: " + lines.get(0));
 
-        // Kiểm tra từng dòng không bị hỏng cấu trúc (đủ 7 cột phân tách bởi dấu phẩy)
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
             String[] parts = line.split(",", -1);
@@ -266,10 +238,6 @@ public class DataSafetyConcurrencyTest {
         }
     }
 
-    /**
-     * Test 4: Ghi dồn dập vào tickets.csv với 10 threads chạy song song.
-     * Kiểm tra: File CSV không bị hỏng dòng, số dòng khớp chính xác, các trường dữ liệu nguyên vẹn.
-     */
     private void testConcurrentTicketSavingAndFileIntegrity() {
         File tempFile = new File("target/test-data/data-safety/tickets_stress.csv");
         this.prepareCleanFile(tempFile, "ticketId,matchId,seatId,transactionId,fanId,price,bookingDate,status");
@@ -298,8 +266,7 @@ public class DataSafetyConcurrencyTest {
                                 "FAN_" + threadIdx,
                                 200000.0,
                                 "2026-10-23 20:00:00",
-                                TicketStatus.BOOKED
-                        );
+                                TicketStatus.BOOKED);
                         repo.save(ticket);
                     }
                 } catch (Exception e) {
@@ -320,10 +287,10 @@ public class DataSafetyConcurrencyTest {
         List<String> lines = this.readFileLines(tempFile);
         this.assertCondition(lines.size() == totalExpected + 1,
                 "File CSV phai co dung " + (totalExpected + 1) + " dong (gom header), thuc te: " + lines.size());
-        this.assertCondition(lines.get(0).equals("ticketId,matchId,seatId,transactionId,fanId,price,bookingDate,status"),
+        this.assertCondition(
+                lines.get(0).equals("ticketId,matchId,seatId,transactionId,fanId,price,bookingDate,status"),
                 "Header file CSV bi hong: " + lines.get(0));
 
-        // Kiểm tra từng dòng đủ 8 cột
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
             String[] parts = line.split(",", -1);
@@ -334,9 +301,6 @@ public class DataSafetyConcurrencyTest {
         }
     }
 
-    /**
-     * Test 5: Vừa đọc vừa ghi đồng thời (không xảy ra ConcurrentModificationException).
-     */
     private void testMixedReadWriteConcurrency() {
         File tempFile = new File("target/test-data/data-safety/mixed_test.csv");
         this.prepareCleanFile(tempFile, "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status");
@@ -350,7 +314,6 @@ public class DataSafetyConcurrencyTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(writeThreads + readThreads);
 
-        // Luồng ghi
         for (int i = 0; i < writeThreads; i++) {
             final int idx = i;
             executor.submit(() -> {
@@ -358,7 +321,8 @@ public class DataSafetyConcurrencyTest {
                     startLatch.await();
                     for (int j = 0; j < opsPerThread; j++) {
                         String id = repo.generateNextTransactionId();
-                        repo.save(new BookingTransaction(id, "FAN_" + idx, "MTC01", "now", 100000.0, 1, TransactionStatus.SUCCESS));
+                        repo.save(new BookingTransaction(id, "FAN_" + idx, "MTC01", "now", 100000.0, 1,
+                                TransactionStatus.SUCCESS));
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -368,7 +332,6 @@ public class DataSafetyConcurrencyTest {
             });
         }
 
-        // Luồng đọc
         for (int i = 0; i < readThreads; i++) {
             executor.submit(() -> {
                 try {
@@ -394,9 +357,6 @@ public class DataSafetyConcurrencyTest {
                 "Tong so record sau mixed test phai dung: " + (writeThreads * opsPerThread));
     }
 
-    /**
-     * Test 6: Kiểm tra khôi phục bộ đếm ID khi tải lại file CSV (Persistence).
-     */
     private void testPersistenceAndReload() {
         File tempFile = new File("target/test-data/data-safety/reload_test.csv");
         this.prepareCleanFile(tempFile, "transactionId,fanId,matchId,totalAmount,ticketCount,transactionDate,status");
@@ -406,7 +366,6 @@ public class DataSafetyConcurrencyTest {
         repo1.save(new BookingTransaction("TXN00002", "FAN2", "M1", "now", 100.0, 1, TransactionStatus.SUCCESS));
         repo1.save(new BookingTransaction("TXN00050", "FAN3", "M1", "now", 100.0, 1, TransactionStatus.SUCCESS));
 
-        // Khởi tạo instance mới từ cùng file đã có dữ liệu
         TransactionRepository repo2 = new TransactionRepository(tempFile.getPath());
         String nextId = repo2.generateNextTransactionId();
 

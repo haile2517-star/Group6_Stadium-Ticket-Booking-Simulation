@@ -8,12 +8,6 @@ import org.stadium.model.Organizer;
 
 import java.util.Scanner;
 
-/**
- * View phụ trách giao diện xác thực và quản lý tài khoản người dùng (Auth / Account UI).
- * Bao gồm: Đăng nhập, Đăng ký Fan, Đăng ký Ban tổ chức, Xem hồ sơ, Đổi mật khẩu, Cập nhật liên hệ.
- * Thành viên phụ trách: Kiệt (Tuần 6 - View Layer).
- * Chuẩn mô hình MVC và tuân thủ nguyên tắc Bàn Tay Sắt.
- */
 public class AuthView {
 
     private final AuthController authController;
@@ -32,10 +26,6 @@ public class AuthView {
         this(new AuthController(), new Scanner(System.in));
     }
 
-    /**
-     * Form đăng nhập hệ thống (Login).
-     * Nhập username và password, gọi AuthController.login() để xác thực.
-     */
     public void displayLoginForm() {
         System.out.println();
         System.out.println("========================== ĐĂNG NHẬP HỆ THỐNG ==========================");
@@ -60,10 +50,6 @@ public class AuthView {
         }
     }
 
-    /**
-     * Form đăng ký tài khoản Fan (Người hâm mộ).
-     * Nhập thông tin cá nhân, kiểm tra xác nhận mật khẩu, gọi AuthController.registerFan().
-     */
     public void displayFanRegisterForm() {
         System.out.println();
         System.out.println("====================== ĐĂNG KÝ TÀI KHOẢN FAN ======================");
@@ -104,10 +90,6 @@ public class AuthView {
         }
     }
 
-    /**
-     * Form đăng ký tài khoản Ban tổ chức (Organizer).
-     * Tài khoản mới sẽ ở trạng thái PENDING chờ Admin phê duyệt.
-     */
     public void displayOrganizerRegisterForm() {
         System.out.println();
         System.out.println("================ ĐĂNG KÝ TÀI KHOẢN BAN TỔ CHỨC ================");
@@ -149,12 +131,6 @@ public class AuthView {
         }
     }
 
-    /**
-     * Hiển thị thông tin hồ sơ cá nhân của tài khoản.
-     * Bao gồm tuỳ chọn cập nhật thông tin liên hệ.
-     *
-     * @param account Đối tượng tài khoản cần hiển thị
-     */
     public void displayProfile(Account account) {
         System.out.println();
         System.out.println("========================= THÔNG TIN HỒ SƠ CÁ NHÂN =========================");
@@ -195,10 +171,6 @@ public class AuthView {
         }
     }
 
-    /**
-     * Form đổi mật khẩu tài khoản hiện tại.
-     * Nhập mật khẩu cũ, mật khẩu mới và xác nhận mật khẩu mới.
-     */
     public void displayChangePasswordForm() {
         System.out.println();
         System.out.println("========================== ĐỔI MẬT KHẨU ==========================");
@@ -234,9 +206,6 @@ public class AuthView {
         }
     }
 
-    /**
-     * Form cập nhật thông tin liên hệ (email, số điện thoại) cho tài khoản đang đăng nhập.
-     */
     public void displayUpdateProfileForm() {
         System.out.println();
         System.out.println("==================== CẬP NHẬT THÔNG TIN LIÊN HỆ ====================");
@@ -265,9 +234,6 @@ public class AuthView {
         }
     }
 
-    /**
-     * Lấy tên hiển thị thân thiện cho Account tuỳ theo loại tài khoản.
-     */
     private String getDisplayName(Account account) {
         if (account instanceof Fan) {
             return ((Fan) account).getFullName();
@@ -279,9 +245,6 @@ public class AuthView {
         return account.getUsername();
     }
 
-    /**
-     * Lấy tên vai trò dạng chuỗi cho Account.
-     */
     private String getRoleName(Account account) {
         if (account instanceof Admin) {
             return "ADMIN (Quản trị viên)";

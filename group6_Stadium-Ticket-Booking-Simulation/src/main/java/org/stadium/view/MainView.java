@@ -28,10 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * Menu điều phối trung tâm của hệ thống (Main View & Core Routing).
- * Phụ trách: Siêu (Tuần 6 - Core Routing & View Layer).
- */
 public class MainView {
 
     private Scanner scanner;

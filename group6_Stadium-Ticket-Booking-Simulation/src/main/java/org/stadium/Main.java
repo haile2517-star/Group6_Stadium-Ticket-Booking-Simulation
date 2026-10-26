@@ -4,10 +4,6 @@ import org.stadium.view.MainView;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
-/**
- * Điểm khởi chạy chính của Hệ Thống Mô Phỏng Đặt Vé Sân Vận Động (Group 6 - LAB211).
- * Khởi tạo và kích hoạt MainView điều hướng toàn bộ ứng dụng MVC.
- */
 public class Main {
 
     public static void main(String[] args) {

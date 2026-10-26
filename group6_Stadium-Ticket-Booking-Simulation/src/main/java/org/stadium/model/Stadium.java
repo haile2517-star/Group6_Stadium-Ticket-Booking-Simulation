@@ -38,7 +38,6 @@ public class Stadium extends BaseEntity {
         this.capacity = (parts[3] == null || parts[3].trim().isEmpty()) ? 0 : Integer.parseInt(parts[3].trim());
     }
 
-    // Getters and Setters
     public String getStadiumId() {
         return this.stadiumId;
     }

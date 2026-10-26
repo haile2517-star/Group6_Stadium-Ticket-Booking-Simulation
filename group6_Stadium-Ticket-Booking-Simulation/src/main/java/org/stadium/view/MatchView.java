@@ -8,10 +8,6 @@ import org.stadium.model.enums.MatchStatus;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Lớp hiển thị giao diện Console cho miền Trận đấu (Match View).
- * Phụ trách: Siêu (Tuần 6 - View Layer & MVC Wiring).
- */
 public class MatchView {
 
     private Scanner scanner;
@@ -193,7 +189,7 @@ public class MatchView {
             try {
                 filter.setStatus(MatchStatus.valueOf(statusInput.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                // Giữ nguyên nếu không đúng định dạng
+
             }
         }
 

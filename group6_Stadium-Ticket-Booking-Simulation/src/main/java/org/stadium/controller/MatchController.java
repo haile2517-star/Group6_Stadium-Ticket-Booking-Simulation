@@ -9,10 +9,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Controller phụ trách quản lý nghiệp vụ Trận đấu (Match domain).
- * Chuẩn 100% Class Diagram & Quy tắc LAB211 Nhóm 6.
- */
 public class MatchController {
 
   private MatchRepository matchRepository;

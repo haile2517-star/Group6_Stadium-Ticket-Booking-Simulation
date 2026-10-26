@@ -1,5 +1,5 @@
 package org.stadium.controller;
- 
+
 import org.stadium.model.BookingTransaction;
 import org.stadium.model.Match;
 import org.stadium.model.Seat;
@@ -15,23 +15,23 @@ import org.stadium.repository.SectionRepository;
 import org.stadium.repository.TicketPricingRepository;
 import org.stadium.repository.TicketRepository;
 import org.stadium.repository.TransactionRepository;
- 
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
- 
+
 public class TicketController {
- 
+
     private MatchRepository matchRepository;
     private SectionRepository sectionRepository;
     private SeatRepository seatRepository;
     private TicketRepository ticketRepository;
     private TicketPricingRepository ticketPricingRepository;
     private TransactionRepository transactionRepository;
- 
+
     public TicketController(MatchRepository matchRepository,
             SectionRepository sectionRepository,
             SeatRepository seatRepository,
@@ -70,20 +70,19 @@ public class TicketController {
         }
         return "data/" + fileName;
     }
- 
-    // Dat/sua gia ve cho 1 khu vuc trong 1 tran. Gia ap dung cho cac ve sinh SAU khi cau hinh.
+
     public boolean configureTicketPricing(String matchId, String sectionId, double price) {
         if (matchId == null || matchId.isEmpty() || sectionId == null || sectionId.isEmpty() || price <= 0) {
             return false;
         }
- 
+
         Match match = this.matchRepository.findById(matchId);
         SeatSection section = this.sectionRepository.findById(sectionId);
-        // Khu vuc phai thuoc dung san van dong cua tran
+
         if (match == null || section == null || !match.getStadiumId().equals(section.getStadiumId())) {
             return false;
         }
- 
+
         TicketPricing pricing = this.ticketPricingRepository.findByMatchAndSection(matchId, sectionId);
         if (pricing != null) {
             pricing.setPrice(price);
@@ -93,9 +92,7 @@ public class TicketController {
         return this.ticketPricingRepository.save(
                 new TicketPricing("PRC_" + matchId + "_" + sectionId, matchId, sectionId, price));
     }
- 
-    // Sinh ve AVAILABLE cho moi ghe cua cac khu vuc DA cau hinh gia. Tra ve so ve moi tao.
-    // Khu vuc chua co gia bi bo qua; ghe da co ve trong tran nay khong bi tao lai.
+
     public int generateTickets(String matchId) {
         if (matchId == null || matchId.isEmpty()) {
             return 0;
@@ -104,14 +101,12 @@ public class TicketController {
         if (match == null) {
             return 0;
         }
- 
+
         Set<String> ticketedSeatIds = new HashSet<>();
         for (Ticket existing : this.ticketRepository.findByMatchId(matchId)) {
             ticketedSeatIds.add(existing.getSeatId());
         }
- 
-        // Tuần 7 - Kiệt: Sử dụng generateNextTicketId() thread-safe từ TicketRepository
-        // thay vì tính nextNumber từ size (dễ trùng ID khi đa luồng)
+
         List<Ticket> newTickets = new ArrayList<>();
         for (SeatSection section : this.sectionRepository.findByStadiumId(match.getStadiumId())) {
             TicketPricing pricing = this.ticketPricingRepository.findByMatchAndSection(matchId,
@@ -129,21 +124,18 @@ public class TicketController {
                 newTickets.add(ticket);
             }
         }
- 
-        // Them hang loat roi ghi file 1 lan qua saveAll() thread-safe
+
         if (!newTickets.isEmpty()) {
             this.ticketRepository.saveAll(newTickets);
         }
         return newTickets.size();
     }
- 
-    // Organizer huy toan bo ve cua 1 tran: ve -> CANCELLED, ghe da ban -> AVAILABLE,
-    // giao dich lien quan -> CANCELLED. Tra ve false neu khong co ve nao de huy.
+
     public boolean cancelTickets(String matchId) {
         if (matchId == null || matchId.isEmpty()) {
             return false;
         }
- 
+
         Set<String> transactionIds = new HashSet<>();
         int cancelled = 0;
         for (Ticket ticket : this.ticketRepository.findByMatchId(matchId)) {
@@ -164,21 +156,20 @@ public class TicketController {
         if (cancelled == 0) {
             return false;
         }
- 
+
         for (String transactionId : transactionIds) {
             BookingTransaction txn = this.transactionRepository.findById(transactionId);
             if (txn != null) {
                 txn.setStatus(TransactionStatus.CANCELLED);
             }
         }
- 
+
         this.ticketRepository.saveToFile();
         this.seatRepository.saveToFile();
         this.transactionRepository.saveToFile();
         return true;
     }
- 
-    // Bao cao ban ve cua 1 tran. Tra ve map rong neu tran khong ton tai.
+
     public Map<String, Object> viewTicketSalesReport(String matchId) {
         Map<String, Object> report = new LinkedHashMap<>();
         if (matchId == null || matchId.isEmpty()) {
@@ -188,7 +179,7 @@ public class TicketController {
         if (match == null) {
             return report;
         }
- 
+
         List<Ticket> tickets = this.ticketRepository.findByMatchId(matchId);
         int sold = 0;
         int available = 0;
@@ -204,7 +195,7 @@ public class TicketController {
                 cancelled++;
             }
         }
- 
+
         report.put("Match ID", matchId);
         report.put("Match title", match.getMatchTitle());
         report.put("Total tickets", tickets.size());

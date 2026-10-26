@@ -18,16 +18,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
-/**
- * Unit Test & Verification cho AuthView (Tuần 6 - Kiệt).
- * Kiểm thử giả lập Console I/O cho tất cả các form giao diện:
- * 1. displayLoginForm()
- * 2. displayFanRegisterForm()
- * 3. displayOrganizerRegisterForm()
- * 4. displayProfile()
- * 5. displayChangePasswordForm()
- * 6. displayUpdateProfileForm()
- */
 public class AuthViewTest {
 
     private static int testsRun = 0;
@@ -49,7 +39,6 @@ public class AuthViewTest {
         }
     }
 
-
     public static void main(String[] args) {
         System.out.println("=== BAT DAU KIEM THU AUTHVIEW (TUAN 6 - KIET) ===\n");
 
@@ -69,7 +58,6 @@ public class AuthViewTest {
 
             AuthController authController = new AuthController(fanRepo, orgRepo, adminRepo);
 
-            // Test 1: Đăng nhập thành công qua AuthView
             test("1. Test displayLoginForm - Dang nhap thanh cong", () -> {
                 String simulatedInput = "namml1\nnamml1\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -90,9 +78,8 @@ public class AuthViewTest {
                 }
             });
 
-            // Test 2: Đăng nhập thất bại do sai mật khẩu
             test("2. Test displayLoginForm - Dang nhap that bai do sai mat khau", () -> {
-                authController.logout(null); // Clear session
+                authController.logout(null);
                 String simulatedInput = "namml1\nwrong_pass\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
@@ -112,7 +99,6 @@ public class AuthViewTest {
                 }
             });
 
-            // Test 3: Đăng ký Fan mới với validation hợp lệ
             test("3. Test displayFanRegisterForm - Dang ky Fan thanh cong", () -> {
                 String simulatedInput = "kiet_fan6\npassword123\npassword123\nNguyen Tuan Kiet\nkiet.tuan@stadium.vn\n0987654321\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -136,7 +122,6 @@ public class AuthViewTest {
                 }
             });
 
-            // Test 4: Đăng ký Organizer mới với validation
             test("4. Test displayOrganizerRegisterForm - Dang ky BTC thanh cong trang thai PENDING", () -> {
                 String simulatedInput = "vff_event\npassword123\npassword123\nCong Ty To Chuc Su Kien VFF\nevent@vff.org.vn\n0912345678\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -160,12 +145,11 @@ public class AuthViewTest {
                 }
             });
 
-            // Test 5: Xem hồ sơ cá nhân qua displayProfile
             test("5. Test displayProfile - Hien thi dung thong tin ho so", () -> {
                 Account fan = fanRepo.findByUsername("namml1");
                 authController.setCurrentUser(fan);
 
-                String simulatedInput = "0\n"; // Chon [0] Quay lai
+                String simulatedInput = "0\n";
                 ByteArrayOutputStream outContent = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
                 System.setOut(createPrintStream(outContent));
@@ -185,7 +169,6 @@ public class AuthViewTest {
                 }
             });
 
-            // Test 6: Đổi mật khẩu qua displayChangePasswordForm
             test("6. Test displayChangePasswordForm - Doi mat khau thanh cong", () -> {
                 Account fan = fanRepo.findByUsername("namml1");
                 authController.setCurrentUser(fan);
@@ -203,7 +186,6 @@ public class AuthViewTest {
                     String output = getOutput(outContent);
                     assertCondition(output.contains("Đổi mật khẩu thành công!"), "Phai co thong bao doi mat khau thanh cong");
 
-                    // Thu login bang mat khau moi
                     Account reLogin = authController.login("namml1", "newsecret123");
                     assertCondition(reLogin != null, "Phai dang nhap thanh cong voi mat khau moi");
                 } finally {
@@ -211,7 +193,6 @@ public class AuthViewTest {
                 }
             });
 
-            // Test 7: Cập nhật thông tin liên hệ qua displayUpdateProfileForm
             test("7. Test displayUpdateProfileForm - Cap nhat Email va Phone", () -> {
                 Account fan = fanRepo.findByUsername("namml1");
                 authController.setCurrentUser(fan);

@@ -30,7 +30,6 @@ public class Seat extends BaseEntity {
         return this.seatId;
     }
 
-    // Các hàm nghiệp vụ trạng thái & Khóa lạc quan (Optimistic Locking)
     public int getVersion() {
         return this.version;
     }
@@ -66,7 +65,6 @@ public class Seat extends BaseEntity {
         this.version = (parts[6] == null || parts[6].trim().isEmpty()) ? 0 : Integer.parseInt(parts[6].trim());
     }
 
-    // Getters and Setters
     public String getSeatId() {
         return this.seatId;
     }

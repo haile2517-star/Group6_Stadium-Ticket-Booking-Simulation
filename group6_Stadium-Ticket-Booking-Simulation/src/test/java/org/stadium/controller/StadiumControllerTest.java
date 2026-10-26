@@ -12,10 +12,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Bộ kiểm thử đơn vị cho StadiumController.
- * Chạy độc lập qua phương thức main (giống AuthControllerTest và BookingControllerTest).
- */
 public class StadiumControllerTest {
 
     private int testsRun = 0;
@@ -44,7 +40,6 @@ public class StadiumControllerTest {
 
             StadiumController controller = new StadiumController(stadiumRepo, sectionRepo, seatRepo);
 
-            // Test 1: getSections với stadiumId hợp lệ
             this.test("1. getSections với stadiumId hợp lệ", () -> {
                 List<SeatSection> sections = controller.getSections("STD01");
                 this.assertCondition(sections != null, "Danh sách sections không được null");
@@ -52,13 +47,11 @@ public class StadiumControllerTest {
                 this.assertCondition("SEC_A".equals(sections.get(0).getSectionId()), "Mã section đầu tiên phải là SEC_A");
             });
 
-            // Test 2: getSections với stadiumId không tồn tại
             this.test("2. getSections với stadiumId không tồn tại", () -> {
                 List<SeatSection> sections = controller.getSections("STD_UNKNOWN");
                 this.assertCondition(sections != null && sections.isEmpty(), "Phải trả về danh sách rỗng");
             });
 
-            // Test 3: getSections với stadiumId null hoặc rỗng
             this.test("3. getSections với stadiumId null hoặc chuỗi rỗng", () -> {
                 List<SeatSection> secNull = controller.getSections(null);
                 List<SeatSection> secEmpty = controller.getSections("   ");
@@ -66,7 +59,6 @@ public class StadiumControllerTest {
                 this.assertCondition(secEmpty != null && secEmpty.isEmpty(), "Empty stadiumId phải trả về rỗng");
             });
 
-            // Test 4: buildSeatMap với sectionId hợp lệ
             this.test("4. buildSeatMap với sectionId hợp lệ", () -> {
                 String seatMap = controller.buildSeatMap("SEC_A");
                 this.assertCondition(seatMap != null, "Sơ đồ ghế không được null");
@@ -79,14 +71,12 @@ public class StadiumControllerTest {
                 this.assertCondition(seatMap.contains("Row 02:"), "Bản đồ phải có nhãn Row 02");
             });
 
-            // Test 5: buildSeatMap với sectionId không tồn tại
             this.test("5. buildSeatMap với sectionId không tồn tại", () -> {
                 String seatMap = controller.buildSeatMap("SEC_NOT_EXIST");
                 this.assertCondition(seatMap != null && seatMap.contains("Section not found"),
                         "Phải báo lỗi không tìm thấy section");
             });
 
-            // Test 6: buildSeatMap với sectionId null hoặc rỗng
             this.test("6. buildSeatMap với sectionId null hoặc chuỗi rỗng", () -> {
                 String mapNull = controller.buildSeatMap(null);
                 String mapEmpty = controller.buildSeatMap("   ");
@@ -94,7 +84,6 @@ public class StadiumControllerTest {
                 this.assertCondition(mapEmpty.contains("Invalid section ID"), "Phải báo lỗi ID không hợp lệ");
             });
 
-            // Test 7: Kiểm tra getAvailableSeats và getSeats
             this.test("7. getAvailableSeats lọc chính xác ghế AVAILABLE và getSeats", () -> {
                 List<Seat> availableSeats = controller.getAvailableSeats("SEC_A");
                 this.assertCondition(availableSeats != null, "Danh sách không được null");
@@ -104,7 +93,6 @@ public class StadiumControllerTest {
                 this.assertCondition(allSeats != null && allSeats.size() == 4, "SEC_A phải có 4 ghế tổng cộng");
             });
 
-            // Test 8: Kiểm tra getStadium và getAllStadiums
             this.test("8. getStadium và getAllStadiums", () -> {
                 Stadium stadium = controller.getStadium("STD01");
                 this.assertCondition(stadium != null, "Phải tìm thấy sân STD01");

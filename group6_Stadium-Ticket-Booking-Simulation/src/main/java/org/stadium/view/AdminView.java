@@ -6,10 +6,6 @@ import org.stadium.model.Organizer;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * View dành cho Quản trị viên (Admin) duyệt ban tổ chức và quản trị hệ thống.
- * Tuân thủ mô hình MVC và nguyên tắc Bàn Tay Sắt.
- */
 public class AdminView {
 
     private final AuthController authController;
@@ -28,9 +24,6 @@ public class AdminView {
         this(new AuthController(), new Scanner(System.in));
     }
 
-    /**
-     * Bảng điều khiển quản trị (Admin Dashboard).
-     */
     public void displayAdminDashboard() {
         boolean inAdmin = true;
         while (inAdmin) {
@@ -66,9 +59,6 @@ public class AdminView {
         }
     }
 
-    /**
-     * Hiển thị danh sách các tài khoản Ban tổ chức đang chờ phê duyệt.
-     */
     public void displayPendingOrganizers(List<Organizer> pendingList) {
         System.out.println();
         System.out.println("================= DANH SÁCH BAN TỔ CHỨC CHỜ DUYỆT =================");
@@ -91,9 +81,6 @@ public class AdminView {
         System.out.println("Tổng số đơn chờ duyệt: " + pendingList.size());
     }
 
-    /**
-     * Form phê duyệt tài khoản Ban tổ chức.
-     */
     public void approveOrganizer() {
         System.out.println();
         System.out.println("--- PHÊ DUYỆT TÀI KHOẢN BAN TỔ CHỨC ---");
@@ -112,9 +99,6 @@ public class AdminView {
         }
     }
 
-    /**
-     * Form từ chối tài khoản Ban tổ chức.
-     */
     public void rejectOrganizer() {
         System.out.println();
         System.out.println("--- TỪ CHỐI TÀI KHOẢN BAN TỔ CHỨC ---");

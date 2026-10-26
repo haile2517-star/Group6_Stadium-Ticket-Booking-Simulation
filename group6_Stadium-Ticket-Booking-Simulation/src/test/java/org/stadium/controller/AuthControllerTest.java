@@ -48,7 +48,8 @@ public class AuthControllerTest {
 
             this.test("2. Dang xuat he thong", () -> {
                 authController.logout("ADM01");
-                this.assertCondition(authController.getCurrentUser() == null, "Current user phai ve null sau khi logout");
+                this.assertCondition(authController.getCurrentUser() == null,
+                        "Current user phai ve null sau khi logout");
             });
 
             this.test("3. Dang nhap Fan thanh cong", () -> {
@@ -79,7 +80,8 @@ public class AuthControllerTest {
                 Fan createdFan = fanRepo.findByUsername("kiet_test");
                 this.assertCondition(createdFan != null, "Fan moi phai ton tai trong repository");
                 this.assertCondition(createdFan.getId().startsWith("FAN"), "ID phai co prefix FAN");
-                this.assertCondition(createdFan.getStatus() == AccountStatus.ACTIVE, "Fan moi phai co trang thai ACTIVE");
+                this.assertCondition(createdFan.getStatus() == AccountStatus.ACTIVE,
+                        "Fan moi phai co trang thai ACTIVE");
                 this.assertCondition("STANDARD".equals(createdFan.getFanType()), "Loai Fan mac dinh phai la STANDARD");
 
                 Account loginAcc = authController.login("kiet_test", "password123");
@@ -96,7 +98,6 @@ public class AuthControllerTest {
                 this.assertCondition(!registered, "Khong duoc phep dang ky khi username da ton tai");
             });
 
-            // Test 8: Đăng ký Fan với tham số rỗng / null
             this.test("8. Dang ky Fan that bai khi du lieu khong hop le", () -> {
                 boolean r1 = authController.registerFan("", "pass", "Name", "e@e.com", "090");
                 boolean r2 = authController.registerFan("user_x", null, "Name", "e@e.com", "090");

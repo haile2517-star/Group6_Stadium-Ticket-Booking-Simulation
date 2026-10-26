@@ -12,7 +12,6 @@ import org.stadium.repository.OrganizerRepository;
 import java.io.File;
 import java.util.List;
 
-
 public class AuthController {
 
     private final FanRepository fanRepo;
@@ -51,7 +50,6 @@ public class AuthController {
 
         String trimmedUser = username.trim();
 
-
         Admin admin = this.adminRepo.findByUsername(trimmedUser);
         if (admin != null) {
             if (admin.getStatus() == AccountStatus.ACTIVE && admin.validatePassword(pass)) {
@@ -61,7 +59,6 @@ public class AuthController {
             return null;
         }
 
-
         Fan fan = this.fanRepo.findByUsername(trimmedUser);
         if (fan != null) {
             if (fan.getStatus() == AccountStatus.ACTIVE && fan.validatePassword(pass)) {
@@ -70,7 +67,6 @@ public class AuthController {
             }
             return null;
         }
-
 
         Organizer organizer = this.organizerRepo.findByUsername(trimmedUser);
         if (organizer != null) {
@@ -264,7 +260,6 @@ public class AuthController {
         }
     }
 
-  
     private synchronized String generateNextFanId() {
         int maxId = 0;
         for (Fan fan : this.fanRepo.findAll()) {
@@ -281,7 +276,6 @@ public class AuthController {
         }
         return String.format("FAN%04d", maxId + 1);
     }
-
 
     private synchronized String generateNextOrganizerId() {
         int maxId = 0;

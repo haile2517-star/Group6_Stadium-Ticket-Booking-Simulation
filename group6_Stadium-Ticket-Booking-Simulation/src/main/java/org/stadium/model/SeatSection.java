@@ -52,7 +52,6 @@ public class SeatSection extends BaseEntity {
         this.seatsPerRow = (parts[5] == null || parts[5].trim().isEmpty()) ? 0 : Integer.parseInt(parts[5].trim());
     }
 
-    // Getters and Setters
     public String getSectionId() {
         return this.sectionId;
     }

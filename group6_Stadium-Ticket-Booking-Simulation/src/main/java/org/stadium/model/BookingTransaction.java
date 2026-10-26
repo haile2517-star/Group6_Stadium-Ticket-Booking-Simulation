@@ -48,7 +48,6 @@ public class BookingTransaction extends BaseEntity {
         this.status = (parts[6] == null || parts[6].trim().isEmpty()) ? null : TransactionStatus.valueOf(parts[6].trim());
     }
 
-    // Getters and Setters
     public String getTransactionId() {
         return this.transactionId;
     }

@@ -20,18 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Bộ kiểm thử đơn vị cho SeatMapView & StadiumView (Tuần 6 - Nam).
- * Kiểm thử giả lập Console I/O cho các phương thức:
- * 1. SeatMapView.displaySeatMap(asciiMap)
- * 2. SeatMapView.displayAvailableSeats(seats)
- * 3. StadiumView.displayStadiumList(stadiums)
- * 4. StadiumView.displaySectionList(stadiumId, sections)
- * 5. StadiumView.displaySectionDetails(sec, count)
- * 6. Kết nối giữa SeatMapView, StadiumView và StadiumController.
- *
- * Kiểm tra Deliverable: Sơ đồ ghế hiển thị chuẩn ký hiệu [O], [X], [L].
- */
 public class SeatMapViewTest {
 
     private static int testsRun = 0;
@@ -66,7 +54,6 @@ public class SeatMapViewTest {
             SeatMapView seatMapView = new SeatMapView(controller);
             StadiumView stadiumView = new StadiumView(controller, seatMapView);
 
-            // Test 1: SeatMapView.displaySeatMap với asciiMap hợp lệ chứa chuẩn [O], [X], [L]
             test("1. Test displaySeatMap với ký hiệu chuẩn [O], [X], [L]", () -> {
                 String sampleAscii = controller.buildSeatMap("SEC_A");
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -87,7 +74,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("Ký hiệu chuẩn:"), "Phải có chú giải ký hiệu chuẩn");
             });
 
-            // Test 2: SeatMapView.displaySeatMap với chuỗi null hoặc rỗng
             test("2. Test displaySeatMap với dữ liệu null hoặc rỗng", () -> {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
@@ -104,7 +90,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("Không có dữ liệu sơ đồ ghế"), "Phải thông báo khi sơ đồ null/rỗng");
             });
 
-            // Test 3: SeatMapView.displayAvailableSeats với danh sách ghế trống
             test("3. Test displayAvailableSeats với danh sách ghế hợp lệ", () -> {
                 List<Seat> seats = controller.getAvailableSeats("SEC_A");
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -123,7 +108,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("Tổng số ghế trống khả dụng:"), "Phải có tổng kết số ghế khả dụng");
             });
 
-            // Test 4: SeatMapView.displayAvailableSeats với danh sách rỗng
             test("4. Test displayAvailableSeats với danh sách rỗng", () -> {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
@@ -139,7 +123,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("Không có ghế trống nào khả dụng"), "Phải thông báo khi không có ghế trống");
             });
 
-            // Test 5: StadiumView.displayStadiumList
             test("5. Test StadiumView.displayStadiumList", () -> {
                 List<Stadium> stadiums = controller.getAllStadiums();
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -158,7 +141,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("San Quoc Gia My Dinh"), "Phải hiển thị tên sân");
             });
 
-            // Test 6: StadiumView.displaySectionList
             test("6. Test StadiumView.displaySectionList", () -> {
                 List<SeatSection> sections = controller.getSections("STD01");
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -177,7 +159,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("VIP"), "Phải có loại ghế VIP");
             });
 
-            // Test 7: StadiumView.displaySectionDetails
             test("7. Test StadiumView.displaySectionDetails(sec, count)", () -> {
                 SeatSection sec = controller.getSection("SEC_A");
                 int availableCount = controller.getAvailableSeats("SEC_A").size();
@@ -197,7 +178,6 @@ public class SeatMapViewTest {
                 assertCondition(output.contains("Ghế còn trống:"), "Phải hiển thị ghế còn trống");
             });
 
-            // Test 8: Kết nối trực tiếp giữa View và Controller
             test("8. Test Kết nối trực tiếp giữa View và StadiumController", () -> {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 PrintStream originalOut = System.out;
@@ -242,11 +222,11 @@ public class SeatMapViewTest {
 
         try (FileWriter w = new FileWriter(seats)) {
             w.write("seatId,sectionId,rowNumber,seatNumber,seatType,status,version\n");
-            // Hàng 1: 1 AVAILABLE, 1 BOOKED, 1 LOCKED
+
             w.write("SEC_A_R01_S01,SEC_A,1,R01-S01,VIP,AVAILABLE,0\n");
             w.write("SEC_A_R01_S02,SEC_A,1,R01-S02,VIP,BOOKED,0\n");
             w.write("SEC_A_R01_S03,SEC_A,1,R01-S03,VIP,LOCKED,0\n");
-            // Hàng 2: 2 AVAILABLE, 1 BOOKED
+
             w.write("SEC_A_R02_S01,SEC_A,2,R02-S01,VIP,AVAILABLE,0\n");
             w.write("SEC_A_R02_S02,SEC_A,2,R02-S02,VIP,AVAILABLE,0\n");
             w.write("SEC_A_R02_S03,SEC_A,2,R02-S03,VIP,BOOKED,0\n");

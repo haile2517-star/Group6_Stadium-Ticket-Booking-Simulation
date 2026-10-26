@@ -28,7 +28,7 @@ public class BookingView {
         System.out.println("Available seats:");
         System.out.printf("%-12s %-14s %-5s %-6s %-10s%n", "Seat ID", "Section", "Row", "Seat", "Type");
         System.out.println("---------------------------------------------------");
-    
+
     for(Seat seat : seats){
         System.out.printf("%-12s %-14s %-5d %-6s %-10s%n", seat.getSeatId(), seat.getSectionId(), seat.getRowNumber(), seat.getSeatNumber(), seat.getSeatType());
     }
@@ -110,7 +110,7 @@ public class BookingView {
         String fanId = this.scanner.nextLine().trim();
         System.out.print("Enter your Ticket ID to cancel: ");
         String ticketId = this.scanner.nextLine().trim();
-        
+
         if(fanId.isEmpty() || ticketId.isEmpty()){
             this.showBookingResult(false, "Fan ID and Ticket ID are required.");
             return;
@@ -127,5 +127,3 @@ public class BookingView {
     }
 
 }
-
-

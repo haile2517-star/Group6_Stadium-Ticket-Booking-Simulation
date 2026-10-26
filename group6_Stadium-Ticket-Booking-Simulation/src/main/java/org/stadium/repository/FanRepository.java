@@ -21,7 +21,6 @@ public class FanRepository extends CsvRepository<Fan> {
         return "fanId,username,passwordHash,fullName,email,phone,fanType,status";
     }
 
-    // Tìm Fan theo username (dùng cho login)
     public Fan findByUsername(String username) {
         if (username == null) {
             return null;
@@ -30,7 +29,6 @@ public class FanRepository extends CsvRepository<Fan> {
         return result.isEmpty() ? null : result.get(0);
     }
 
-    // Tìm danh sách Fan theo trạng thái (dùng cho Admin duyệt tài khoản)
     public List<Fan> findByStatus(AccountStatus status) {
         return this.findByCondition(fan -> fan.getStatus() == status);
     }

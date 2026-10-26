@@ -1,13 +1,12 @@
 package org.stadium.view;
 import org.stadium.controller.TicketController;
- 
+
 import java.util.Map;
 import java.util.Scanner;
 
 public class OrganizerView {
     private Scanner scanner;
     private TicketController ticketController;
-    
 
     public OrganizerView(Scanner scanner, TicketController ticketController){
         this.scanner = scanner;
@@ -30,7 +29,7 @@ public class OrganizerView {
         double price;
         try {
             price = Double.parseDouble(priceInput);
-            
+
         } catch (NumberFormatException e) {
             System.out.println("[FAILED] Price must be a valid number");
             return;

@@ -184,10 +184,13 @@ public class TicketRepository extends CsvRepository<Ticket> {
     }
 
     public synchronized Ticket findBySeatAndMatch(String seatId, String matchId) {
-        return this.findByCondition(t -> seatId != null && seatId.equals(t.getSeatId())
-                && matchId != null && matchId.equals(t.getMatchId()))
-                .stream()
-                .findFirst()
-                .orElse(null);
+        List<Ticket> matches = this.findByCondition(t -> seatId != null && seatId.equals(t.getSeatId())
+                && matchId != null && matchId.equals(t.getMatchId()));
+        for (Ticket t : matches) {
+            if (t.isAvailable()) {
+                return t;
+            }
+        }
+        return matches.isEmpty() ? null : matches.get(matches.size() - 1);
     }
 }

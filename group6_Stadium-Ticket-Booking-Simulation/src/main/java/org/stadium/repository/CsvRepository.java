@@ -67,7 +67,22 @@ public abstract class CsvRepository<T extends BaseEntity> { // Generic ràng bu�
 
     // Thêm hoặc lưu một thực thể vào bộ nhớ và đồng bộ xuống file CSV
     public boolean save(T entity) {
-        this.items.add(entity); // Thêm vào danh sách bộ nhớ
+        if (entity == null) {
+            return false;
+        }
+        int existingIndex = -1;
+        for (int i = 0; i < this.items.size(); i++) {
+            T item = this.items.get(i);
+            if (item == entity || (item.getId() != null && item.getId().equals(entity.getId()))) {
+                existingIndex = i;
+                break;
+            }
+        }
+        if (existingIndex >= 0) {
+            this.items.set(existingIndex, entity);
+        } else {
+            this.items.add(entity);
+        }
         this.saveToFile(); // Lưu ngay xuống đĩa cứng
         return true;
     }

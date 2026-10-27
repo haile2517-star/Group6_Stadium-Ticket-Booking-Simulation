@@ -1,5 +1,6 @@
 package org.stadium.view;
 
+import org.stadium.controller.AdminController;
 import org.stadium.controller.AuthController;
 import org.stadium.controller.BookingController;
 import org.stadium.controller.MatchController;
@@ -18,6 +19,7 @@ import org.stadium.model.Stadium;
 import org.stadium.repository.MatchRepository;
 import org.stadium.repository.SeatRepository;
 import org.stadium.repository.SectionRepository;
+import org.stadium.repository.SimulationResultRepository;
 import org.stadium.repository.StadiumRepository;
 import org.stadium.repository.TicketPricingRepository;
 import org.stadium.repository.TicketRepository;
@@ -32,6 +34,7 @@ public class MainView {
 
     private Scanner scanner;
     private AuthController authController;
+    private AdminController adminController;
     private MatchController matchController;
     private BookingController bookingController;
     private StadiumController stadiumController;
@@ -41,6 +44,7 @@ public class MainView {
     private OrganizerView organizerView;
     private SeatMapView seatMapView;
     private StadiumView stadiumView;
+    private AdminView adminView;
     private Account currentUser;
     private boolean running;
 
@@ -54,11 +58,13 @@ public class MainView {
         String pathSeats = new File("data/seats.csv").exists() ? "data/seats.csv"
                 : (new File("../data/seats.csv").exists() ? "../data/seats.csv" : "data/seats.csv");
         String pathPricings = new File("data/ticket_pricings.csv").exists() ? "data/ticket_pricings.csv"
-                : (new File("../data/ticket_pricings.csv").exists() ? "../data/ticket_pricings.csv" : "data/ticket_pricings.csv");
+                : (new File("../data/ticket_pricings.csv").exists() ? "../data/ticket_pricings.csv"
+                        : "data/ticket_pricings.csv");
         String pathTickets = new File("data/tickets.csv").exists() ? "data/tickets.csv"
                 : (new File("../data/tickets.csv").exists() ? "../data/tickets.csv" : "data/tickets.csv");
         String pathTxns = new File("data/transactions.csv").exists() ? "data/transactions.csv"
-                : (new File("../data/transactions.csv").exists() ? "../data/transactions.csv" : "data/transactions.csv");
+                : (new File("../data/transactions.csv").exists() ? "../data/transactions.csv"
+                        : "data/transactions.csv");
 
         MatchRepository matchRepo = new MatchRepository(pathMatches);
         StadiumRepository stadiumRepo = new StadiumRepository(pathStadiums);
@@ -67,12 +73,19 @@ public class MainView {
         TicketPricingRepository pricingRepo = new TicketPricingRepository(pathPricings);
         TicketRepository ticketRepo = new TicketRepository(pathTickets);
         TransactionRepository txnRepo = new TransactionRepository(pathTxns);
+        String pathSims = new File("data/simulation_results.csv").exists() ? "data/simulation_results.csv"
+                : (new File("../data/simulation_results.csv").exists() ? "../data/simulation_results.csv"
+                        : "data/simulation_results.csv");
+        SimulationResultRepository simRepo = new SimulationResultRepository(pathSims);
 
         this.authController = new AuthController();
+        this.adminController = new AdminController(this.authController.getFanRepo(),
+                this.authController.getOrganizerRepo(), seatRepo, simRepo);
         this.matchController = new MatchController(matchRepo);
         this.stadiumController = new StadiumController(stadiumRepo, sectionRepo, seatRepo);
         this.bookingController = new BookingController(seatRepo, ticketRepo, txnRepo);
-        this.ticketController = new TicketController(matchRepo, sectionRepo, seatRepo, ticketRepo, pricingRepo, txnRepo);
+        this.ticketController = new TicketController(matchRepo, sectionRepo, seatRepo, ticketRepo, pricingRepo,
+                txnRepo);
 
         this.scanner = new Scanner(System.in);
         this.matchView = new MatchView(this.scanner, this.matchController);
@@ -80,15 +93,16 @@ public class MainView {
         this.organizerView = new OrganizerView(this.scanner, this.ticketController);
         this.seatMapView = new SeatMapView(this.stadiumController);
         this.stadiumView = new StadiumView(this.stadiumController, this.seatMapView);
+        this.adminView = new AdminView(this.adminController, this.scanner);
         this.currentUser = null;
         this.running = true;
     }
 
     public void start() {
-        System.out.println("============================================================");
-        System.out.println("   HỆ THỐNG MÔ PHỎNG ĐẶT VÉ SÂN VẬN ĐỘNG (STADIUM BOOKING)");
-        System.out.println("                  NHÓM 6 - LAB211 (SEMESTER 3)");
-        System.out.println("============================================================");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println("|                STADIUM TICKET BOOKING SIMULATION SYSTEM                 |");
+        System.out.println("|                      GROUP 6 - LAB211 (SEMESTER 3)                      |");
+        System.out.println("+-------------------------------------------------------------------------+");
 
         while (this.running) {
             if (this.currentUser == null) {
@@ -103,24 +117,26 @@ public class MainView {
                 this.currentUser = null;
             }
         }
-        System.out.println("\nCảm ơn bạn đã sử dụng hệ thống Đặt vé Sân vận động! Tạm biệt.");
+        System.out.println("\nThank you for using Stadium Ticket Booking System! Goodbye.");
     }
 
     public void displayGuestMenu() {
         System.out.println();
-        System.out.println("==================== MENU KHÁCH (GUEST) ====================");
-        System.out.println("1. Xem danh sách trận đấu");
-        System.out.println("2. Xem chi tiết trận đấu");
-        System.out.println("3. Tìm kiếm trận đấu theo từ khóa");
-        System.out.println("4. Lọc trận đấu theo tiêu chí");
-        System.out.println("5. Xem danh sách sân vận động");
-        System.out.println("6. Xem khán đài & sơ đồ ghế sân vận động");
-        System.out.println("7. Đăng nhập hệ thống");
-        System.out.println("8. Đăng ký tài khoản Fan (Người hâm mộ)");
-        System.out.println("9. Đăng ký tài khoản Organizer (Ban tổ chức)");
-        System.out.println("0. Thoát chương trình");
-        System.out.println("============================================================");
-        System.out.print("Vui lòng chọn chức năng (0-9): ");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println("|                               GUEST MENU                                |");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println(" 1. View match list");
+        System.out.println(" 2. View match details");
+        System.out.println(" 3. Search matches by keyword");
+        System.out.println(" 4. Filter matches by criteria");
+        System.out.println(" 5. View stadium list");
+        System.out.println(" 6. View stands & seat map");
+        System.out.println(" 7. Login to system");
+        System.out.println(" 8. Register Fan account");
+        System.out.println(" 9. Register Organizer account");
+        System.out.println(" 0. Exit program");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.print("Please choose an option (0-9): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
@@ -131,7 +147,7 @@ public class MainView {
             List<Match> matches = this.matchController.viewAllMatches();
             this.matchView.displayMatches(matches);
         } else if ("2".equals(choice)) {
-            System.out.print("Nhập mã trận đấu cần xem chi tiết (VD: MTH01): ");
+            System.out.print("Enter match ID to view details (e.g., MTH01): ");
             String matchId = this.scanner.nextLine().trim();
             Match match = null;
             for (Match m : this.matchController.viewAllMatches()) {
@@ -153,7 +169,7 @@ public class MainView {
             List<Stadium> stadiums = this.stadiumController.getAllStadiums();
             this.stadiumView.displayStadiumList(stadiums);
         } else if ("6".equals(choice)) {
-            System.out.print("Nhập mã sân vận động (VD: STD01): ");
+            System.out.print("Enter stadium ID (e.g., STD01): ");
             if (!this.scanner.hasNextLine()) {
                 this.running = false;
                 return;
@@ -162,7 +178,8 @@ public class MainView {
             List<SeatSection> sections = this.stadiumController.getSections(stadiumId);
             this.stadiumView.displaySectionList(stadiumId, sections);
             if (!sections.isEmpty()) {
-                System.out.print("Nhập mã khán đài muốn xem sơ đồ ghế ASCII (VD: " + sections.get(0).getSectionId() + "): ");
+                System.out.print(
+                        "Enter section ID to view ASCII seat map (e.g., " + sections.get(0).getSectionId() + "): ");
                 if (!this.scanner.hasNextLine()) {
                     this.running = false;
                     return;
@@ -172,77 +189,81 @@ public class MainView {
                 this.seatMapView.displaySeatMap(map);
             }
         } else if ("7".equals(choice)) {
-            System.out.println("\n============= ĐĂNG NHẬP =============");
-            System.out.print("Tên đăng nhập: ");
+            System.out.println("\n============= LOGIN =============");
+            System.out.print("Username: ");
             String u = this.scanner.nextLine().trim();
-            System.out.print("Mật khẩu: ");
+            System.out.print("Password: ");
             String p = this.scanner.nextLine().trim();
             Account acc = this.authController.login(u, p);
             if (acc != null) {
                 this.currentUser = acc;
-                System.out.println("[SUCCESS] Đăng nhập thành công! Xin chào " + acc.getUsername());
+                System.out.println("[SUCCESS] Login successful! Welcome " + acc.getUsername());
             } else {
-                System.out.println("[FAILED] Đăng nhập thất bại. Sai tài khoản, mật khẩu hoặc tài khoản chưa ACTIVE.");
+                System.out.println("[FAILED] Login failed. Invalid username/password or account is not ACTIVE.");
             }
         } else if ("8".equals(choice)) {
-            System.out.println("\n============= ĐĂNG KÝ TÀI KHOẢN FAN =============");
+            System.out.println("\n============= REGISTER FAN ACCOUNT =============");
             System.out.print("Username: ");
             String fu = this.scanner.nextLine().trim();
             System.out.print("Password: ");
             String fp = this.scanner.nextLine().trim();
-            System.out.print("Họ và tên: ");
+            System.out.print("Full name: ");
             String fname = this.scanner.nextLine().trim();
             System.out.print("Email: ");
             String femail = this.scanner.nextLine().trim();
-            System.out.print("Số điện thoại: ");
+            System.out.print("Phone: ");
             String fphone = this.scanner.nextLine().trim();
             boolean ok = this.authController.registerFan(fu, fp, fname, femail, fphone);
             if (ok) {
-                System.out.println("[SUCCESS] Đăng ký Fan thành công! Bạn có thể đăng nhập ngay.");
+                System.out.println("[SUCCESS] Fan registered successfully! You can login now.");
             } else {
-                System.out.println("[FAILED] Đăng ký thất bại. Kiểm tra trùng username/email/phone.");
+                System.out.println("[FAILED] Registration failed. Username/email/phone may already exist.");
             }
         } else if ("9".equals(choice)) {
-            System.out.println("\n============= ĐĂNG KÝ BAN TỔ CHỨC (ORGANIZER) =============");
+            System.out.println("\n============= REGISTER ORGANIZER ACCOUNT =============");
             System.out.print("Username: ");
             String ou = this.scanner.nextLine().trim();
             System.out.print("Password: ");
             String op = this.scanner.nextLine().trim();
-            System.out.print("Tên tổ chức: ");
+            System.out.print("Organization name: ");
             String orgName = this.scanner.nextLine().trim();
             System.out.print("Email: ");
             String oemail = this.scanner.nextLine().trim();
-            System.out.print("Số điện thoại: ");
+            System.out.print("Phone: ");
             String ophone = this.scanner.nextLine().trim();
             boolean ok = this.authController.registerOrganizer(ou, op, orgName, oemail, ophone);
             if (ok) {
-                System.out.println("[SUCCESS] Đăng ký Organizer thành công! Trạng thái PENDING, chờ Admin duyệt.");
+                System.out.println(
+                        "[SUCCESS] Organizer registered successfully! Status is PENDING, awaiting Admin approval.");
             } else {
-                System.out.println("[FAILED] Đăng ký thất bại. Kiểm tra lại thông tin nhập.");
+                System.out.println("[FAILED] Registration failed. Please check the entered information.");
             }
         } else if ("0".equals(choice)) {
             this.running = false;
         } else {
-            System.out.println("[WARNING] Lựa chọn không hợp lệ, vui lòng thử lại.");
+            System.out.println("[WARNING] Invalid option, please try again.");
         }
     }
 
     public void displayFanMenu() {
         System.out.println();
-        System.out.println("================= MENU NGƯỜI HÂM MỘ (FAN) ==================");
-        System.out.println("Tài khoản: " + this.currentUser.getUsername() + " | ID: " + this.currentUser.getId());
-        System.out.println("1. Xem danh sách trận đấu");
-        System.out.println("2. Tìm kiếm trận đấu");
-        System.out.println("3. Lọc trận đấu theo tiêu chí");
-        System.out.println("4. Xem sơ đồ ghế khán đài");
-        System.out.println("5. Đặt vé xem trận đấu (Tối đa 4 vé)");
-        System.out.println("6. Xem lịch sử đặt vé của tôi");
-        System.out.println("7. Hủy vé đã đặt");
-        System.out.println("8. Xem hồ sơ cá nhân");
-        System.out.println("9. Đổi mật khẩu");
-        System.out.println("0. Đăng xuất");
-        System.out.println("============================================================");
-        System.out.print("Vui lòng chọn chức năng (0-9): ");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println("|                                FAN MENU                                 |");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.printf("| User: %-30s | ID: %-30s |%n", this.currentUser.getUsername(), this.currentUser.getId());
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println(" 1. View match list");
+        System.out.println(" 2. Search matches");
+        System.out.println(" 3. Filter matches by criteria");
+        System.out.println(" 4. View section seat map");
+        System.out.println(" 5. Book match tickets (Max 4 tickets)");
+        System.out.println(" 6. View my booking history & tickets");
+        System.out.println(" 7. Cancel booked ticket");
+        System.out.println(" 8. View personal profile");
+        System.out.println(" 9. Change password");
+        System.out.println(" 0. Logout");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.print("Please choose an option (0-9): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
@@ -256,7 +277,7 @@ public class MainView {
         } else if ("3".equals(choice)) {
             this.matchView.displayMatches(this.matchController.filterMatches(this.matchView.promptFilterCriteria()));
         } else if ("4".equals(choice)) {
-            System.out.print("Nhập mã khán đài muốn xem sơ đồ ghế (VD: SEC_STD01_A): ");
+            System.out.print("Enter section ID to view seat map (e.g., SEC_STD01_A): ");
             if (!this.scanner.hasNextLine()) {
                 this.running = false;
                 return;
@@ -274,42 +295,47 @@ public class MainView {
         } else if ("8".equals(choice)) {
             Account acc = this.authController.viewProfile(this.currentUser.getId());
             if (acc != null) {
-                System.out.println("\n============= HỒ SƠ CÁ NHÂN =============");
-                System.out.println("Mã tài khoản : " + acc.getId());
-                System.out.println("Tên đăng nhập: " + acc.getUsername());
-                System.out.println("Email        : " + (acc.getEmail() != null ? acc.getEmail() : ""));
-                System.out.println("Số điện thoại: " + (acc.getPhone() != null ? acc.getPhone() : ""));
-                System.out.println("Trạng thái   : " + acc.getStatus());
+                String border = "+-------------------------------------------------------------------------+";
+                System.out.println();
+                System.out.println(border);
+                System.out.println("|                            PERSONAL PROFILE                             |");
+                System.out.println(border);
+                System.out.printf("| Account ID   : %-56s |%n", acc.getId());
+                System.out.printf("| Username     : %-56s |%n", acc.getUsername());
+                System.out.printf("| Email        : %-56s |%n", (acc.getEmail() != null ? acc.getEmail() : "N/A"));
+                System.out.printf("| Phone        : %-56s |%n", (acc.getPhone() != null ? acc.getPhone() : "N/A"));
+                System.out.printf("| Status       : %-56s |%n", acc.getStatus());
                 if (acc instanceof Fan) {
-                    System.out.println("Họ và tên    : " + ((Fan) acc).getFullName());
-                    System.out.println("Hạng Fan     : " + ((Fan) acc).getFanType());
+                    System.out.printf("| Full Name    : %-56s |%n", ((Fan) acc).getFullName());
+                    System.out.printf("| Fan Tier     : %-56s |%n", ((Fan) acc).getFanType());
                 }
-                System.out.println("=========================================");
+                System.out.println(border);
             }
         } else if ("9".equals(choice)) {
-            System.out.println("\n============= ĐỔI MẬT KHẨU =============");
-            System.out.print("Mật khẩu hiện tại: ");
+            System.out.println("\n============= CHANGE PASSWORD =============");
+            System.out.print("Current password: ");
             String oldPass = this.scanner.nextLine().trim();
-            System.out.print("Mật khẩu mới    : ");
+            System.out.print("New password    : ");
             String newPass = this.scanner.nextLine().trim();
             boolean ok = this.authController.changePassword(this.currentUser.getId(), oldPass, newPass);
             if (ok) {
-                System.out.println("[SUCCESS] Đổi mật khẩu thành công!");
+                System.out.println("[SUCCESS] Password changed successfully!");
             } else {
-                System.out.println("[FAILED] Đổi mật khẩu thất bại. Mật khẩu cũ không chính xác hoặc không hợp lệ.");
+                System.out.println(
+                        "[FAILED] Password change failed. Current password incorrect or invalid new password.");
             }
         } else if ("0".equals(choice)) {
             this.authController.logout(this.currentUser.getId());
             this.currentUser = null;
-            System.out.println("[INFO] Đã đăng xuất thành công.");
+            System.out.println("[INFO] Logged out successfully.");
         } else {
-            System.out.println("[WARNING] Lựa chọn không hợp lệ, vui lòng thử lại.");
+            System.out.println("[WARNING] Invalid option, please try again.");
         }
     }
 
     private void displayFanBookingForm() {
         this.matchView.displayMatches(this.matchController.viewAllMatches());
-        System.out.print("Nhập mã trận đấu muốn đặt vé: ");
+        System.out.print("Enter match ID to book tickets (e.g., MTH01): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
@@ -323,24 +349,24 @@ public class MainView {
             }
         }
         if (selectedMatch == null) {
-            System.out.println("[FAILED] Không tìm thấy trận đấu với mã đã nhập.");
+            System.out.println("[FAILED] Match not found with the entered ID.");
             return;
         }
 
         this.ticketController.generateTickets(selectedMatch.getMatchId());
         List<SeatSection> sections = this.stadiumController.getSections(selectedMatch.getStadiumId());
         this.stadiumView.displaySectionList(selectedMatch.getStadiumId(), sections);
-        System.out.print("Nhập mã khán đài muốn chọn ghế: ");
+        System.out.print("Enter section ID to select seats (e.g., SEC_STD01_A): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
         }
         String sectionId = this.scanner.nextLine().trim();
-        List<Seat> availableSeats =
-                this.ticketController.getAvailableSeatsForMatch(selectedMatch.getMatchId(), sectionId);
+        List<Seat> availableSeats = this.ticketController.getAvailableSeatsForMatch(selectedMatch.getMatchId(),
+                sectionId);
         if (availableSeats.isEmpty()) {
-            System.out.println("[FAILED] Không còn vé khả dụng cho trận đấu và khán đài đã chọn. "
-                    + "Vui lòng kiểm tra giá vé đã được cấu hình.");
+            System.out.println("[FAILED] No available tickets for the selected match and section. "
+                    + "Please check that ticket pricing is configured.");
             return;
         }
         this.bookingView.displayBookingForm(availableSeats, this.currentUser.getId(), selectedMatch.getMatchId());
@@ -348,21 +374,24 @@ public class MainView {
 
     public void displayOrganizerMenu() {
         System.out.println();
-        System.out.println("=============== MENU BAN TỔ CHỨC (ORGANIZER) ===============");
-        System.out.println("Đơn vị: " + this.currentUser.getUsername() + " | ID: " + this.currentUser.getId());
-        System.out.println("1. Xem danh sách trận đấu");
-        System.out.println("2. Tạo sự kiện trận đấu mới");
-        System.out.println("3. Cập nhật thông tin trận đấu");
-        System.out.println("4. Xóa trận đấu");
-        System.out.println("5. Cấu hình giá vé theo khán đài");
-        System.out.println("6. Tự động phát hành vé cho trận đấu");
-        System.out.println("7. Hủy toàn bộ vé trận đấu");
-        System.out.println("8. Xem báo cáo doanh thu bán vé");
-        System.out.println("9. Xem hồ sơ đơn vị");
-        System.out.println("10. Đổi mật khẩu");
-        System.out.println("0. Đăng xuất");
-        System.out.println("============================================================");
-        System.out.print("Vui lòng chọn chức năng (0-10): ");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println("|                             ORGANIZER MENU                              |");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.printf("| Org: %-31s | ID: %-30s |%n", this.currentUser.getUsername(), this.currentUser.getId());
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println(" 1. View match list");
+        System.out.println(" 2. Create new match event");
+        System.out.println(" 3. Update match details");
+        System.out.println(" 4. Delete match");
+        System.out.println(" 5. Configure ticket pricing by section");
+        System.out.println(" 6. Automatically generate tickets for match");
+        System.out.println(" 7. Cancel all tickets of match");
+        System.out.println(" 8. View ticket sales report");
+        System.out.println(" 9. View organization profile");
+        System.out.println(" 10. Change password");
+        System.out.println(" 0. Logout");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.print("Please choose an option (0-10): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
@@ -376,13 +405,13 @@ public class MainView {
         } else if ("3".equals(choice)) {
             this.matchView.displayUpdateMatchForm();
         } else if ("4".equals(choice)) {
-            System.out.print("Nhập mã trận đấu muốn xóa: ");
+            System.out.print("Enter match ID to delete: ");
             String matchId = this.scanner.nextLine().trim();
             boolean ok = this.matchController.deleteMatch(matchId);
             if (ok) {
-                System.out.println("[SUCCESS] Xóa trận đấu " + matchId + " thành công!");
+                System.out.println("[SUCCESS] Match " + matchId + " deleted successfully!");
             } else {
-                System.out.println("[FAILED] Xóa trận đấu thất bại. Mã trận không tồn tại.");
+                System.out.println("[FAILED] Failed to delete match. Match ID does not exist.");
             }
         } else if ("5".equals(choice)) {
             this.organizerView.displayPricingConfigForm();
@@ -391,55 +420,65 @@ public class MainView {
         } else if ("7".equals(choice)) {
             this.organizerView.displayCancelTicketsForm();
         } else if ("8".equals(choice)) {
-            System.out.print("Nhập mã trận đấu cần xem báo cáo doanh thu (VD: MTH01): ");
+            System.out.print("Enter match ID to view sales report (e.g., MTH01): ");
             String matchId = this.scanner.nextLine().trim();
             Map<String, Object> sales = this.ticketController.viewTicketSalesReport(matchId);
             this.organizerView.displaySalesReport(sales);
         } else if ("9".equals(choice)) {
             Account acc = this.authController.viewProfile(this.currentUser.getId());
             if (acc != null) {
-                System.out.println("\n============= THÔNG TIN ĐƠN VỊ =============");
-                System.out.println("Mã ban tổ chức: " + acc.getId());
-                System.out.println("Username      : " + acc.getUsername());
-                System.out.println("Email         : " + (acc.getEmail() != null ? acc.getEmail() : ""));
-                System.out.println("Số điện thoại : " + (acc.getPhone() != null ? acc.getPhone() : ""));
-                System.out.println("Trạng thái    : " + acc.getStatus());
+                String border = "+-------------------------------------------------------------------------+";
+                System.out.println();
+                System.out.println(border);
+                System.out.println("|                          ORGANIZATION PROFILE                           |");
+                System.out.println(border);
+                System.out.printf("| Organizer ID : %-56s |%n", acc.getId());
+                System.out.printf("| Username     : %-56s |%n", acc.getUsername());
+                System.out.printf("| Email        : %-56s |%n", (acc.getEmail() != null ? acc.getEmail() : "N/A"));
+                System.out.printf("| Phone        : %-56s |%n", (acc.getPhone() != null ? acc.getPhone() : "N/A"));
+                System.out.printf("| Status       : %-56s |%n", acc.getStatus());
                 if (acc instanceof Organizer) {
-                    System.out.println("Tên tổ chức   : " + ((Organizer) acc).getOrgName());
+                    System.out.printf("| Org Name     : %-56s |%n", ((Organizer) acc).getOrgName());
                 }
-                System.out.println("============================================");
+                System.out.println(border);
             }
         } else if ("10".equals(choice)) {
-            System.out.println("\n============= ĐỔI MẬT KHẨU =============");
-            System.out.print("Mật khẩu hiện tại: ");
+            System.out.println("\n============= CHANGE PASSWORD =============");
+            System.out.print("Current password: ");
             String oldPass = this.scanner.nextLine().trim();
-            System.out.print("Mật khẩu mới    : ");
+            System.out.print("New password    : ");
             String newPass = this.scanner.nextLine().trim();
             boolean ok = this.authController.changePassword(this.currentUser.getId(), oldPass, newPass);
             if (ok) {
-                System.out.println("[SUCCESS] Đổi mật khẩu thành công!");
+                System.out.println("[SUCCESS] Password changed successfully!");
             } else {
-                System.out.println("[FAILED] Đổi mật khẩu thất bại.");
+                System.out.println("[FAILED] Password change failed.");
             }
         } else if ("0".equals(choice)) {
             this.authController.logout(this.currentUser.getId());
             this.currentUser = null;
-            System.out.println("[INFO] Đã đăng xuất thành công.");
+            System.out.println("[INFO] Logged out successfully.");
         } else {
-            System.out.println("[WARNING] Lựa chọn không hợp lệ, vui lòng thử lại.");
+            System.out.println("[WARNING] Invalid option, please try again.");
         }
     }
 
     public void displayAdminMenu() {
         System.out.println();
-        System.out.println("================ MENU QUẢN TRỊ VIÊN (ADMIN) ================");
-        System.out.println("Quản trị viên: " + this.currentUser.getUsername() + " | ID: " + this.currentUser.getId());
-        System.out.println("1. Xem danh sách toàn bộ trận đấu");
-        System.out.println("2. Xem danh sách sân vận động & khán đài");
-        System.out.println("3. Xem hồ sơ cá nhân");
-        System.out.println("0. Đăng xuất");
-        System.out.println("============================================================");
-        System.out.print("Vui lòng chọn chức năng (0-3): ");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println("|                               ADMIN MENU                                |");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.printf("| Admin: %-29s | ID: %-30s |%n", this.currentUser.getUsername(), this.currentUser.getId());
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.println("  1. Manage Fan (Approve, Search, Delete)");
+        System.out.println("  2. Manage Organizer (Approve, Search, Delete)");
+        System.out.println("  3. Manage Seat (Create, Update, Search, Delete)");
+        System.out.println("  4. Benchmark (Run Concurrency Benchmark, View Reports)");
+        System.out.println("  5. View Profile");
+        System.out.println("  6. Change Password");
+        System.out.println("  0. Logout");
+        System.out.println("+-------------------------------------------------------------------------+");
+        System.out.print("Please choose an option (0-6): ");
         if (!this.scanner.hasNextLine()) {
             this.running = false;
             return;
@@ -447,36 +486,45 @@ public class MainView {
         String choice = this.scanner.nextLine().trim();
 
         if ("1".equals(choice)) {
-            this.matchView.displayMatches(this.matchController.viewAllMatches());
+            this.adminView.displayFanManagementMenu();
         } else if ("2".equals(choice)) {
-            List<Stadium> stadiums = this.stadiumController.getAllStadiums();
-            this.stadiumView.displayStadiumList(stadiums);
-            System.out.print("Nhập mã sân vận động để xem khán đài (VD: STD01, Enter để bỏ qua): ");
-            if (!this.scanner.hasNextLine()) {
-                this.running = false;
-                return;
-            }
-            String stdId = this.scanner.nextLine().trim();
-            if (!stdId.isEmpty()) {
-                List<SeatSection> sections = this.stadiumController.getSections(stdId);
-                this.stadiumView.displaySectionList(stdId, sections);
-            }
+            this.adminView.displayOrganizerManagementMenu();
         } else if ("3".equals(choice)) {
+            this.adminView.displaySeatManagementMenu();
+        } else if ("4".equals(choice)) {
+            this.adminView.displayBenchmarkMenu();
+        } else if ("5".equals(choice)) {
             Account acc = this.authController.viewProfile(this.currentUser.getId());
             if (acc != null) {
-                System.out.println("\n============= HỒ SƠ ADMIN =============");
-                System.out.println("Mã Admin     : " + acc.getId());
-                System.out.println("Username     : " + acc.getUsername());
-                System.out.println("Email        : " + (acc.getEmail() != null ? acc.getEmail() : ""));
-                System.out.println("Số điện thoại: " + (acc.getPhone() != null ? acc.getPhone() : ""));
-                System.out.println("========================================");
+                String border = "+-------------------------------------------------------------------------+";
+                System.out.println();
+                System.out.println(border);
+                System.out.println("|                              ADMIN PROFILE                              |");
+                System.out.println(border);
+                System.out.printf("| Admin ID     : %-56s |%n", acc.getId());
+                System.out.printf("| Username     : %-56s |%n", acc.getUsername());
+                System.out.printf("| Email        : %-56s |%n", (acc.getEmail() != null ? acc.getEmail() : "N/A"));
+                System.out.printf("| Phone        : %-56s |%n", (acc.getPhone() != null ? acc.getPhone() : "N/A"));
+                System.out.println(border);
+            }
+        } else if ("6".equals(choice)) {
+            System.out.println("\n============= CHANGE PASSWORD =============");
+            System.out.print("Current password: ");
+            String oldPass = this.scanner.nextLine().trim();
+            System.out.print("New password    : ");
+            String newPass = this.scanner.nextLine().trim();
+            boolean ok = this.authController.changePassword(this.currentUser.getId(), oldPass, newPass);
+            if (ok) {
+                System.out.println("[SUCCESS] Password changed successfully!");
+            } else {
+                System.out.println("[FAILED] Password change failed.");
             }
         } else if ("0".equals(choice)) {
             this.authController.logout(this.currentUser.getId());
             this.currentUser = null;
-            System.out.println("[INFO] Đã đăng xuất thành công.");
+            System.out.println("[INFO] Logged out successfully.");
         } else {
-            System.out.println("[WARNING] Lựa chọn không hợp lệ, vui lòng thử lại.");
+            System.out.println("[WARNING] Invalid option, please try again.");
         }
     }
 }

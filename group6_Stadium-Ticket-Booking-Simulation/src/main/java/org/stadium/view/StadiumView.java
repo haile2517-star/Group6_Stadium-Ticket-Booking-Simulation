@@ -26,63 +26,84 @@ public class StadiumView {
     }
 
     public void displayStadiumList(List<Stadium> stadiums) {
-        System.out.println("\n=========================== DANH SÁCH SÂN VẬN ĐỘNG ===========================");
+        String border = "+-------------------------------------------------------------------------+";
+        String gridBorder = "+-------+---------------------------+----------+--------------------------+";
+        System.out.println();
+        System.out.println(border);
+        System.out.println("|                              STADIUM LIST                               |");
+        System.out.println(border);
         if (stadiums == null || stadiums.isEmpty()) {
-            System.out.println("[!] Không có dữ liệu sân vận động nào để hiển thị.");
-            System.out.println("==============================================================================");
+            System.out.println("| [INFO] No stadium data available to display.                            |");
+            System.out.println(border);
             return;
         }
 
-        System.out.printf("%-10s | %-35s | %-12s | %s%n", "Mã Sân", "Tên Sân Vận Động", "Sức Chứa", "Địa Chỉ");
-        System.out.println("--------------------------------------------------------------------------------------------------");
+        System.out.println(gridBorder);
+        System.out.println("| ID    | Stadium Name              | Capacity | City / Address           |");
+        System.out.println(gridBorder);
         for (Stadium stadium : stadiums) {
-            System.out.printf("%-10s | %-35s | %-12d | %s%n",
-                    stadium.getStadiumId() != null ? stadium.getStadiumId() : "N/A",
-                    stadium.getStadiumName() != null ? stadium.getStadiumName() : "N/A",
-                    stadium.getCapacity(),
-                    stadium.getAddress() != null ? stadium.getAddress() : "N/A");
+            String id = this.padOrTruncate(stadium.getStadiumId(), 5);
+            String name = this.padOrTruncate(stadium.getStadiumName(), 25);
+            String cap = String.format("%,d", stadium.getCapacity());
+            String capStr = this.padOrTruncate(cap, 8);
+            String addr = this.padOrTruncate(stadium.getAddress(), 24);
+            System.out.printf("| %s | %s | %s | %s |%n", id, name, capStr, addr);
         }
-        System.out.println("==================================================================================================");
+        System.out.println(gridBorder);
+        System.out.printf("| Total: %-64s |%n", stadiums.size() + " stadiums available");
+        System.out.println(border);
     }
 
     public void displaySectionList(String stadiumId, List<SeatSection> sections) {
-        System.out.println("\n======================== DANH SÁCH KHÁN ĐÀI (" + stadiumId + ") ========================");
+        String border = "+-------------------------------------------------------------------------+";
+        String gridBorder = "+---------------+----------------------+-----------+----+-------+---------+";
+        String title = "SECTION LIST (" + (stadiumId != null ? stadiumId : "N/A") + ")";
+        System.out.println();
+        System.out.println(border);
+        System.out.printf("| %-71s |%n", this.padOrTruncate(title, 71));
+        System.out.println(border);
         if (sections == null || sections.isEmpty()) {
-            System.out.println("[!] Không tìm thấy khu vực / khán đài nào cho sân: " + stadiumId);
-            System.out.println("=============================================================================================");
+            System.out.println("| [INFO] No sections found for this stadium.                              |");
+            System.out.println(border);
             return;
         }
 
-        System.out.printf("%-15s | %-25s | %-12s | %-10s | %-10s | %s%n",
-                "Mã Khán Đài", "Tên Khán Đài", "Loại Ghế", "Số Hàng", "Ghế/Hàng", "Tổng Số Ghế");
-        System.out.println("---------------------------------------------------------------------------------------------");
+        System.out.println(gridBorder);
+        System.out.println("| Section ID    | Section Name         | Type      | R  | S/Row | Seats   |");
+        System.out.println(gridBorder);
         for (SeatSection section : sections) {
-            System.out.printf("%-15s | %-25s | %-12s | %-10d | %-10d | %d%n",
-                    section.getSectionId() != null ? section.getSectionId() : "N/A",
-                    section.getSectionName() != null ? section.getSectionName() : "N/A",
-                    section.getSectionType() != null ? section.getSectionType().name() : "N/A",
-                    section.getTotalRows(),
-                    section.getSeatsPerRow(),
-                    section.getTotalSeats());
+            String id = this.padOrTruncate(section.getSectionId(), 13);
+            String name = this.padOrTruncate(section.getSectionName(), 20);
+            String type = this.padOrTruncate(section.getSectionType() != null ? section.getSectionType().name() : "N/A", 9);
+            String rows = this.padOrTruncate(String.valueOf(section.getTotalRows()), 2);
+            String sRow = this.padOrTruncate(String.valueOf(section.getSeatsPerRow()), 5);
+            String total = this.padOrTruncate(String.format("%,d", section.getTotalSeats()), 7);
+
+            System.out.printf("| %s | %s | %s | %s | %s | %s |%n", id, name, type, rows, sRow, total);
         }
-        System.out.println("=============================================================================================");
+        System.out.println(gridBorder);
+        System.out.printf("| Total: %-64s |%n", sections.size() + " sections in this stadium");
+        System.out.println(border);
     }
 
     public void displaySectionDetails(SeatSection sec, int count) {
         if (sec == null) {
-            System.out.println("[!] Thông tin khán đài không tồn tại.");
+            System.out.println("[INFO] Section information does not exist.");
             return;
         }
-        System.out.println("\n----------------- THÔNG TIN CHI TIẾT KHÁN ĐÀI -----------------");
-        System.out.printf("  Mã khán đài  : %s%n", sec.getSectionId());
-        System.out.printf("  Tên khán đài : %s%n", sec.getSectionName());
-        System.out.printf("  Mã sân       : %s%n", sec.getStadiumId());
-        System.out.printf("  Loại ghế     : %s%n", sec.getSectionType() != null ? sec.getSectionType().name() : "N/A");
-        System.out.printf("  Tổng số hàng : %d hàng%n", sec.getTotalRows());
-        System.out.printf("  Số ghế/hàng  : %d ghế%n", sec.getSeatsPerRow());
-        System.out.printf("  Tổng số ghế  : %d ghế%n", sec.getTotalSeats());
-        System.out.printf("  Ghế còn trống: %d ghế [O]%n", count);
-        System.out.println("---------------------------------------------------------------");
+        System.out.println();
+        String border = "+-------------------------------------------------------------------------+";
+        System.out.println(border);
+        System.out.println("|                             SECTION DETAILS                             |");
+        System.out.println(border);
+        System.out.printf("| Section ID   : %-56s |%n", this.padOrTruncate(sec.getSectionId(), 56));
+        System.out.printf("| Section Name : %-56s |%n", this.padOrTruncate(sec.getSectionName(), 56));
+        System.out.printf("| Stadium ID   : %-56s |%n", this.padOrTruncate(sec.getStadiumId(), 56));
+        System.out.printf("| Seat Type    : %-56s |%n", this.padOrTruncate(sec.getSectionType() != null ? sec.getSectionType().name() : "N/A", 56));
+        String layout = sec.getTotalRows() + " rows  x  " + sec.getSeatsPerRow() + " seats/row  =  " + sec.getTotalSeats() + " total seats";
+        System.out.printf("| Layout       : %-56s |%n", this.padOrTruncate(layout, 56));
+        System.out.printf("| Available    : %-56s |%n", this.padOrTruncate(count + " seats [O]", 56));
+        System.out.println(border);
     }
 
     public void displaySeatMap(String seatMapAscii) {
@@ -90,7 +111,7 @@ public class StadiumView {
             this.seatMapView.displaySeatMap(seatMapAscii);
         } else {
             if (seatMapAscii == null || seatMapAscii.isEmpty()) {
-                System.out.println("[!] Không có sơ đồ ghế để hiển thị.");
+                System.out.println("[!] No seat map available to display.");
                 return;
             }
             System.out.println(seatMapAscii);
@@ -99,7 +120,7 @@ public class StadiumView {
 
     public void displayAllStadiums() {
         if (this.stadiumController == null) {
-            System.out.println("[!] Chưa cấu hình StadiumController trong StadiumView.");
+            System.out.println("[!] StadiumController is not configured in StadiumView.");
             return;
         }
         List<Stadium> stadiums = this.stadiumController.getAllStadiums();
@@ -108,7 +129,7 @@ public class StadiumView {
 
     public void displaySectionsByStadium(String stadiumId) {
         if (this.stadiumController == null) {
-            System.out.println("[!] Chưa cấu hình StadiumController trong StadiumView.");
+            System.out.println("[!] StadiumController is not configured in StadiumView.");
             return;
         }
         List<SeatSection> sections = this.stadiumController.getSections(stadiumId);
@@ -117,12 +138,12 @@ public class StadiumView {
 
     public void displaySectionFullDetails(String sectionId) {
         if (this.stadiumController == null) {
-            System.out.println("[!] Chưa cấu hình StadiumController trong StadiumView.");
+            System.out.println("[!] StadiumController is not configured in StadiumView.");
             return;
         }
         SeatSection section = this.stadiumController.getSection(sectionId);
         if (section == null) {
-            System.out.println("[!] Không tìm thấy khán đài với mã: " + sectionId);
+            System.out.println("[!] Section not found with ID: " + sectionId);
             return;
         }
         int availableCount = this.stadiumController.getAvailableSeats(sectionId).size();
@@ -146,5 +167,19 @@ public class StadiumView {
 
     public void setSeatMapView(SeatMapView seatMapView) {
         this.seatMapView = seatMapView;
+    }
+
+    private String padOrTruncate(String text, int width) {
+        if (text == null) {
+            text = "N/A";
+        }
+        text = text.trim();
+        if (text.length() > width) {
+            if (width <= 3) {
+                return text.substring(0, width);
+            }
+            return text.substring(0, width - 3) + "...";
+        }
+        return String.format("%-" + width + "s", text);
     }
 }

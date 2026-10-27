@@ -27,144 +27,159 @@ public class AuthView {
     }
 
     public void displayLoginForm() {
+        String border = "+-------------------------------------------------------------------------+";
         System.out.println();
-        System.out.println("========================== ĐĂNG NHẬP HỆ THỐNG ==========================");
-        System.out.print("👉 Nhập tên đăng nhập (Username): ");
+        System.out.println(border);
+        System.out.println("|                              SYSTEM LOGIN                               |");
+        System.out.println(border);
+        System.out.print("Enter username: ");
         String username = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập mật khẩu (Password): ");
+        System.out.print("Enter password: ");
         String password = this.scanner.nextLine().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            System.out.println("❌ Tên đăng nhập và mật khẩu không được để trống!");
+            System.out.println("[FAILED] Username and password cannot be empty!");
             return;
         }
 
         Account account = this.authController.login(username, password);
         if (account != null) {
-            System.out.println("✅ Đăng nhập thành công! Xin chào, " + this.getDisplayName(account) + "!");
-            System.out.println("   Vai trò: " + this.getRoleName(account));
+            System.out.println("[SUCCESS] Login successful! Welcome, " + this.getDisplayName(account) + "!");
+            System.out.println("   Role: " + this.getRoleName(account));
         } else {
             String reason = this.authController.getLoginFailureReason(username);
-            System.out.println("❌ Đăng nhập thất bại!");
-            System.out.println("   Lý do: " + reason);
+            System.out.println("[FAILED] Login failed!");
+            System.out.println("   Reason: " + reason);
         }
     }
 
     public void displayFanRegisterForm() {
+        String border = "+-------------------------------------------------------------------------+";
         System.out.println();
-        System.out.println("====================== ĐĂNG KÝ TÀI KHOẢN FAN ======================");
-        System.out.print("👉 Nhập tên đăng nhập (Username): ");
+        System.out.println(border);
+        System.out.println("|                          REGISTER FAN ACCOUNT                           |");
+        System.out.println(border);
+        System.out.print("Enter username: ");
         String username = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập mật khẩu: ");
+        System.out.print("Enter password: ");
         String password = this.scanner.nextLine().trim();
-        System.out.print("👉 Xác nhận mật khẩu: ");
+        System.out.print("Confirm password: ");
         String confirmPass = this.scanner.nextLine().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            System.out.println("❌ Tên đăng nhập và mật khẩu không được để trống!");
+            System.out.println("[FAILED] Username and password cannot be empty!");
             return;
         }
 
         if (!password.equals(confirmPass)) {
-            System.out.println("❌ Mật khẩu xác nhận không khớp! Vui lòng thử lại.");
+            System.out.println("[FAILED] Password confirmation does not match! Please try again.");
             return;
         }
 
-        System.out.print("👉 Nhập họ và tên đầy đủ: ");
+        System.out.print("Enter full name: ");
         String fullName = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập địa chỉ email: ");
+        System.out.print("Enter email address: ");
         String email = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập số điện thoại: ");
+        System.out.print("Enter phone number: ");
         String phone = this.scanner.nextLine().trim();
 
         if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty()) {
-            System.out.println("❌ Thông tin không được để trống!");
+            System.out.println("[FAILED] Fields cannot be empty!");
             return;
         }
 
         boolean success = this.authController.registerFan(username, password, fullName, email, phone);
         if (success) {
-            System.out.println("🎉 Đăng ký tài khoản Fan thành công! Bạn có thể đăng nhập ngay.");
+            System.out.println("[SUCCESS] Fan account registered successfully! You can now log in.");
         } else {
-            System.out.println("❌ Đăng ký thất bại! Tên đăng nhập đã tồn tại hoặc dữ liệu không hợp lệ.");
+            System.out.println("[FAILED] Registration failed! Username may already exist or data is invalid.");
         }
     }
 
     public void displayOrganizerRegisterForm() {
+        String border = "+-------------------------------------------------------------------------+";
         System.out.println();
-        System.out.println("================ ĐĂNG KÝ TÀI KHOẢN BAN TỔ CHỨC ================");
-        System.out.print("👉 Nhập tên đăng nhập (Username): ");
+        System.out.println(border);
+        System.out.println("|                       REGISTER ORGANIZER ACCOUNT                        |");
+        System.out.println(border);
+        System.out.print("Enter username: ");
         String username = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập mật khẩu: ");
+        System.out.print("Enter password: ");
         String password = this.scanner.nextLine().trim();
-        System.out.print("👉 Xác nhận mật khẩu: ");
+        System.out.print("Confirm password: ");
         String confirmPass = this.scanner.nextLine().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            System.out.println("❌ Tên đăng nhập và mật khẩu không được để trống!");
+            System.out.println("[FAILED] Username and password cannot be empty!");
             return;
         }
 
         if (!password.equals(confirmPass)) {
-            System.out.println("❌ Mật khẩu xác nhận không khớp! Vui lòng thử lại.");
+            System.out.println("[FAILED] Password confirmation does not match! Please try again.");
             return;
         }
 
-        System.out.print("👉 Nhập tên đơn vị tổ chức: ");
+        System.out.print("Enter organization name: ");
         String orgName = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập địa chỉ email: ");
+        System.out.print("Enter email address: ");
         String email = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập số điện thoại: ");
+        System.out.print("Enter phone number: ");
         String phone = this.scanner.nextLine().trim();
 
         if (orgName.isEmpty() || email.isEmpty() || phone.isEmpty()) {
-            System.out.println("❌ Thông tin không được để trống!");
+            System.out.println("[FAILED] Fields cannot be empty!");
             return;
         }
 
         boolean success = this.authController.registerOrganizer(username, password, orgName, email, phone);
         if (success) {
-            System.out.println("🎉 Đăng ký tài khoản Ban tổ chức thành công!");
-            System.out.println("ℹ️ Tài khoản đang ở trạng thái PENDING — Vui lòng chờ Admin phê duyệt trước khi đăng nhập.");
+            System.out.println("[SUCCESS] Organizer account registered successfully!");
+            System.out.println("[INFO] Account status is PENDING — Please wait for Admin approval before logging in.");
         } else {
-            System.out.println("❌ Đăng ký thất bại! Tên đăng nhập đã tồn tại hoặc dữ liệu không hợp lệ.");
+            System.out.println("[FAILED] Registration failed! Username may already exist or data is invalid.");
         }
     }
 
     public void displayProfile(Account account) {
+        String border = "+-------------------------------------------------------------------------+";
         System.out.println();
-        System.out.println("========================= THÔNG TIN HỒ SƠ CÁ NHÂN =========================");
+        System.out.println(border);
+        System.out.println("|                              USER PROFILE                               |");
+        System.out.println(border);
         if (account == null) {
-            System.out.println("⚠️ Không có thông tin tài khoản để hiển thị.");
+            System.out.println("| [WARNING] No account information to display.                            |");
+            System.out.println(border);
             return;
         }
 
-        System.out.printf("%-20s: %s%n", "Mã tài khoản", account.getId());
-        System.out.printf("%-20s: %s%n", "Tên đăng nhập", account.getUsername());
-        System.out.printf("%-20s: %s%n", "Email", account.getEmail());
-        System.out.printf("%-20s: %s%n", "Số điện thoại", account.getPhone());
-        System.out.printf("%-20s: %s%n", "Trạng thái", account.getStatus() != null ? account.getStatus().name() : "N/A");
+        System.out.printf("| Account ID   : %-56s |%n", this.padOrTruncate(account.getId(), 56));
+        System.out.printf("| Username     : %-56s |%n", this.padOrTruncate(account.getUsername(), 56));
+        System.out.printf("| Email        : %-56s |%n", this.padOrTruncate(account.getEmail(), 56));
+        System.out.printf("| Phone        : %-56s |%n", this.padOrTruncate(account.getPhone(), 56));
+        System.out.printf("| Status       : %-56s |%n",
+                this.padOrTruncate(account.getStatus() != null ? account.getStatus().name() : "N/A", 56));
 
         if (account instanceof Fan) {
             Fan fan = (Fan) account;
-            System.out.printf("%-20s: %s%n", "Họ và tên", fan.getFullName());
-            System.out.printf("%-20s: %s%n", "Hạng thành viên", fan.getFanType() != null ? fan.getFanType() : "N/A");
-            System.out.printf("%-20s: %s%n", "Vai trò", "FAN");
+            System.out.printf("| Full Name    : %-56s |%n", this.padOrTruncate(fan.getFullName(), 56));
+            System.out.printf("| Member Tier  : %-56s |%n",
+                    this.padOrTruncate(fan.getFanType() != null ? fan.getFanType() : "N/A", 56));
+            System.out.printf("| Role         : %-56s |%n", this.padOrTruncate("FAN", 56));
         } else if (account instanceof Organizer) {
             Organizer org = (Organizer) account;
-            System.out.printf("%-20s: %s%n", "Tên đơn vị", org.getOrgName());
-            System.out.printf("%-20s: %s%n", "Vai trò", "ORGANIZER");
+            System.out.printf("| Organization : %-56s |%n", this.padOrTruncate(org.getOrgName(), 56));
+            System.out.printf("| Role         : %-56s |%n", this.padOrTruncate("ORGANIZER", 56));
         } else if (account instanceof Admin) {
             Admin admin = (Admin) account;
-            System.out.printf("%-20s: %s%n", "Họ và tên", admin.getFullName());
-            System.out.printf("%-20s: %s%n", "Vai trò", "ADMIN");
+            System.out.printf("| Full Name    : %-56s |%n", this.padOrTruncate(admin.getFullName(), 56));
+            System.out.printf("| Role         : %-56s |%n", this.padOrTruncate("ADMIN", 56));
         }
 
-        System.out.println("=============================================================================");
+        System.out.println(border);
 
-        System.out.println("\n [1] Cập nhật thông tin liên hệ (Email & SĐT)");
-        System.out.println(" [0] Quay lại");
-        System.out.print("👉 Lựa chọn: ");
+        System.out.println("\n [1] Update contact info (Email & Phone)");
+        System.out.println(" [0] Back");
+        System.out.print("Enter choice: ");
         String choice = this.scanner.nextLine().trim();
         if ("1".equals(choice)) {
             this.displayUpdateProfileForm();
@@ -172,65 +187,71 @@ public class AuthView {
     }
 
     public void displayChangePasswordForm() {
+        String border = "+-------------------------------------------------------------------------+";
         System.out.println();
-        System.out.println("========================== ĐỔI MẬT KHẨU ==========================");
+        System.out.println(border);
+        System.out.println("|                             CHANGE PASSWORD                             |");
+        System.out.println(border);
 
         Account currentUser = this.authController.getCurrentUser();
         if (currentUser == null) {
-            System.out.println("❌ Bạn chưa đăng nhập! Không thể đổi mật khẩu.");
+            System.out.println("[FAILED] You are not logged in! Cannot change password.");
             return;
         }
 
-        System.out.print("👉 Nhập mật khẩu hiện tại: ");
+        System.out.print("Enter current password: ");
         String oldPass = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập mật khẩu mới: ");
+        System.out.print("Enter new password: ");
         String newPass = this.scanner.nextLine().trim();
-        System.out.print("👉 Xác nhận mật khẩu mới: ");
+        System.out.print("Confirm new password: ");
         String confirmPass = this.scanner.nextLine().trim();
 
         if (oldPass.isEmpty() || newPass.isEmpty()) {
-            System.out.println("❌ Mật khẩu không được để trống!");
+            System.out.println("[FAILED] Password cannot be empty!");
             return;
         }
 
         if (!newPass.equals(confirmPass)) {
-            System.out.println("❌ Mật khẩu mới và xác nhận không khớp!");
+            System.out.println("[FAILED] New password and confirmation do not match!");
             return;
         }
 
         boolean success = this.authController.changePassword(currentUser.getId(), oldPass, newPass);
         if (success) {
-            System.out.println("✅ Đổi mật khẩu thành công!");
+            System.out.println("[SUCCESS] Password changed successfully!");
         } else {
-            System.out.println("❌ Đổi mật khẩu thất bại! Mật khẩu hiện tại không đúng.");
+            System.out.println("[FAILED] Password change failed! Current password incorrect.");
         }
     }
 
     public void displayUpdateProfileForm() {
+        String border = "+-------------------------------------------------------------------------+";
         System.out.println();
-        System.out.println("==================== CẬP NHẬT THÔNG TIN LIÊN HỆ ====================");
+        System.out.println(border);
+        System.out.println("|                       UPDATE CONTACT INFORMATION                        |");
+        System.out.println(border);
 
         Account currentUser = this.authController.getCurrentUser();
         if (currentUser == null) {
-            System.out.println("❌ Bạn chưa đăng nhập!");
+            System.out.println("[FAILED] You are not logged in!");
             return;
         }
 
-        System.out.print("👉 Nhập email mới: ");
+        System.out.print("Enter new email: ");
         String newEmail = this.scanner.nextLine().trim();
-        System.out.print("👉 Nhập số điện thoại mới: ");
+        System.out.print("Enter new phone: ");
         String newPhone = this.scanner.nextLine().trim();
 
         if (newEmail.isEmpty() || newPhone.isEmpty()) {
-            System.out.println("❌ Email và số điện thoại không được để trống!");
+            System.out.println("[FAILED] Email and phone cannot be empty!");
             return;
         }
 
         boolean success = this.authController.updateProfile(currentUser.getId(), newEmail, newPhone);
         if (success) {
-            System.out.println("✅ Cập nhật thông tin liên hệ thành công!");
+            System.out.println("[SUCCESS] Contact information updated successfully!");
         } else {
-            System.out.println("❌ Cập nhật thất bại!");
+            System.out.println("[FAILED] Update failed!");
         }
     }
 
@@ -247,12 +268,26 @@ public class AuthView {
 
     private String getRoleName(Account account) {
         if (account instanceof Admin) {
-            return "ADMIN (Quản trị viên)";
+            return "ADMIN";
         } else if (account instanceof Organizer) {
-            return "ORGANIZER (Ban tổ chức)";
+            return "ORGANIZER";
         } else if (account instanceof Fan) {
-            return "FAN (Người hâm mộ)";
+            return "FAN";
         }
         return "UNKNOWN";
+    }
+
+    private String padOrTruncate(String text, int width) {
+        if (text == null) {
+            text = "N/A";
+        }
+        text = text.trim();
+        if (text.length() > width) {
+            if (width <= 3) {
+                return text.substring(0, width);
+            }
+            return text.substring(0, width - 3) + "...";
+        }
+        return String.format("%-" + width + "s", text);
     }
 }

@@ -16,17 +16,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.stadium.model.TicketPricing;
 import org.stadium.model.enums.SeatStatus;
+import org.stadium.repository.TicketPricingRepository;
 
 public class BookingController {
     private SeatRepository seatRepository;
     private TicketRepository ticketRepository;
     private TransactionRepository transactionRepository;
+    private TicketPricingRepository ticketPricingRepository;
 
     public BookingController(SeatRepository seatRepository, TicketRepository ticketRepository, TransactionRepository transactionRepository){
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
         this.transactionRepository = transactionRepository;
+        this.ticketPricingRepository = new TicketPricingRepository(this.resolvePath("ticket_pricings.csv"));
     }
 
     public BookingController() {
@@ -36,6 +40,7 @@ public class BookingController {
         this.seatRepository = new SeatRepository(pathSeats);
         this.ticketRepository = new TicketRepository(pathTickets);
         this.transactionRepository = new TransactionRepository(pathTransactions);
+        this.ticketPricingRepository = new TicketPricingRepository(this.resolvePath("ticket_pricings.csv"));
     }
 
     private String resolvePath(String fileName) {
@@ -82,9 +87,30 @@ public class BookingController {
                         return false;
                     }
                     Ticket ticket = this.ticketRepository.findBySeatAndMatch(seatId, matchId);
-                    if (ticket == null || !ticket.isAvailable()) {
+                    if (ticket != null && ticket.isAvailable()) {
+                        // ticket is available
+                    } else if (ticket != null && ticket.getStatus() == TicketStatus.CANCELLED) {
+                        String nextTicketId = this.ticketRepository.generateNextTicketId();
+                        Ticket newTicket = new Ticket(nextTicketId, matchId, seatId, "", "", ticket.getPrice(), "", TicketStatus.AVAILABLE);
+                        this.ticketRepository.save(newTicket);
+                        ticket = newTicket;
+                    } else if (ticket == null) {
+                        double price = 500000.0;
+                        if (this.ticketPricingRepository != null) {
+                            Seat currentSeat = this.seatRepository.findById(seatId);
+                            if (currentSeat != null) {
+                                TicketPricing tp = this.ticketPricingRepository.findByMatchAndSection(matchId, currentSeat.getSectionId());
+                                if (tp != null && tp.getPrice() > 0) {
+                                    price = tp.getPrice();
+                                }
+                            }
+                        }
+                        String nextTicketId = this.ticketRepository.generateNextTicketId();
+                        Ticket newTicket = new Ticket(nextTicketId, matchId, seatId, "", "", price, "", TicketStatus.AVAILABLE);
+                        this.ticketRepository.save(newTicket);
+                        ticket = newTicket;
+                    } else {
                         return false;
-
                     }
                     tickets.add(ticket);
                 }
@@ -131,7 +157,26 @@ public class BookingController {
                 return false;
             }
             Ticket ticket = this.ticketRepository.findBySeatAndMatch(seatId, matchId);
-            if (ticket == null || !ticket.isAvailable()) {
+            if (ticket != null && ticket.isAvailable()) {
+                // ticket is already available
+            } else if (ticket != null && ticket.getStatus() == TicketStatus.CANCELLED) {
+                String nextTicketId = this.ticketRepository.generateNextTicketId();
+                Ticket newTicket = new Ticket(nextTicketId, matchId, seatId, "", "", ticket.getPrice(), "", TicketStatus.AVAILABLE);
+                this.ticketRepository.save(newTicket);
+                ticket = newTicket;
+            } else if (ticket == null) {
+                double price = 500000.0;
+                if (this.ticketPricingRepository != null) {
+                    TicketPricing tp = this.ticketPricingRepository.findByMatchAndSection(matchId, seat.getSectionId());
+                    if (tp != null && tp.getPrice() > 0) {
+                        price = tp.getPrice();
+                    }
+                }
+                String nextTicketId = this.ticketRepository.generateNextTicketId();
+                Ticket newTicket = new Ticket(nextTicketId, matchId, seatId, "", "", price, "", TicketStatus.AVAILABLE);
+                this.ticketRepository.save(newTicket);
+                ticket = newTicket;
+            } else {
                 return false;
             }
             seats.add(seat);
@@ -194,10 +239,7 @@ public class BookingController {
 
         String originalTransactionId = ticket.getTransactionId();
         double refundedPrice = ticket.getPrice();
-        ticket.setStatus(TicketStatus.AVAILABLE);
-        ticket.setFanId("");
-        ticket.setTransactionId("");
-        ticket.setBookingDate("");
+        ticket.setStatus(TicketStatus.CANCELLED);
         this.ticketRepository.saveToFile();
 
         BookingTransaction originalTransaction = this.transactionRepository.findById(originalTransactionId);

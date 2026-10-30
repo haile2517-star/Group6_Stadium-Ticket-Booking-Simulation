@@ -1,6 +1,6 @@
 package org.stadium;
 
-import org.stadium.view.MainView;
+import org.stadium.controller.MainController;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
@@ -11,7 +11,7 @@ public class Main {
             System.setOut(new PrintStream(System.out, true, "UTF-8"));
         } catch (UnsupportedEncodingException ignored) {
         }
-        MainView mainView = new MainView();
-        mainView.start();
+        MainController app = new MainController();
+        app.start();
     }
 }

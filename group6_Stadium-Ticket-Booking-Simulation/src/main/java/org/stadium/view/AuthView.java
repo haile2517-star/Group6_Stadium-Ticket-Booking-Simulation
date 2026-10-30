@@ -177,7 +177,7 @@ public class AuthView {
 
         System.out.println(border);
 
-        System.out.println("\n [1] Update contact info (Email & Phone)");
+        System.out.println("\n [1] Update profile");
         System.out.println(" [0] Back");
         System.out.print("Enter choice: ");
         String choice = this.scanner.nextLine().trim();
@@ -228,7 +228,7 @@ public class AuthView {
         String border = "+-------------------------------------------------------------------------+";
         System.out.println();
         System.out.println(border);
-        System.out.println("|                       UPDATE CONTACT INFORMATION                        |");
+        System.out.println("|                              UPDATE PROFILE                             |");
         System.out.println(border);
 
         Account currentUser = this.authController.getCurrentUser();
@@ -249,7 +249,7 @@ public class AuthView {
 
         boolean success = this.authController.updateProfile(currentUser.getId(), newEmail, newPhone);
         if (success) {
-            System.out.println("[SUCCESS] Contact information updated successfully!");
+            System.out.println("[SUCCESS] Profile updated successfully! (Cập nhật thông tin liên hệ thành công!)");
         } else {
             System.out.println("[FAILED] Update failed!");
         }

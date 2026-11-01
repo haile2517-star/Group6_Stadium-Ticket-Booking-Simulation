@@ -12,7 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class SeatRepository extends CsvRepository<Seat> {
 
-    // Khóa điều phối giữa các luồng trong cùng JVM trước khi chiếm FileLock cấp OS
     private final ReentrantLock jvmLock = new ReentrantLock();
     private RandomAccessFile lockRaf;
     private FileChannel lockChannel;
@@ -62,17 +61,6 @@ public class SeatRepository extends CsvRepository<Seat> {
         return true;
     }
 
-    /**
-     * Chiếm độc quyền kênh file seats.csv thông qua Java NIO FileChannel và FileLock.
-     * <p>
-     * Tuần 7 - Nam (Sân & Ghế):
-     * <ul>
-     *   <li>Sử dụng jvmLock để điều phối thứ tự truy cập giữa các luồng trong cùng tiến trình JVM,
-     *       tránh ngoại lệ OverlappingFileLockException của Java NIO.</li>
-     *   <li>Mở kênh FileChannel trên file seats.csv.lock và chiếm giữ FileLock độc quyền ở cấp hệ điều hành (OS-level).</li>
-     * </ul>
-     * </p>
-     */
     public void acquireFileLock() {
         this.jvmLock.lock();
         try {
@@ -94,13 +82,6 @@ public class SeatRepository extends CsvRepository<Seat> {
         }
     }
 
-    /**
-     * Giải phóng FileLock và tài nguyên kênh file liên quan.
-     * <p>
-     * Đảm bảo giải phóng hoàn toàn và an toàn trong khối finally,
-     * tránh deadlock hoặc treo file trên hệ điều hành Windows/Linux.
-     * </p>
-     */
     public void releaseFileLock() {
         try {
             if (this.currentFileLock != null && this.currentFileLock.isValid()) {
@@ -135,3 +116,4 @@ public class SeatRepository extends CsvRepository<Seat> {
         this.currentFileLock = null;
     }
 }
+

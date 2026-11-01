@@ -272,10 +272,6 @@ public class AdminView {
         this.displayPendingFans(fans);
     }
 
-    // =========================================================================
-    // FAN HANDLERS
-    // =========================================================================
-
     public void handleApproveOrRejectFan() {
         List<Fan> pendingList = this.adminController.getPendingFans();
         this.displayPendingFans(pendingList);
@@ -389,10 +385,6 @@ public class AdminView {
         }
     }
 
-    // =========================================================================
-    // ORGANIZER HANDLERS
-    // =========================================================================
-
     public void handleApproveOrRejectOrganizer() {
         List<Organizer> pendingList = this.adminController.getPendingOrganizers();
         this.displayPendingOrganizers(pendingList);
@@ -505,10 +497,6 @@ public class AdminView {
             System.out.println("[FAILED] Organizer account not found: " + orgId);
         }
     }
-
-    // =========================================================================
-    // SEAT HANDLERS
-    // =========================================================================
 
     public void handleCreateSeat() {
         System.out.println();
@@ -735,10 +723,6 @@ public class AdminView {
         }
     }
 
-    // =========================================================================
-    // TABLE PRESENTATION METHODS
-    // =========================================================================
-
     public void displayPendingOrganizers(List<Organizer> pendingList) {
         String border = "+-----------------------------------------------------------------------------+";
         String gridBorder = "+----+--------+---------------+----------------------+------------------------+";
@@ -882,7 +866,6 @@ public class AdminView {
             return;
         }
 
-        // Limit display to top 50 if result is very large to keep terminal clean
         int displayLimit = Math.min(seats.size(), 50);
 
         System.out.println(gridBorder);
@@ -924,3 +907,4 @@ public class AdminView {
         return String.format("%-" + width + "s", text);
     }
 }
+

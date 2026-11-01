@@ -7,54 +7,45 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-// Lớp cơ sở trừu tượng Generic cho tầng Repository thao tác đọc/ghi file CSV
-public abstract class CsvRepository<T extends BaseEntity> { // Generic ràng buộc T phải kế thừa từ BaseEntity
+public abstract class CsvRepository<T extends BaseEntity> {
     private String filePath;
     private List<T> items = new ArrayList<>();
 
-    // Khởi tạo Repository với đường dẫn file và tự động nạp dữ liệu từ file lên RAM
     public CsvRepository(String filePath) {
         this.filePath = filePath;
-        this.loadFromFile(); // Tự động nạp dữ liệu ngay khi khởi tạo
+        this.loadFromFile();
     }
 
-    // Factory method trừu tượng để lớp con tạo instance thực thể rỗng
     public abstract T createEntity();
 
-    // Đọc toàn bộ dữ liệu từ file CSV vào danh sách items trong RAM
     public void loadFromFile() {
-        this.items.clear(); // Xóa sạch dữ liệu cũ trong bộ nhớ
-        // Sử dụng try-with-resources để tự động đóng file an toàn
+        this.items.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(this.filePath))) {
             String line;
             boolean firstLine = true;
-            // Đọc từng dòng cho đến hết file
             while ((line = br.readLine()) != null) {
                 if (firstLine) {
-                    firstLine = false; // Bỏ qua dòng tiêu đề (header) đầu tiên
+                    firstLine = false;
                     continue;
                 }
                 if (line.isEmpty()) {
                     continue;
                 }
-                T entity = this.createEntity(); // Khởi tạo thực thể rỗng
-                entity.fromCsvLine(line); // Parse dữ liệu từ dòng CSV vào thực thể
-                this.items.add(entity); // Thêm vào danh sách bộ nhớ
+                T entity = this.createEntity();
+                entity.fromCsvLine(line);
+                this.items.add(entity);
             }
         } catch (IOException e) {
             System.err.println("[CsvRepository] Loi doc file: " + this.filePath + "-" + e.getMessage());
         }
     }
 
-    // Ghi toàn bộ dữ liệu từ danh sách items trong RAM xuống file CSV
     public void saveToFile() {
-        // Mở file và ghi đè nội dung mới bằng BufferedWriter
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(this.filePath))) {
-            bw.write(this.getHeader()); // Ghi dòng tiêu đề cột
+            bw.write(this.getHeader());
             bw.newLine();
-            // Ghi từng đối tượng dưới dạng dòng CSV
             for (T item : this.items) {
-                bw.write(item.toCsvLine()); // Gọi hàm chuyển đối tượng thành chuỗi CSV
+                bw.write(item.toCsvLine());
                 bw.newLine();
             }
         } catch (IOException e) {
@@ -62,10 +53,8 @@ public abstract class CsvRepository<T extends BaseEntity> { // Generic ràng bu�
         }
     }
 
-    // Trả về dòng tiêu đề header của file CSV (do từng Repository con định nghĩa)
     public abstract String getHeader();
 
-    // Thêm hoặc lưu một thực thể vào bộ nhớ và đồng bộ xuống file CSV
     public boolean save(T entity) {
         if (entity == null) {
             return false;
@@ -83,41 +72,35 @@ public abstract class CsvRepository<T extends BaseEntity> { // Generic ràng bu�
         } else {
             this.items.add(entity);
         }
-        this.saveToFile(); // Lưu ngay xuống đĩa cứng
+        this.saveToFile();
         return true;
     }
 
-    // Tìm kiếm thực thể theo mã ID duy nhất
     public T findById(String id) {
-        // Sử dụng Java Stream API để tìm phần tử đầu tiên khớp ID
         return this.items.stream()
-                .filter(e -> e.getId().equals(id)) // Lọc theo getId()
+                .filter(e -> e.getId().equals(id))
                 .findFirst()
-                .orElse(null); // Trả về null nếu không tìm thấy
+                .orElse(null);
     }
 
-    // Trả về bản sao danh sách tất cả các thực thể hiện có
     public List<T> findAll() {
-        return new ArrayList<>(this.items); // Trả về bản sao để bảo vệ tính đóng gói
+        return new ArrayList<>(this.items);
     }
 
-    // Tìm kiếm các thực thể thỏa mãn điều kiện lọc qua Predicate Lambda
     public List<T> findByCondition(Predicate<T> predicate) {
         List<T> result = new ArrayList<>();
-        // Duyệt danh sách và kiểm tra điều kiện test
         for (T item : this.items) {
-            if (predicate.test(item)) { // Kiểm tra điều kiện truyền vào qua functional interface
+            if (predicate.test(item)) {
                 result.add(item);
             }
         }
         return result;
     }
 
-    // Xóa thực thể khỏi danh sách theo ID và lưu lại file CSV
     public boolean deleteById(String id) {
-        boolean removed = this.items.removeIf(e -> e.getId().equals(id)); // removeIf xóa phần tử khớp điều kiện
+        boolean removed = this.items.removeIf(e -> e.getId().equals(id));
         if (removed) {
-            this.saveToFile(); // Đồng bộ lại file CSV sau khi xóa
+            this.saveToFile();
         }
         return removed;
     }
@@ -138,3 +121,4 @@ public abstract class CsvRepository<T extends BaseEntity> { // Generic ràng bu�
         this.items = items;
     }
 }
+

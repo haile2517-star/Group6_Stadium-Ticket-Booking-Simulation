@@ -88,7 +88,6 @@ public class BookingController {
                     }
                     Ticket ticket = this.ticketRepository.findBySeatAndMatch(seatId, matchId);
                     if (ticket != null && ticket.isAvailable()) {
-                        // ticket is available
                     } else if (ticket != null && ticket.getStatus() == TicketStatus.CANCELLED) {
                         String nextTicketId = this.ticketRepository.generateNextTicketId();
                         Ticket newTicket = new Ticket(nextTicketId, matchId, seatId, "", "", ticket.getPrice(), "", TicketStatus.AVAILABLE);
@@ -158,7 +157,6 @@ public class BookingController {
             }
             Ticket ticket = this.ticketRepository.findBySeatAndMatch(seatId, matchId);
             if (ticket != null && ticket.isAvailable()) {
-                // ticket is already available
             } else if (ticket != null && ticket.getStatus() == TicketStatus.CANCELLED) {
                 String nextTicketId = this.ticketRepository.generateNextTicketId();
                 Ticket newTicket = new Ticket(nextTicketId, matchId, seatId, "", "", ticket.getPrice(), "", TicketStatus.AVAILABLE);
@@ -278,12 +276,12 @@ public class BookingController {
         return result;
     }
 
-    // Xem lịch sử đặt vé của Fan (truy vấn danh sách giao dịch từ TransactionRepository)
     public List<BookingTransaction> viewBookingHistory(String fanId) {
-        return this.transactionRepository.findByFanId(fanId); // Lọc giao dịch theo fanId
+        return this.transactionRepository.findByFanId(fanId);
     }
 
     public String generateNextTransactionId() {
         return this.transactionRepository.generateNextTransactionId();
     }
 }
+

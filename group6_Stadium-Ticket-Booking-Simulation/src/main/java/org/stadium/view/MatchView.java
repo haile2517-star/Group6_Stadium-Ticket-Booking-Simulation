@@ -13,19 +13,16 @@ public class MatchView {
     private Scanner scanner;
     private MatchController matchController;
 
-    // Khởi tạo MatchView với Scanner và MatchController được truyền vào (Dependency Injection)
     public MatchView(Scanner scanner, MatchController matchController) {
         this.scanner = scanner;
         this.matchController = matchController;
     }
 
-    // Constructor mặc định tự khởi tạo Scanner và MatchController
     public MatchView() {
         this.scanner = new Scanner(System.in);
         this.matchController = new MatchController();
     }
 
-    // Hiển thị danh sách các trận đấu dạng bảng có định dạng cột
     public void displayMatches(List<Match> matches) {
         String border = "+---------------------------------------------------------------------------+";
         String gridBorder = "+-------+----------------------------+------------------+-------+-----------+";
@@ -71,7 +68,6 @@ public class MatchView {
         System.out.println(border);
     }
 
-    // Hiển thị thông tin chi tiết của một trận đấu
     public void displayMatchDetails(Match match) {
         System.out.println();
         String border = "+-------------------------------------------------------------------------+";
@@ -96,7 +92,6 @@ public class MatchView {
         System.out.println(border);
     }
 
-    // Hiển thị form nhập thông tin để tạo trận đấu mới
     public void displayCreateMatchForm() {
         System.out.println();
         System.out.println("+-------------------------------------------------------------------------+");
@@ -117,14 +112,12 @@ public class MatchView {
         System.out.print("Enter Organizer ID (e.g., ORG01): ");
         String orgId = this.scanner.nextLine().trim();
 
-        // Kiểm tra hợp lệ dữ liệu đầu vào không được để trống
         if (title.isEmpty() || teamA.isEmpty() || teamB.isEmpty() || stadiumId.isEmpty()
                 || start.isEmpty() || end.isEmpty() || orgId.isEmpty()) {
             System.out.println("[FAILED] Error: All fields are required!");
             return;
         }
 
-        // Gọi Controller thực hiện tạo và lưu trận đấu mới
         boolean success = this.matchController.createMatch(title, teamA, teamB, stadiumId, start, end, orgId);
         if (success) {
             System.out.println("[SUCCESS] New match created successfully!");
@@ -133,7 +126,6 @@ public class MatchView {
         }
     }
 
-    // Hiển thị form cập nhật thông tin và trạng thái trận đấu
     public void displayUpdateMatchForm() {
         System.out.println();
         System.out.println("+-------------------------------------------------------------------------+");
@@ -164,7 +156,6 @@ public class MatchView {
         System.out.print("Enter choice (1-4 or Enter to skip): ");
         String statusChoice = this.scanner.nextLine().trim();
 
-        // Xử lý chuyển đổi lựa chọn người dùng thành Enum MatchStatus (null nếu người dùng bỏ qua)
         MatchStatus status = null;
         if ("1".equals(statusChoice)) {
             status = MatchStatus.SCHEDULED;
@@ -176,14 +167,13 @@ public class MatchView {
             status = MatchStatus.CANCELLED;
         } else if (!statusChoice.isEmpty()) {
             try {
-                status = MatchStatus.valueOf(statusChoice.toUpperCase()); // Ép kiểu chuỗi sang Enum an toàn
+                status = MatchStatus.valueOf(statusChoice.toUpperCase());
             } catch (IllegalArgumentException e) {
                 System.out.println("[FAILED] Invalid status!");
                 return;
             }
         }
 
-        // Gọi Controller cập nhật thông tin trận đấu vào matches.csv
         boolean success = this.matchController.updateMatch(matchId, title, teamA, teamB, start, end, status);
         if (success) {
             System.out.println("[SUCCESS] Match " + matchId + " updated successfully!");
@@ -192,7 +182,6 @@ public class MatchView {
         }
     }
 
-    // Nhận từ khóa tìm kiếm trận đấu từ console
     public String promptSearchKeyword() {
         System.out.println();
         System.out.println("+-------------------------------------------------------------------------+");
@@ -202,13 +191,12 @@ public class MatchView {
         return this.scanner.nextLine().trim();
     }
 
-    // Nhận các tiêu chí lọc đa điều kiện và đóng gói vào đối tượng MatchFilter
     public MatchFilter promptFilterCriteria() {
         System.out.println();
         System.out.println("+-------------------------------------------------------------------------+");
         System.out.println("|                             FILTER MATCHES                              |");
         System.out.println("+-------------------------------------------------------------------------+");
-        MatchFilter filter = new MatchFilter(); // Tạo đối tượng chứa các tiêu chí lọc
+        MatchFilter filter = new MatchFilter();
 
         System.out.print("Enter keyword (Press Enter to skip): ");
         String keyword = this.scanner.nextLine().trim();
@@ -236,7 +224,7 @@ public class MatchView {
             filter.setStatus(MatchStatus.CANCELLED);
         } else if (!statusInput.isEmpty()) {
             try {
-                filter.setStatus(MatchStatus.valueOf(statusInput.toUpperCase())); // valueOf parse Enum
+                filter.setStatus(MatchStatus.valueOf(statusInput.toUpperCase()));
             } catch (IllegalArgumentException e) {
 
             }
@@ -259,3 +247,4 @@ public class MatchView {
         return String.format("%-" + width + "s", text);
     }
 }
+

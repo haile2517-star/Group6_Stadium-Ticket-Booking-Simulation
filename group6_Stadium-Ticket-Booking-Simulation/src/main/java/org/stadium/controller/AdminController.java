@@ -256,7 +256,6 @@ public class AdminController {
         final int effectiveThreads = Math.max(1, Math.min(threads, 50));
         final int effectiveReqs = Math.max(1, reqs);
 
-        // Tạo Sandbox: Một nhóm ghế mô phỏng độc lập (10 ghế) để tạo tranh chấp đồng thời
         final int seatPoolSize = 10;
         final boolean[] seatBooked = new boolean[seatPoolSize];
         final int[] seatVersions = new int[seatPoolSize];
@@ -278,14 +277,12 @@ public class AdminController {
                 try {
                     switch (targetMech) {
                         case NO_LOCK: {
-                            // Không khóa: Check-then-act có độ trễ nhỏ mô phỏng Race Condition
                             if (!seatBooked[seatIndex]) {
                                 try {
                                     Thread.sleep(1);
                                 } catch (InterruptedException ignored) {
                                 }
                                 if (seatBooked[seatIndex]) {
-                                    // Đã có luồng khác vừa ghi đè -> Bán trùng (Double Booking)!
                                     doubleBookingCount.incrementAndGet();
                                 }
                                 seatBooked[seatIndex] = true;
@@ -297,7 +294,6 @@ public class AdminController {
                             break;
                         }
                         case FILE_LOCK: {
-                            // Khóa tệp OS FileChannel lock
                             this.seatRepository.acquireFileLock();
                             try {
                                 if (!seatBooked[seatIndex]) {
@@ -313,7 +309,6 @@ public class AdminController {
                             break;
                         }
                         case SYNCHRONIZED: {
-                            // Khóa cấp độ JVM Monitor lock
                             synchronized (this) {
                                 if (!seatBooked[seatIndex]) {
                                     seatBooked[seatIndex] = true;
@@ -326,7 +321,6 @@ public class AdminController {
                             break;
                         }
                         case OPTIMISTIC: {
-                            // Khóa lạc quan dựa trên phiên bản (Version-based retry)
                             boolean claimed = false;
                             for (int attempt = 0; attempt < 5 && !claimed; attempt++) {
                                 int expectedVersion = seatVersions[seatIndex];
@@ -411,3 +405,4 @@ public class AdminController {
         return this.simulationResultRepository;
     }
 }
+

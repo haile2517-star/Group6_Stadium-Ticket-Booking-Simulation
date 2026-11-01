@@ -2,7 +2,6 @@ package org.stadium.model;
 
 import org.stadium.model.enums.MatchStatus;
 
-// Lớp đóng gói các tiêu chí lọc dữ liệu trận đấu đa điều kiện
 public class MatchFilter {
 
     private String keyword;
@@ -14,32 +13,28 @@ public class MatchFilter {
     public MatchFilter() {
     }
 
-    // Kiểm tra xem đối tượng Match truyền vào có thỏa mãn tất cả tiêu chí lọc hay không
     public boolean matchesCriteria(Match match) {
-        // 1. Kiểm tra tiêu chí từ khóa (tìm trong tiêu đề, tên đội A hoặc đội B)
         if (this.keyword != null && !this.keyword.isEmpty()) {
             boolean keywordMatch = match.getMatchTitle().toLowerCase().contains(this.keyword.toLowerCase()) ||
                     match.getTeamA().toLowerCase().contains(this.keyword.toLowerCase()) ||
-                    match.getTeamB().toLowerCase().contains(this.keyword.toLowerCase()); // Không phân biệt hoa thường
+                    match.getTeamB().toLowerCase().contains(this.keyword.toLowerCase());
             if (!keywordMatch) {
                 return false;
             }
         }
 
-        // 2. Kiểm tra tiêu chí mã sân vận động (stadiumId)
         if (this.stadiumId != null && !this.stadiumId.isEmpty()) {
             if (!match.getStadiumId().equals(this.stadiumId)) {
                 return false;
             }
         }
 
-        // 3. Kiểm tra tiêu chí trạng thái trận đấu (SCHEDULED, LIVE, FINISHED, CANCELLED)
         if (this.status != null) {
             if (match.getStatus() != this.status) {
                 return false;
             }
         }
-        return true; // Thỏa mãn tất cả các điều kiện lọc
+        return true;
     }
 
     public String getKeyword() {
@@ -82,3 +77,4 @@ public class MatchFilter {
         this.status = status;
     }
 }
+

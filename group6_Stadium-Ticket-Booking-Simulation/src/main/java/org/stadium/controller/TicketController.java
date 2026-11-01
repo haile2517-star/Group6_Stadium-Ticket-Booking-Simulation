@@ -121,10 +121,8 @@ public class TicketController {
                 Ticket existing = existingTicketsBySeat.get(seat.getSeatId());
                 if (existing != null) {
                     if (existing.getStatus() == TicketStatus.BOOKED) {
-                        // Vé đã bán cho người dùng, giữ nguyên không đè
                         continue;
                     }
-                    // Vé cũ đang AVAILABLE hoặc CANCELLED: cập nhật giá mới và tái kích hoạt về AVAILABLE
                     existing.setPrice(pricing.getPrice());
                     existing.setStatus(TicketStatus.AVAILABLE);
                     existing.setFanId("");
@@ -132,7 +130,6 @@ public class TicketController {
                     existing.setBookingDate("");
                     generatedCount++;
                 } else {
-                    // Chưa từng có vé cho ghế này: sinh mã vé mới
                     String nextTicketId = this.ticketRepository.generateNextTicketId();
                     Ticket ticket = new Ticket(nextTicketId, matchId, seat.getSeatId(),
                             "", "", pricing.getPrice(), "", TicketStatus.AVAILABLE);
@@ -214,7 +211,6 @@ public class TicketController {
             }
         }
 
-        // Xóa sạch các vé chưa bán (AVAILABLE) khỏi tickets.csv để không rác file
         this.ticketRepository.getItems().removeIf(t -> matchId.equals(t.getMatchId()) && t.getStatus() == TicketStatus.AVAILABLE);
 
         this.ticketRepository.saveToFile();
@@ -223,9 +219,8 @@ public class TicketController {
         return cancelled > 0;
     }
 
-    // Xem báo cáo thống kê doanh thu bán vé của trận đấu (tổng vé, vé đã bán, doanh thu, tỷ lệ lấp đầy)
     public Map<String, Object> viewTicketSalesReport(String matchId) {
-        Map<String, Object> report = new LinkedHashMap<>(); // Dùng LinkedHashMap để bảo toàn thứ tự hiển thị các trường thống kê
+        Map<String, Object> report = new LinkedHashMap<>();
         if (matchId == null || matchId.isEmpty()) {
             return report;
         }
@@ -261,3 +256,4 @@ public class TicketController {
         return report;
     }
 }
+

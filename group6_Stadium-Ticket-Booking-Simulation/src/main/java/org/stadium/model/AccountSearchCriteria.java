@@ -2,7 +2,6 @@ package org.stadium.model;
 
 import java.util.Locale;
 
-// Lớp đóng gói tiêu chí tìm kiếm và lọc tài khoản người dùng cho Quản trị viên
 public class AccountSearchCriteria {
     private String keyword;
     private UserRole role;
@@ -17,25 +16,22 @@ public class AccountSearchCriteria {
         this.status = status;
     }
 
-    // Kiểm tra xem đối tượng Account có khớp với tiêu chí tìm kiếm không
     public boolean matchesCriteria(Account account) {
         if (account == null) {
             return false;
         }
-        // 1. Kiểm tra trạng thái tài khoản (ACTIVE, PENDING, REJECTED, BLOCKED)
         if (this.status != null && account.getStatus() != this.status) {
             return false;
         }
-        // 2. Kiểm tra vai trò tài khoản (FAN, ORGANIZER, ADMIN) dùng instanceof
         if (this.role != null) {
             boolean roleMatches;
 
             if (this.role == UserRole.FAN) {
-                roleMatches = account instanceof Fan; // instanceof kiểm tra lớp Fan
+                roleMatches = account instanceof Fan;
             } else if (this.role == UserRole.ORGANIZER) {
-                roleMatches = account instanceof Organizer; // instanceof kiểm tra lớp Organizer
+                roleMatches = account instanceof Organizer;
             } else if (this.role == UserRole.ADMIN) {
-                roleMatches = account instanceof Admin; // instanceof kiểm tra lớp Admin
+                roleMatches = account instanceof Admin;
             } else {
                 roleMatches = false;
             }
@@ -45,7 +41,6 @@ public class AccountSearchCriteria {
             }
         }
 
-        // Nếu không có từ khóa tìm kiếm thì mặc định khớp
         if (this.keyword == null || this.keyword.trim().isEmpty()) {
             return true;
         }
@@ -53,13 +48,11 @@ public class AccountSearchCriteria {
         String accountId = account.getId();
         String username = account.getUsername();
 
-        // 3. So khớp từ khóa với accountId hoặc username
         boolean keywordMatches = (accountId != null
                 && accountId.toLowerCase(Locale.ROOT).contains(searchTerm))
                 || (username != null
                         && username.toLowerCase(Locale.ROOT).contains(searchTerm));
 
-        // So khớp từ khóa với tên hiển thị theo từng loại tài khoản cụ thể
         if (account instanceof Fan) {
             String fullName = ((Fan) account).getFullName();
             keywordMatches = keywordMatches
@@ -103,3 +96,4 @@ public class AccountSearchCriteria {
         this.status = status;
     }
 }
+

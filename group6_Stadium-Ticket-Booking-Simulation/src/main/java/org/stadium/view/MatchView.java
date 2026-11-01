@@ -146,29 +146,35 @@ public class MatchView {
             return;
         }
 
-        System.out.print("Enter new title: ");
+        System.out.print("Enter new title (press Enter to keep current): ");
         String title = this.scanner.nextLine().trim();
-        System.out.print("Enter new start time (yyyy-MM-dd HH:mm:ss): ");
+        System.out.print("Enter new Team A (press Enter to keep current): ");
+        String teamA = this.scanner.nextLine().trim();
+        System.out.print("Enter new Team B (press Enter to keep current): ");
+        String teamB = this.scanner.nextLine().trim();
+        System.out.print("Enter new start time (yyyy-MM-dd HH:mm:ss, press Enter to keep current): ");
         String start = this.scanner.nextLine().trim();
-        System.out.print("Enter new end time (yyyy-MM-dd HH:mm:ss): ");
+        System.out.print("Enter new end time (yyyy-MM-dd HH:mm:ss, press Enter to keep current): ");
         String end = this.scanner.nextLine().trim();
-        System.out.println("Select new match status:");
+        System.out.println("Select new match status (press Enter to keep current):");
         System.out.println("1. SCHEDULED");
         System.out.println("2. LIVE");
         System.out.println("3. FINISHED");
         System.out.println("4. CANCELLED");
-        System.out.print("Enter choice (1-4): ");
+        System.out.print("Enter choice (1-4 or Enter to skip): ");
         String statusChoice = this.scanner.nextLine().trim();
 
-        // Xử lý chuyển đổi lựa chọn người dùng thành Enum MatchStatus
-        MatchStatus status = MatchStatus.SCHEDULED;
-        if ("2".equals(statusChoice)) {
+        // Xử lý chuyển đổi lựa chọn người dùng thành Enum MatchStatus (null nếu người dùng bỏ qua)
+        MatchStatus status = null;
+        if ("1".equals(statusChoice)) {
+            status = MatchStatus.SCHEDULED;
+        } else if ("2".equals(statusChoice)) {
             status = MatchStatus.LIVE;
         } else if ("3".equals(statusChoice)) {
             status = MatchStatus.FINISHED;
         } else if ("4".equals(statusChoice)) {
             status = MatchStatus.CANCELLED;
-        } else if (!"1".equals(statusChoice)) {
+        } else if (!statusChoice.isEmpty()) {
             try {
                 status = MatchStatus.valueOf(statusChoice.toUpperCase()); // Ép kiểu chuỗi sang Enum an toàn
             } catch (IllegalArgumentException e) {
@@ -178,7 +184,7 @@ public class MatchView {
         }
 
         // Gọi Controller cập nhật thông tin trận đấu vào matches.csv
-        boolean success = this.matchController.updateMatch(matchId, title, start, end, status);
+        boolean success = this.matchController.updateMatch(matchId, title, teamA, teamB, start, end, status);
         if (success) {
             System.out.println("[SUCCESS] Match " + matchId + " updated successfully!");
         } else {

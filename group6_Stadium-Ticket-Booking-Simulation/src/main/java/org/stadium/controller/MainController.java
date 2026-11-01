@@ -346,6 +346,9 @@ public class MainController {
         } else if ("4".equals(choice)) {
             System.out.print("Enter match ID to delete: ");
             String matchId = this.scanner.nextLine().trim();
+            // 1. Hủy và dọn dẹp toàn bộ vé, giải phóng ghế của trận đấu trước khi xóa
+            this.ticketController.cancelTickets(matchId);
+            // 2. Xóa trận đấu khỏi matches.csv
             boolean ok = this.matchController.deleteMatch(matchId);
             if (ok) {
                 System.out.println("[SUCCESS] Match " + matchId + " deleted successfully!");

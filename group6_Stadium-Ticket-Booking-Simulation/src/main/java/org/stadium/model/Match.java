@@ -23,11 +23,23 @@ public class Match extends BaseEntity {
         return this.matchId;
     }
 
-    // Cập nhật thông tin chi tiết trận đấu (tiêu đề, thời gian bắt đầu và kết thúc)
-    public void updateMatchDetails(String title, String start, String end) {
-        this.matchTitle = title;
-        this.startTime = start;
-        this.endTime = end;
+    // Cập nhật thông tin chi tiết trận đấu (tiêu đề, hai đội thi đấu, thời gian bắt đầu và kết thúc)
+    public void updateMatchDetails(String title, String teamA, String teamB, String start, String end) {
+        if (title != null && !title.trim().isEmpty()) {
+            this.matchTitle = title.trim();
+        }
+        if (teamA != null && !teamA.trim().isEmpty()) {
+            this.teamA = teamA.trim();
+        }
+        if (teamB != null && !teamB.trim().isEmpty()) {
+            this.teamB = teamB.trim();
+        }
+        if (start != null && !start.trim().isEmpty()) {
+            this.startTime = start.trim();
+        }
+        if (end != null && !end.trim().isEmpty()) {
+            this.endTime = end.trim();
+        }
     }
 
     // Chuyển đổi đối tượng Match thành dòng định dạng CSV để ghi vào file matches.csv

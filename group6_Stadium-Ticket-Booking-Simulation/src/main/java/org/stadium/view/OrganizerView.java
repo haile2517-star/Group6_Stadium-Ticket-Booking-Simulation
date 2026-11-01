@@ -21,11 +21,11 @@ public class OrganizerView {
         System.out.println(border);
         System.out.println("|                        CONFIGURE TICKET PRICING                         |");
         System.out.println(border);
-        System.out.print("Enter Match ID: ");
+        System.out.print("Enter Match ID (e.g., MTH01): ");
         String matchId = this.scanner.nextLine().trim();
-        System.out.print("Enter Section ID: ");
+        System.out.print("Enter Section ID (e.g., SEC_STD01_A, SEC_STD01_B): ");
         String sectionId = this.scanner.nextLine().trim();
-        System.out.print("Enter ticket price: ");
+        System.out.print("Enter ticket price (e.g., 200000): ");
         String priceInput = this.scanner.nextLine().trim();
         if (matchId.isEmpty() || sectionId.isEmpty()) {
             System.out.println("[FAILED] Match ID and Section ID are required.");
@@ -56,7 +56,7 @@ public class OrganizerView {
         System.out.println(border);
         System.out.println("|                            GENERATE TICKETS                             |");
         System.out.println(border);
-        System.out.print("Enter Match ID: ");
+        System.out.print("Enter Match ID (e.g., MTH01): ");
         String matchId = this.scanner.nextLine().trim();
         if (matchId.isEmpty()) {
             System.out.println("[FAILED] Match ID is required.");
@@ -76,7 +76,7 @@ public class OrganizerView {
         System.out.println(border);
         System.out.println("|                        CANCEL ALL MATCH TICKETS                         |");
         System.out.println(border);
-        System.out.print("Enter Match ID: ");
+        System.out.print("Enter Match ID (e.g., MTH01): ");
         String matchId = this.scanner.nextLine().trim();
         if (matchId.isEmpty()) {
             System.out.println("[FAILED] Match ID is required.");

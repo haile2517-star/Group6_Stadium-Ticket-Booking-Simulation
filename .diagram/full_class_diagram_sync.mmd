@@ -1,0 +1,531 @@
+classDiagram
+    direction TB
+
+    %% ==========================================================
+    %% TẦNG 0: ENTRY POINT
+    %% ==========================================================
+    class Main {
+        +main(args: String[]) void$
+    }
+
+    %% ==========================================================
+    %% TẦNG 1: COORDINATOR & VIEW LAYER
+    %% ==========================================================
+    class MainController {
+        -currentUser: Account
+        -running: boolean
+        +start() void
+        +handleGuestChoice(choice: int) void
+        +handleFanChoice(choice: int) void
+        +handleFanBookingFlow() void
+        +handleOrganizerChoice(choice: int) void
+        +handleAdminChoice(choice: int) void
+        +getCurrentUser() Account
+        +setRunning(running: boolean) void
+    }
+
+    class MainView {
+        +start() void
+        +displayWelcomeBanner() void
+        +displayGoodbye() void
+        +displayGuestMenu() void
+        +displayFanMenu() void
+        +displayOrganizerMenu() void
+        +displayAdminMenu() void
+    }
+
+    class AuthView {
+        +displayLoginForm() void
+        +displayFanRegisterForm() void
+        +displayOrganizerRegisterForm() void
+        +displayProfile(account: Account) void
+        +displayChangePasswordForm() void
+        +displayUpdateProfileForm() void
+    }
+
+    class MatchView {
+        +displayMatches(matches: List~Match~) void
+        +displayMatchDetails(match: Match) void
+        +displayCreateMatchForm() void
+        +displayUpdateMatchForm() void
+        +promptSearchKeyword() String
+        +promptFilterCriteria() MatchFilter
+    }
+
+    class StadiumView {
+        +displayStadiumList(stadiums: List~Stadium~) void
+        +displaySectionList(stadiumId: String, sections: List~SeatSection~) void
+        +displaySectionDetails(sec: SeatSection, count: int) void
+        +displaySeatMap(seatMapAscii: String) void
+        +displayAllStadiums() void
+        +displaySectionsByStadium(stadiumId: String) void
+    }
+
+    class SeatMapView {
+        +displaySeatMap(asciiMap: String) void
+        +displayAvailableSeats(seats: List~Seat~) void
+        +displaySeatMapForSection(sectionId: String) void
+        +displayAvailableSeatsForSection(sectionId: String) void
+    }
+
+    class BookingView {
+        +displayBookingForm(seats: List~Seat~, fanId: String, matchId: String) void
+        +showBookingResult(success: boolean, msg: String) void
+        +displayBookingHistory(txns: List~BookingTransaction~) void
+        +displayCancelTicketForm() void
+    }
+
+    class OrganizerView {
+        +displayPricingConfigForm() void
+        +displayGenerateTicketsForm() void
+        +displayCancelTicketsForm() void
+        +displaySalesReport(salesData: Map~String, Object~) void
+    }
+
+    class AdminView {
+        +displayFanManagementMenu() void
+        +displayOrganizerManagementMenu() void
+        +displaySeatManagementMenu() void
+        +displayBenchmarkMenu() void
+        +displayPendingAccounts(orgs: List~Organizer~, fans: List~Fan~) void
+        +displayFansTable(fans: List~Fan~) void
+        +displayOrganizersTable(orgs: List~Organizer~) void
+        +displaySeatsTable(seats: List~Seat~) void
+    }
+
+    %% ==========================================================
+    %% TẦNG 2: CONTROLLER LAYER & FILTER/DTO
+    %% ==========================================================
+    class AuthController {
+        +login(username: String, pass: String) Account
+        +logout(accountId: String) void
+        +registerFan(username, pass, name, email, phone) boolean
+        +registerOrganizer(username, pass, orgName, email, phone) boolean
+        +viewProfile(accountId: String) Account
+        +updateProfile(accountId: String, email, phone) boolean
+        +changePassword(accountId: String, oldPass, newPass) boolean
+        +isUsernameExists(username: String) boolean
+        +getPendingOrganizers() List~Organizer~
+        +approveOrganizer(organizerId: String) boolean
+        +rejectOrganizer(organizerId: String) boolean
+    }
+
+    class MatchController {
+        +viewAllMatches() List~Match~
+        +searchMatches(keyword: String) List~Match~
+        +filterMatches(filter: MatchFilter) List~Match~
+        +createMatch(title, teamA, teamB, stadiumId, start, end, orgId) boolean
+        +updateMatch(matchId, title, teamA, teamB, start, end, status) boolean
+        +deleteMatch(matchId: String) boolean
+    }
+
+    class StadiumController {
+        +getAllStadiums() List~Stadium~
+        +getSections(stadiumId: String) List~SeatSection~
+        +buildSeatMap(sectionId: String) String
+        +getSeats(sectionId: String) List~Seat~
+        +getSeatsBySection(sectionId: String) List~Seat~
+        +getSection(sectionId: String) SeatSection
+        +getStadium(stadiumId: String) Stadium
+        +getAvailableSeats(sectionId: String) List~Seat~
+    }
+
+    class BookingController {
+        +bookTickets(fanId: String, matchId: String, seatIds: List~String~, mech: SynchronizationMechanism) boolean
+        +cancelTicket(ticketId: String, fanId: String) boolean
+        +viewBookingHistory(fanId: String) List~BookingTransaction~
+        +getTicketDetails(transactionId: String) List~Ticket~
+    }
+
+    class TicketController {
+        +configureTicketPricing(matchId: String, sectionId: String, price: double) boolean
+        +generateTickets(matchId: String) int
+        +getAvailableSeatsForMatch(matchId: String, sectionId: String) List~Seat~
+        +cancelTickets(matchId: String) boolean
+        +viewTicketSalesReport(matchId: String) Map~String, Object~
+    }
+
+    class AdminController {
+        +approveFanAccount(fanId: String) boolean
+        +rejectFanAccount(fanId: String) boolean
+        +deleteFanAccount(fanId: String) boolean
+        +searchFanAccounts(criteria: AccountSearchCriteria) List~Fan~
+        +approveOrganizerAccount(orgId: String) boolean
+        +rejectOrganizerAccount(orgId: String) boolean
+        +deleteOrganizerAccount(orgId: String) boolean
+        +searchOrganizerAccounts(criteria: AccountSearchCriteria) List~Organizer~
+        +createSeat(sectionId: String, row: int, num: String, type: SeatType) boolean
+        +updateSeat(seatId: String, type: SeatType, status: SeatStatus) boolean
+        +deleteSeat(seatId: String) boolean
+        +searchSeat(sectionId: String, type: SeatType, status: SeatStatus) List~Seat~
+        +runConcurrencyBenchmark(mech: SynchronizationMechanism, threads: int, reqs: int) SimulationResult
+        +viewBenchmarkReports() List~SimulationResult~
+    }
+
+    class MatchFilter {
+        -keyword: String
+        -dateFrom: String
+        -dateTo: String
+        -stadiumId: String
+        -status: MatchStatus
+        +matchesCriteria(match: Match) boolean
+    }
+
+    class AccountSearchCriteria {
+        -keyword: String
+        -role: UserRole
+        -status: AccountStatus
+        +matchesCriteria(account: Account) boolean
+    }
+
+    %% ==========================================================
+    %% TẦNG 3: REPOSITORY LAYER (File CSV Persistence)
+    %% ==========================================================
+    class CsvRepository~T~ {
+        -filePath: String
+        -items: List~T~
+        +save(entity: T) boolean
+        +findById(id: String) T
+        +findAll() List~T~
+        +findByCondition(predicate: Predicate~T~) List~T~
+        +deleteById(id: String) boolean
+        +loadFromFile() void
+        +saveToFile() void
+    }
+
+    class FanRepository {
+        +findByUsername(username: String) Fan
+        +findByStatus(status: AccountStatus) List~Fan~
+    }
+
+    class OrganizerRepository {
+        +findByUsername(username: String) Organizer
+        +findPendingOrganizers() List~Organizer~
+    }
+
+    class AdminRepository {
+        +findByUsername(username: String) Admin
+    }
+
+    class StadiumRepository {
+        +findByName(name: String) Stadium
+    }
+
+    class SectionRepository {
+        +findByStadiumId(stadiumId: String) List~SeatSection~
+    }
+
+    class SeatRepository {
+        +findBySectionId(sectionId: String) List~Seat~
+        +findAvailableBySection(sectionId: String) List~Seat~
+        +updateWithOptimisticLock(seat: Seat, expectedVersion: int) boolean
+        +acquireFileLock() void
+        +releaseFileLock() void
+    }
+
+    class MatchRepository {
+        +findByStadiumId(stadiumId: String) List~Match~
+        +findByStatus(status: MatchStatus) List~Match~
+        +findUpcomingMatches() List~Match~
+    }
+
+    class TransactionRepository {
+        +generateNextTransactionId() String
+        +findByFanId(fanId: String) List~BookingTransaction~
+        +findByStatus(status: TransactionStatus) List~BookingTransaction~
+    }
+
+    class TicketPricingRepository {
+        +findByMatchAndSection(matchId: String, sectionId: String) TicketPricing
+    }
+
+    class TicketRepository {
+        +generateNextTicketId() String
+        +saveAll(tickets: Collection~Ticket~) boolean
+        +findByMatchId(matchId: String) List~Ticket~
+        +findByFanId(fanId: String) List~Ticket~
+        +findBySeatAndMatch(seatId: String, matchId: String) Ticket
+    }
+
+    class SimulationResultRepository {
+        +findByMechanism(mech: SynchronizationMechanism) List~SimulationResult~
+        +getLatestResult() SimulationResult
+    }
+
+    %% ==========================================================
+    %% TẦNG 4: DOMAIN MODEL LAYER
+    %% ==========================================================
+    class BaseEntity {
+        +getId() String
+        +toCsvLine() String
+        +fromCsvLine(line: String) void
+    }
+
+    class Account {
+        -accountId: String
+        -username: String
+        -passwordHash: String
+        -email: String
+        -phone: String
+        -status: AccountStatus
+        +validatePassword(rawPass: String) boolean
+        +changePassword(newHash: String) void
+        +updateContactInfo(email: String, phone: String) void
+    }
+
+    class Fan {
+        -fullName: String
+        -fanType: String
+    }
+
+    class Organizer {
+        -orgName: String
+    }
+
+    class Admin {
+        -fullName: String
+    }
+
+    class Stadium {
+        -stadiumId: String
+        -stadiumName: String
+        -address: String
+        -capacity: int
+    }
+
+    class SeatSection {
+        -sectionId: String
+        -stadiumId: String
+        -sectionName: String
+        -sectionType: SeatType
+        -totalRows: int
+        -seatsPerRow: int
+        +getTotalSeats() int
+    }
+
+    class Seat {
+        -seatId: String
+        -sectionId: String
+        -rowNumber: int
+        -seatNumber: String
+        -seatType: SeatType
+        -status: SeatStatus
+        -version: int
+        +incrementVersion() void
+        +isAvailable() boolean
+    }
+
+    class Match {
+        -matchId: String
+        -organizerId: String
+        -stadiumId: String
+        -matchTitle: String
+        -teamA: String
+        -teamB: String
+        -startTime: String
+        -endTime: String
+        -status: MatchStatus
+        +updateMatchDetails(title, teamA, teamB, start, end) void
+    }
+
+    class TicketPricing {
+        -pricingId: String
+        -matchId: String
+        -sectionId: String
+        -price: double
+    }
+
+    class BookingTransaction {
+        -transactionId: String
+        -fanId: String
+        -matchId: String
+        -transactionDate: String
+        -totalAmount: double
+        -ticketCount: int
+        -status: TransactionStatus
+    }
+
+    class Ticket {
+        -ticketId: String
+        -matchId: String
+        -seatId: String
+        -transactionId: String
+        -fanId: String
+        -price: double
+        -bookingDate: String
+        -status: TicketStatus
+        +isAvailable() boolean
+    }
+
+    class SimulationResult {
+        -resultId: String
+        -mechanism: SynchronizationMechanism
+        -threadCount: int
+        -totalRequests: int
+        -successCount: int
+        -failedCount: int
+        -doubleBookingCount: int
+        -throughput: double
+        -doubleBookingRate: double
+        -executionTimeMs: long
+    }
+
+    %% ==========================================================
+    %% TẦNG 5: ENUMERATIONS
+    %% ==========================================================
+    class UserRole {
+        GUEST
+        FAN
+        ORGANIZER
+        ADMIN
+    }
+
+    class AccountStatus {
+        PENDING
+        ACTIVE
+        REJECTED
+        BLOCKED
+    }
+
+    class SeatType {
+        VIP
+        STANDARD
+        ECONOMY
+        STANDING
+    }
+
+    class SeatStatus {
+        AVAILABLE
+        LOCKED
+        BOOKED
+    }
+
+    class MatchStatus {
+        SCHEDULED
+        LIVE
+        FINISHED
+        CANCELLED
+    }
+
+    class TicketStatus {
+        AVAILABLE
+        BOOKED
+        CANCELLED
+    }
+
+    class TransactionStatus {
+        PENDING
+        SUCCESS
+        FAILED
+        CANCELLED
+    }
+
+    class SynchronizationMechanism {
+        NO_LOCK
+        FILE_LOCK
+        SYNCHRONIZED
+        OPTIMISTIC
+    }
+
+    %% ==========================================================
+    %% CÁC ĐƯỜNG NỐI QUAN HỆ (TOP-DOWN FLOW, MŨI TÊN ĐÂM THẲNG)
+    %% ==========================================================
+
+    %% 1. Khởi chạy ứng dụng
+    Main --> MainController
+
+    %% 2. MainController điều phối Views
+    MainController --> MainView
+    MainController --> AuthView
+    MainController --> MatchView
+    MainController --> StadiumView
+    MainController --> BookingView
+    MainController --> OrganizerView
+    MainController --> AdminView
+    StadiumView *-- SeatMapView
+
+    %% 3. MainController ủy quyền xử lý nghiệp vụ cho Sub-Controllers
+    MainController --> AuthController
+    MainController --> MatchController
+    MainController --> StadiumController
+    MainController --> BookingController
+    MainController --> TicketController
+    MainController --> AdminController
+
+    %% 4. Tầng Controller gọi Tầng Repository & DTO/Filter
+    AuthController --> FanRepository
+    AuthController --> OrganizerRepository
+    AuthController --> AdminRepository
+
+    MatchController --> MatchRepository
+    MatchController ..> MatchFilter
+
+    StadiumController --> StadiumRepository
+    StadiumController --> SectionRepository
+    StadiumController --> SeatRepository
+
+    BookingController --> TransactionRepository
+    BookingController --> TicketRepository
+    BookingController --> SeatRepository
+    BookingController --> TicketPricingRepository
+
+    TicketController --> MatchRepository
+    TicketController --> SectionRepository
+    TicketController --> SeatRepository
+    TicketController --> TicketRepository
+    TicketController --> TicketPricingRepository
+    TicketController --> TransactionRepository
+
+    AdminController --> FanRepository
+    AdminController --> OrganizerRepository
+    AdminController --> SeatRepository
+    AdminController --> SimulationResultRepository
+    AdminController ..> AccountSearchCriteria
+
+    %% 5. Kế thừa Generic CsvRepository (11 Repositories)
+    CsvRepository~Fan~ <|-- FanRepository
+    CsvRepository~Organizer~ <|-- OrganizerRepository
+    CsvRepository~Admin~ <|-- AdminRepository
+    CsvRepository~Stadium~ <|-- StadiumRepository
+    CsvRepository~SeatSection~ <|-- SectionRepository
+    CsvRepository~Seat~ <|-- SeatRepository
+    CsvRepository~Match~ <|-- MatchRepository
+    CsvRepository~TicketPricing~ <|-- TicketPricingRepository
+    CsvRepository~Ticket~ <|-- TicketRepository
+    CsvRepository~BookingTransaction~ <|-- TransactionRepository
+    CsvRepository~SimulationResult~ <|-- SimulationResultRepository
+
+    %% 6. Kế thừa BaseEntity & Account (Tầng Model)
+    BaseEntity <|-- Account
+    Account <|-- Fan
+    Account <|-- Organizer
+    Account <|-- Admin
+    BaseEntity <|-- Stadium
+    BaseEntity <|-- SeatSection
+    BaseEntity <|-- Seat
+    BaseEntity <|-- Match
+    BaseEntity <|-- TicketPricing
+    BaseEntity <|-- BookingTransaction
+    BaseEntity <|-- Ticket
+    BaseEntity <|-- SimulationResult
+
+    %% 7. Quan hệ Thực thể Domain (Composition & Associations)
+    Stadium "1" *-- "*" SeatSection : contains
+    SeatSection "1" *-- "*" Seat : contains
+    BookingTransaction "1" *-- "1..4" Ticket : contains
+    Match "1" --> "*" TicketPricing : defines
+    Match --> Stadium : held at
+    Match --> Organizer : created by
+    Ticket --> Seat : occupies
+    Ticket --> Match : for
+    BookingTransaction --> Fan : placed by
+    BookingTransaction --> Match : books for
+
+    %% 8. Phụ thuộc Enum (Dependencies)
+    Account ..> AccountStatus
+    Seat ..> SeatType
+    Seat ..> SeatStatus
+    Match ..> MatchStatus
+    Ticket ..> TicketStatus
+    BookingTransaction ..> TransactionStatus
+    SimulationResult ..> SynchronizationMechanism

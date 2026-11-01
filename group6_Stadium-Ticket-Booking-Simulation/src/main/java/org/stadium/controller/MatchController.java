@@ -103,7 +103,8 @@ public class MatchController {
   }
 
   // Cập nhật thông tin chi tiết và trạng thái trận đấu
-  public boolean updateMatch(String matchId, String title, String start, String end, MatchStatus status) {
+  public boolean updateMatch(String matchId, String title, String teamA, String teamB, String start, String end,
+      MatchStatus status) {
     if (this.matchRepository == null || matchId == null || matchId.trim().isEmpty()) {
       return false;
     }
@@ -112,12 +113,8 @@ public class MatchController {
       return false;
     }
 
-    // Cập nhật tiêu đề và thời gian nếu có truyền vào
-    if (title != null && !title.trim().isEmpty() &&
-        start != null && !start.trim().isEmpty() &&
-        end != null && !end.trim().isEmpty()) {
-      match.updateMatchDetails(title.trim(), start.trim(), end.trim());
-    }
+    // Cập nhật các thông tin chi tiết (nếu người dùng bấm Enter bỏ qua thì giữ nguyên giá trị cũ)
+    match.updateMatchDetails(title, teamA, teamB, start, end);
 
     // Cập nhật trạng thái trận đấu (SCHEDULED, LIVE, FINISHED, CANCELLED)
     if (status != null) {

@@ -17,6 +17,12 @@ import org.stadium.repository.SimulationResultRepository;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AdminController {
 
@@ -246,8 +252,143 @@ public class AdminController {
     }
 
     public SimulationResult runConcurrencyBenchmark(SynchronizationMechanism mech, int threads, int reqs) {
-        System.out.println("[INFO] Benchmark feature is scheduled for Week 8 milestone (Coming Soon).");
-        return null;
+        final SynchronizationMechanism targetMech = (mech != null) ? mech : SynchronizationMechanism.OPTIMISTIC;
+        final int effectiveThreads = Math.max(1, Math.min(threads, 50));
+        final int effectiveReqs = Math.max(1, reqs);
+
+        // Tạo Sandbox: Một nhóm ghế mô phỏng độc lập (10 ghế) để tạo tranh chấp đồng thời
+        final int seatPoolSize = 10;
+        final boolean[] seatBooked = new boolean[seatPoolSize];
+        final int[] seatVersions = new int[seatPoolSize];
+        final int[] seatBookCount = new int[seatPoolSize];
+
+        final AtomicInteger successCount = new AtomicInteger(0);
+        final AtomicInteger failedCount = new AtomicInteger(0);
+        final AtomicInteger doubleBookingCount = new AtomicInteger(0);
+
+        ExecutorService executor = Executors.newFixedThreadPool(effectiveThreads);
+        CountDownLatch latch = new CountDownLatch(effectiveReqs);
+        Random random = new Random();
+
+        long startTime = System.currentTimeMillis();
+
+        for (int i = 0; i < effectiveReqs; i++) {
+            final int seatIndex = random.nextInt(seatPoolSize);
+            executor.submit(() -> {
+                try {
+                    switch (targetMech) {
+                        case NO_LOCK: {
+                            // Không khóa: Check-then-act có độ trễ nhỏ mô phỏng Race Condition
+                            if (!seatBooked[seatIndex]) {
+                                try {
+                                    Thread.sleep(1);
+                                } catch (InterruptedException ignored) {
+                                }
+                                if (seatBooked[seatIndex]) {
+                                    // Đã có luồng khác vừa ghi đè -> Bán trùng (Double Booking)!
+                                    doubleBookingCount.incrementAndGet();
+                                }
+                                seatBooked[seatIndex] = true;
+                                seatBookCount[seatIndex]++;
+                                successCount.incrementAndGet();
+                            } else {
+                                failedCount.incrementAndGet();
+                            }
+                            break;
+                        }
+                        case FILE_LOCK: {
+                            // Khóa tệp OS FileChannel lock
+                            this.seatRepository.acquireFileLock();
+                            try {
+                                if (!seatBooked[seatIndex]) {
+                                    seatBooked[seatIndex] = true;
+                                    seatBookCount[seatIndex]++;
+                                    successCount.incrementAndGet();
+                                } else {
+                                    failedCount.incrementAndGet();
+                                }
+                            } finally {
+                                this.seatRepository.releaseFileLock();
+                            }
+                            break;
+                        }
+                        case SYNCHRONIZED: {
+                            // Khóa cấp độ JVM Monitor lock
+                            synchronized (this) {
+                                if (!seatBooked[seatIndex]) {
+                                    seatBooked[seatIndex] = true;
+                                    seatBookCount[seatIndex]++;
+                                    successCount.incrementAndGet();
+                                } else {
+                                    failedCount.incrementAndGet();
+                                }
+                            }
+                            break;
+                        }
+                        case OPTIMISTIC: {
+                            // Khóa lạc quan dựa trên phiên bản (Version-based retry)
+                            boolean claimed = false;
+                            for (int attempt = 0; attempt < 5 && !claimed; attempt++) {
+                                int expectedVersion = seatVersions[seatIndex];
+                                if (seatBooked[seatIndex]) {
+                                    break;
+                                }
+                                synchronized (this) {
+                                    if (seatVersions[seatIndex] == expectedVersion && !seatBooked[seatIndex]) {
+                                        seatVersions[seatIndex]++;
+                                        seatBooked[seatIndex] = true;
+                                        seatBookCount[seatIndex]++;
+                                        claimed = true;
+                                        successCount.incrementAndGet();
+                                    }
+                                }
+                            }
+                            if (!claimed) {
+                                failedCount.incrementAndGet();
+                            }
+                            break;
+                        }
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        try {
+            latch.await(15, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        executor.shutdown();
+
+        long executionTimeMs = Math.max(1, System.currentTimeMillis() - startTime);
+        double throughput = Math.round(((double) effectiveReqs / (executionTimeMs / 1000.0)) * 10.0) / 10.0;
+        double doubleBookingRate = Math.round(((double) doubleBookingCount.get() / effectiveReqs * 100.0) * 10.0) / 10.0;
+
+        int nextIdNum = this.simulationResultRepository.findAll().size() + 1;
+        String resultId = String.format("SIM%03d", nextIdNum);
+        while (this.simulationResultRepository.findById(resultId) != null) {
+            nextIdNum++;
+            resultId = String.format("SIM%03d", nextIdNum);
+        }
+
+        SimulationResult result = new SimulationResult(
+                resultId,
+                targetMech,
+                effectiveThreads,
+                effectiveReqs,
+                successCount.get(),
+                failedCount.get(),
+                doubleBookingCount.get(),
+                throughput,
+                doubleBookingRate,
+                executionTimeMs
+        );
+
+        this.simulationResultRepository.save(result);
+        this.simulationResultRepository.saveToFile();
+        return result;
     }
 
     public List<SimulationResult> viewBenchmarkReports() {

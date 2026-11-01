@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AdminController {
 
@@ -253,7 +254,7 @@ public class AdminController {
 
     public SimulationResult runConcurrencyBenchmark(SynchronizationMechanism mech, int threads, int reqs) {
         final SynchronizationMechanism targetMech = (mech != null) ? mech : SynchronizationMechanism.OPTIMISTIC;
-        final int effectiveThreads = Math.max(1, Math.min(threads, 50));
+        final int effectiveThreads = Math.max(1, Math.min(threads, 500));
         final int effectiveReqs = Math.max(1, reqs);
 
         final int seatPoolSize = 10;
@@ -264,99 +265,140 @@ public class AdminController {
         final AtomicInteger successCount = new AtomicInteger(0);
         final AtomicInteger failedCount = new AtomicInteger(0);
         final AtomicInteger doubleBookingCount = new AtomicInteger(0);
+        final AtomicReference<RuntimeException> taskFailure = new AtomicReference<>();
 
+        final int activeWorkerCount = Math.min(effectiveThreads, effectiveReqs);
         ExecutorService executor = Executors.newFixedThreadPool(effectiveThreads);
-        CountDownLatch latch = new CountDownLatch(effectiveReqs);
+        CountDownLatch readyLatch = new CountDownLatch(activeWorkerCount);
+        CountDownLatch startGate = new CountDownLatch(1);
+        CountDownLatch completionLatch = new CountDownLatch(effectiveReqs);
         Random random = new Random();
 
-        long startTime = System.currentTimeMillis();
+        long startTime;
+        long executionTimeMs;
+        try {
+            for (int i = 0; i < effectiveReqs; i++) {
+                final int seatIndex = random.nextInt(seatPoolSize);
+                executor.submit(() -> {
+                    try {
+                        readyLatch.countDown();
+                        startGate.await();
 
-        for (int i = 0; i < effectiveReqs; i++) {
-            final int seatIndex = random.nextInt(seatPoolSize);
-            executor.submit(() -> {
-                try {
-                    switch (targetMech) {
-                        case NO_LOCK: {
-                            if (!seatBooked[seatIndex]) {
+                        switch (targetMech) {
+                            case NO_LOCK: {
+                                if (!seatBooked[seatIndex]) {
+                                    try {
+                                        Thread.sleep(1);
+                                    } catch (InterruptedException e) {
+                                        Thread.currentThread().interrupt();
+                                        failedCount.incrementAndGet();
+                                        break;
+                                    }
+                                    if (seatBooked[seatIndex]) {
+                                        doubleBookingCount.incrementAndGet();
+                                    }
+                                    seatBooked[seatIndex] = true;
+                                    seatBookCount[seatIndex]++;
+                                    successCount.incrementAndGet();
+                                } else {
+                                    failedCount.incrementAndGet();
+                                }
+                                break;
+                            }
+                            case FILE_LOCK: {
+                                this.seatRepository.acquireFileLock();
                                 try {
-                                    Thread.sleep(1);
-                                } catch (InterruptedException ignored) {
-                                }
-                                if (seatBooked[seatIndex]) {
-                                    doubleBookingCount.incrementAndGet();
-                                }
-                                seatBooked[seatIndex] = true;
-                                seatBookCount[seatIndex]++;
-                                successCount.incrementAndGet();
-                            } else {
-                                failedCount.incrementAndGet();
-                            }
-                            break;
-                        }
-                        case FILE_LOCK: {
-                            this.seatRepository.acquireFileLock();
-                            try {
-                                if (!seatBooked[seatIndex]) {
-                                    seatBooked[seatIndex] = true;
-                                    seatBookCount[seatIndex]++;
-                                    successCount.incrementAndGet();
-                                } else {
-                                    failedCount.incrementAndGet();
-                                }
-                            } finally {
-                                this.seatRepository.releaseFileLock();
-                            }
-                            break;
-                        }
-                        case SYNCHRONIZED: {
-                            synchronized (this) {
-                                if (!seatBooked[seatIndex]) {
-                                    seatBooked[seatIndex] = true;
-                                    seatBookCount[seatIndex]++;
-                                    successCount.incrementAndGet();
-                                } else {
-                                    failedCount.incrementAndGet();
-                                }
-                            }
-                            break;
-                        }
-                        case OPTIMISTIC: {
-                            boolean claimed = false;
-                            for (int attempt = 0; attempt < 5 && !claimed; attempt++) {
-                                int expectedVersion = seatVersions[seatIndex];
-                                if (seatBooked[seatIndex]) {
-                                    break;
-                                }
-                                synchronized (this) {
-                                    if (seatVersions[seatIndex] == expectedVersion && !seatBooked[seatIndex]) {
-                                        seatVersions[seatIndex]++;
+                                    if (!seatBooked[seatIndex]) {
                                         seatBooked[seatIndex] = true;
                                         seatBookCount[seatIndex]++;
-                                        claimed = true;
                                         successCount.incrementAndGet();
+                                    } else {
+                                        failedCount.incrementAndGet();
+                                    }
+                                } finally {
+                                    this.seatRepository.releaseFileLock();
+                                }
+                                break;
+                            }
+                            case SYNCHRONIZED: {
+                                synchronized (this) {
+                                    if (!seatBooked[seatIndex]) {
+                                        seatBooked[seatIndex] = true;
+                                        seatBookCount[seatIndex]++;
+                                        successCount.incrementAndGet();
+                                    } else {
+                                        failedCount.incrementAndGet();
                                     }
                                 }
+                                break;
                             }
-                            if (!claimed) {
-                                failedCount.incrementAndGet();
+                            case OPTIMISTIC: {
+                                boolean claimed = false;
+                                for (int attempt = 0; attempt < 5 && !claimed; attempt++) {
+                                    int expectedVersion = seatVersions[seatIndex];
+                                    if (seatBooked[seatIndex]) {
+                                        break;
+                                    }
+                                    synchronized (this) {
+                                        if (seatVersions[seatIndex] == expectedVersion && !seatBooked[seatIndex]) {
+                                            seatVersions[seatIndex]++;
+                                            seatBooked[seatIndex] = true;
+                                            seatBookCount[seatIndex]++;
+                                            claimed = true;
+                                            successCount.incrementAndGet();
+                                        }
+                                    }
+                                }
+                                if (!claimed) {
+                                    failedCount.incrementAndGet();
+                                }
+                                break;
                             }
-                            break;
                         }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        failedCount.incrementAndGet();
+                    } catch (RuntimeException e) {
+                        taskFailure.compareAndSet(null, e);
+                    } finally {
+                        completionLatch.countDown();
                     }
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+                });
+            }
 
-        try {
-            latch.await(15, TimeUnit.SECONDS);
+            if (!readyLatch.await(30, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Benchmark workers did not become ready within 30 seconds.");
+            }
+            startTime = System.currentTimeMillis();
+            startGate.countDown();
+
+            if (!completionLatch.await(60, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Benchmark tasks did not complete within 60 seconds.");
+            }
+            if (taskFailure.get() != null) {
+                throw new IllegalStateException("A benchmark task failed.", taskFailure.get());
+            }
+            executionTimeMs = Math.max(1, System.currentTimeMillis() - startTime);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            throw new IllegalStateException("Benchmark was interrupted before all tasks completed.", e);
+        } finally {
+            startGate.countDown();
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                    if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                        throw new IllegalStateException("Benchmark executor did not terminate.");
+                    }
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Interrupted while shutting down benchmark executor.", e);
+            }
         }
-        executor.shutdown();
 
-        long executionTimeMs = Math.max(1, System.currentTimeMillis() - startTime);
         double throughput = Math.round(((double) effectiveReqs / (executionTimeMs / 1000.0)) * 10.0) / 10.0;
         double doubleBookingRate = Math.round(((double) doubleBookingCount.get() / effectiveReqs * 100.0) * 10.0) / 10.0;
 
@@ -405,4 +447,3 @@ public class AdminController {
         return this.simulationResultRepository;
     }
 }
-

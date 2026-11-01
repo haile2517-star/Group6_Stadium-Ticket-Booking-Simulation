@@ -226,13 +226,13 @@ public class AdminView {
             return;
         }
 
-        System.out.print("Enter number of concurrent threads (e.g., 20): ");
+        System.out.print("Enter number of concurrent threads (1-500): ");
         String threadStr = this.scanner.nextLine().trim();
-        int threads = 20;
+        int threads = 100;
         try {
             threads = Integer.parseInt(threadStr);
         } catch (NumberFormatException e) {
-            System.out.println("[INFO] Defaulting to 20 threads.");
+            System.out.println("[INFO] Defaulting to 100 threads.");
         }
 
         System.out.print("Enter total booking requests to simulate (e.g., 100): ");
@@ -243,10 +243,21 @@ public class AdminView {
         } catch (NumberFormatException e) {
             System.out.println("[INFO] Defaulting to 100 requests.");
         }
+        if (reqs < threads) {
+            reqs = threads;
+            System.out.println("[INFO] Requests increased to " + reqs
+                    + " so every configured thread can run concurrently.");
+        }
 
         System.out.println();
         System.out.println("[RUNNING] Executing benchmark simulation on sandbox seats...");
-        SimulationResult res = this.adminController.runConcurrencyBenchmark(mech, threads, reqs);
+        SimulationResult res;
+        try {
+            res = this.adminController.runConcurrencyBenchmark(mech, threads, reqs);
+        } catch (IllegalStateException e) {
+            System.out.println("[FAILED] Benchmark could not complete: " + e.getMessage());
+            return;
+        }
         if (res != null) {
             System.out.println("+-------------------------------------------------------------------------+");
             System.out.println("|                       BENCHMARK EXECUTION RESULT                        |");
@@ -907,4 +918,3 @@ public class AdminView {
         return String.format("%-" + width + "s", text);
     }
 }
-

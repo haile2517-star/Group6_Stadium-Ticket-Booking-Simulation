@@ -13,7 +13,6 @@ import org.stadium.model.Stadium;
 import org.stadium.repository.MatchRepository;
 import org.stadium.repository.SeatRepository;
 import org.stadium.repository.SectionRepository;
-import org.stadium.repository.SimulationResultRepository;
 import org.stadium.repository.StadiumRepository;
 import org.stadium.repository.TicketPricingRepository;
 import org.stadium.repository.TicketRepository;
@@ -87,10 +86,6 @@ public class MainController {
         String pathTxns = new File("data/transactions.csv").exists() ? "data/transactions.csv"
                 : (new File("../data/transactions.csv").exists() ? "../data/transactions.csv"
                         : "data/transactions.csv");
-        String pathSims = new File("data/simulation_results.csv").exists() ? "data/simulation_results.csv"
-                : (new File("../data/simulation_results.csv").exists() ? "../data/simulation_results.csv"
-                        : "data/simulation_results.csv");
-
         MatchRepository matchRepo = new MatchRepository(pathMatches);
         StadiumRepository stadiumRepo = new StadiumRepository(pathStadiums);
         SectionRepository sectionRepo = new SectionRepository(pathSections);
@@ -98,11 +93,9 @@ public class MainController {
         TicketPricingRepository pricingRepo = new TicketPricingRepository(pathPricings);
         TicketRepository ticketRepo = new TicketRepository(pathTickets);
         TransactionRepository txnRepo = new TransactionRepository(pathTxns);
-        SimulationResultRepository simRepo = new SimulationResultRepository(pathSims);
-
         this.authController = new AuthController();
         this.adminController = new AdminController(this.authController.getFanRepo(),
-                this.authController.getOrganizerRepo(), seatRepo, simRepo);
+                this.authController.getOrganizerRepo(), seatRepo);
         this.matchController = new MatchController(matchRepo);
         this.stadiumController = new StadiumController(stadiumRepo, sectionRepo, seatRepo);
         this.bookingController = new BookingController(seatRepo, ticketRepo, txnRepo);
@@ -398,8 +391,6 @@ public class MainController {
         } else if ("3".equals(choice)) {
             this.adminView.displaySeatManagementMenu();
         } else if ("4".equals(choice)) {
-            this.adminView.displayBenchmarkMenu();
-        } else if ("5".equals(choice)) {
             Account acc = this.authController.viewProfile(this.currentUser.getId());
             if (acc != null) {
                 String border = "+-------------------------------------------------------------------------+";
@@ -413,7 +404,7 @@ public class MainController {
                 System.out.printf("| Phone        : %-56s |%n", (acc.getPhone() != null ? acc.getPhone() : "N/A"));
                 System.out.println(border);
             }
-        } else if ("6".equals(choice)) {
+        } else if ("5".equals(choice)) {
             System.out.println("\n============= CHANGE PASSWORD =============");
             System.out.print("Current password: ");
             String oldPass = this.scanner.nextLine().trim();
@@ -510,4 +501,3 @@ public class MainController {
         return this.scanner;
     }
 }
-

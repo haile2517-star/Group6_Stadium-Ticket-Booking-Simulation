@@ -5,53 +5,38 @@ import org.stadium.model.AccountStatus;
 import org.stadium.model.Fan;
 import org.stadium.model.Organizer;
 import org.stadium.model.Seat;
-import org.stadium.model.SimulationResult;
 import org.stadium.model.enums.SeatStatus;
 import org.stadium.model.enums.SeatType;
-import org.stadium.model.enums.SynchronizationMechanism;
 import org.stadium.repository.FanRepository;
 import org.stadium.repository.OrganizerRepository;
 import org.stadium.repository.SeatRepository;
-import org.stadium.repository.SimulationResultRepository;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class AdminController {
 
     private final FanRepository fanRepository;
     private final OrganizerRepository organizerRepository;
     private final SeatRepository seatRepository;
-    private final SimulationResultRepository simulationResultRepository;
 
     public AdminController(FanRepository fanRepository,
                            OrganizerRepository organizerRepository,
-                           SeatRepository seatRepository,
-                           SimulationResultRepository simulationResultRepository) {
+                           SeatRepository seatRepository) {
         this.fanRepository = fanRepository;
         this.organizerRepository = organizerRepository;
         this.seatRepository = seatRepository;
-        this.simulationResultRepository = simulationResultRepository;
     }
 
     public AdminController() {
         String pathFans = this.resolvePath("fans.csv");
         String pathOrgs = this.resolvePath("organizers.csv");
         String pathSeats = this.resolvePath("seats.csv");
-        String pathSims = this.resolvePath("simulation_results.csv");
 
         this.fanRepository = new FanRepository(pathFans);
         this.organizerRepository = new OrganizerRepository(pathOrgs);
         this.seatRepository = new SeatRepository(pathSeats);
-        this.simulationResultRepository = new SimulationResultRepository(pathSims);
     }
 
     public String resolvePath(String fileName) {
@@ -252,185 +237,6 @@ public class AdminController {
         return results;
     }
 
-    public SimulationResult runConcurrencyBenchmark(SynchronizationMechanism mech, int threads, int reqs) {
-        final SynchronizationMechanism targetMech = (mech != null) ? mech : SynchronizationMechanism.OPTIMISTIC;
-        final int effectiveThreads = Math.max(1, Math.min(threads, 500));
-        final int effectiveReqs = Math.max(1, reqs);
-
-        final int seatPoolSize = 10;
-        final boolean[] seatBooked = new boolean[seatPoolSize];
-        final int[] seatVersions = new int[seatPoolSize];
-        final int[] seatBookCount = new int[seatPoolSize];
-
-        final AtomicInteger successCount = new AtomicInteger(0);
-        final AtomicInteger failedCount = new AtomicInteger(0);
-        final AtomicInteger doubleBookingCount = new AtomicInteger(0);
-        final AtomicReference<RuntimeException> taskFailure = new AtomicReference<>();
-
-        final int activeWorkerCount = Math.min(effectiveThreads, effectiveReqs);
-        ExecutorService executor = Executors.newFixedThreadPool(effectiveThreads);
-        CountDownLatch readyLatch = new CountDownLatch(activeWorkerCount);
-        CountDownLatch startGate = new CountDownLatch(1);
-        CountDownLatch completionLatch = new CountDownLatch(effectiveReqs);
-        Random random = new Random();
-
-        long startTime;
-        long executionTimeMs;
-        try {
-            for (int i = 0; i < effectiveReqs; i++) {
-                final int seatIndex = random.nextInt(seatPoolSize);
-                executor.submit(() -> {
-                    try {
-                        readyLatch.countDown();
-                        startGate.await();
-
-                        switch (targetMech) {
-                            case NO_LOCK: {
-                                if (!seatBooked[seatIndex]) {
-                                    try {
-                                        Thread.sleep(1);
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                        failedCount.incrementAndGet();
-                                        break;
-                                    }
-                                    if (seatBooked[seatIndex]) {
-                                        doubleBookingCount.incrementAndGet();
-                                    }
-                                    seatBooked[seatIndex] = true;
-                                    seatBookCount[seatIndex]++;
-                                    successCount.incrementAndGet();
-                                } else {
-                                    failedCount.incrementAndGet();
-                                }
-                                break;
-                            }
-                            case FILE_LOCK: {
-                                this.seatRepository.acquireFileLock();
-                                try {
-                                    if (!seatBooked[seatIndex]) {
-                                        seatBooked[seatIndex] = true;
-                                        seatBookCount[seatIndex]++;
-                                        successCount.incrementAndGet();
-                                    } else {
-                                        failedCount.incrementAndGet();
-                                    }
-                                } finally {
-                                    this.seatRepository.releaseFileLock();
-                                }
-                                break;
-                            }
-                            case SYNCHRONIZED: {
-                                synchronized (this) {
-                                    if (!seatBooked[seatIndex]) {
-                                        seatBooked[seatIndex] = true;
-                                        seatBookCount[seatIndex]++;
-                                        successCount.incrementAndGet();
-                                    } else {
-                                        failedCount.incrementAndGet();
-                                    }
-                                }
-                                break;
-                            }
-                            case OPTIMISTIC: {
-                                boolean claimed = false;
-                                for (int attempt = 0; attempt < 5 && !claimed; attempt++) {
-                                    int expectedVersion = seatVersions[seatIndex];
-                                    if (seatBooked[seatIndex]) {
-                                        break;
-                                    }
-                                    synchronized (this) {
-                                        if (seatVersions[seatIndex] == expectedVersion && !seatBooked[seatIndex]) {
-                                            seatVersions[seatIndex]++;
-                                            seatBooked[seatIndex] = true;
-                                            seatBookCount[seatIndex]++;
-                                            claimed = true;
-                                            successCount.incrementAndGet();
-                                        }
-                                    }
-                                }
-                                if (!claimed) {
-                                    failedCount.incrementAndGet();
-                                }
-                                break;
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        failedCount.incrementAndGet();
-                    } catch (RuntimeException e) {
-                        taskFailure.compareAndSet(null, e);
-                    } finally {
-                        completionLatch.countDown();
-                    }
-                });
-            }
-
-            if (!readyLatch.await(30, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("Benchmark workers did not become ready within 30 seconds.");
-            }
-            startTime = System.currentTimeMillis();
-            startGate.countDown();
-
-            if (!completionLatch.await(60, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("Benchmark tasks did not complete within 60 seconds.");
-            }
-            if (taskFailure.get() != null) {
-                throw new IllegalStateException("A benchmark task failed.", taskFailure.get());
-            }
-            executionTimeMs = Math.max(1, System.currentTimeMillis() - startTime);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Benchmark was interrupted before all tasks completed.", e);
-        } finally {
-            startGate.countDown();
-            executor.shutdown();
-            try {
-                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                    executor.shutdownNow();
-                    if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                        throw new IllegalStateException("Benchmark executor did not terminate.");
-                    }
-                }
-            } catch (InterruptedException e) {
-                executor.shutdownNow();
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Interrupted while shutting down benchmark executor.", e);
-            }
-        }
-
-        double throughput = Math.round(((double) effectiveReqs / (executionTimeMs / 1000.0)) * 10.0) / 10.0;
-        double doubleBookingRate = Math.round(((double) doubleBookingCount.get() / effectiveReqs * 100.0) * 10.0) / 10.0;
-
-        int nextIdNum = this.simulationResultRepository.findAll().size() + 1;
-        String resultId = String.format("SIM%03d", nextIdNum);
-        while (this.simulationResultRepository.findById(resultId) != null) {
-            nextIdNum++;
-            resultId = String.format("SIM%03d", nextIdNum);
-        }
-
-        SimulationResult result = new SimulationResult(
-                resultId,
-                targetMech,
-                effectiveThreads,
-                effectiveReqs,
-                successCount.get(),
-                failedCount.get(),
-                doubleBookingCount.get(),
-                throughput,
-                doubleBookingRate,
-                executionTimeMs
-        );
-
-        this.simulationResultRepository.save(result);
-        this.simulationResultRepository.saveToFile();
-        return result;
-    }
-
-    public List<SimulationResult> viewBenchmarkReports() {
-        return this.simulationResultRepository.findAll();
-    }
-
     public FanRepository getFanRepository() {
         return this.fanRepository;
     }
@@ -443,7 +249,4 @@ public class AdminController {
         return this.seatRepository;
     }
 
-    public SimulationResultRepository getSimulationResultRepository() {
-        return this.simulationResultRepository;
-    }
 }

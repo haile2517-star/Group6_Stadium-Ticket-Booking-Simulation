@@ -7,9 +7,7 @@ import org.stadium.model.Fan;
 import org.stadium.model.Organizer;
 import org.stadium.model.Seat;
 import org.stadium.model.UserRole;
-import org.stadium.model.SimulationResult;
 import org.stadium.model.enums.SeatStatus;
-import org.stadium.model.enums.SynchronizationMechanism;
 import org.stadium.model.enums.SeatType;
 
 import java.util.List;
@@ -145,136 +143,6 @@ public class AdminView {
                 default:
                     System.out.println("[FAILED] Invalid choice! Please enter 0-4.");
             }
-        }
-    }
-
-    public void displayBenchmarkMenu() {
-        while (true) {
-            System.out.println();
-            System.out.println("+-------------------------------------------------------------------------+");
-            System.out.println("|               CONCURRENCY BENCHMARK & SIMULATION SYSTEM                 |");
-            System.out.println("+-------------------------------------------------------------------------+");
-            System.out.println("| 1. View Historical Benchmark Comparison Reports                         |");
-            System.out.println("| 2. Run New Live Concurrency Benchmark Simulation                        |");
-            System.out.println("| 0. Back to Admin Menu                                                   |");
-            System.out.println("+-------------------------------------------------------------------------+");
-            System.out.print("Select an option (0-2): ");
-            String choice = this.scanner.nextLine().trim();
-
-            if ("0".equals(choice)) {
-                return;
-            } else if ("1".equals(choice)) {
-                this.displayBenchmarkReportsTable();
-            } else if ("2".equals(choice)) {
-                this.handleRunLiveBenchmark();
-            } else {
-                System.out.println("[WARNING] Invalid choice, please enter 0, 1, or 2.");
-            }
-        }
-    }
-
-    private void displayBenchmarkReportsTable() {
-        List<SimulationResult> reports = this.adminController.viewBenchmarkReports();
-        System.out.println();
-        System.out.println("+-------------------------------------------------------------------------+");
-        System.out.println("|                   BENCHMARK COMPARISON REPORTS (CSV)                    |");
-        System.out.println("+--------+--------------+---------+-------+---------+--------+--------+---+");
-        System.out.printf("| %-6s | %-12s | %-7s | %-5s | %-7s | %-6s | %-6s |%n",
-                "ID", "MECHANISM", "THREADS", "REQS", "SUCCESS", "FAILED", "DBL-BK");
-        System.out.println("+--------+--------------+---------+-------+---------+--------+--------+---+");
-        if (reports == null || reports.isEmpty()) {
-            System.out.printf("| %-71s |%n", "No benchmark records found in simulation_results.csv.");
-        } else {
-            for (SimulationResult r : reports) {
-                System.out.printf("| %-6s | %-12s | %-7d | %-5d | %-7d | %-6d | %-6d |%n",
-                        r.getResultId(),
-                        r.getMechanism().name(),
-                        r.getThreadCount(),
-                        r.getTotalRequests(),
-                        r.getSuccessCount(),
-                        r.getFailedCount(),
-                        r.getDoubleBookingCount());
-            }
-        }
-        System.out.println("+--------+--------------+---------+-------+---------+--------+--------+---+");
-    }
-
-    private void handleRunLiveBenchmark() {
-        System.out.println();
-        System.out.println("+-------------------------------------------------------------------------+");
-        System.out.println("|                     RUN LIVE CONCURRENCY BENCHMARK                      |");
-        System.out.println("+-------------------------------------------------------------------------+");
-        System.out.println("Select synchronization mechanism:");
-        System.out.println("1. NO_LOCK      (No synchronization - shows Race Condition & Double Booking)");
-        System.out.println("2. FILE_LOCK    (Operating System FileChannel Lock - 100% safe)");
-        System.out.println("3. SYNCHRONIZED (JVM Monitor Lock - 100% safe)");
-        System.out.println("4. OPTIMISTIC   (Optimistic Versioning with retry - High Throughput)");
-        System.out.print("Enter choice (1-4): ");
-        String mechChoice = this.scanner.nextLine().trim();
-
-        SynchronizationMechanism mech;
-        if ("1".equals(mechChoice)) {
-            mech = SynchronizationMechanism.NO_LOCK;
-        } else if ("2".equals(mechChoice)) {
-            mech = SynchronizationMechanism.FILE_LOCK;
-        } else if ("3".equals(mechChoice)) {
-            mech = SynchronizationMechanism.SYNCHRONIZED;
-        } else if ("4".equals(mechChoice)) {
-            mech = SynchronizationMechanism.OPTIMISTIC;
-        } else {
-            System.out.println("[FAILED] Invalid mechanism selected!");
-            return;
-        }
-
-        System.out.print("Enter number of concurrent threads (1-500): ");
-        String threadStr = this.scanner.nextLine().trim();
-        int threads = 100;
-        try {
-            threads = Integer.parseInt(threadStr);
-        } catch (NumberFormatException e) {
-            System.out.println("[INFO] Defaulting to 100 threads.");
-        }
-
-        System.out.print("Enter total booking requests to simulate (e.g., 100): ");
-        String reqStr = this.scanner.nextLine().trim();
-        int reqs = 100;
-        try {
-            reqs = Integer.parseInt(reqStr);
-        } catch (NumberFormatException e) {
-            System.out.println("[INFO] Defaulting to 100 requests.");
-        }
-        if (reqs < threads) {
-            reqs = threads;
-            System.out.println("[INFO] Requests increased to " + reqs
-                    + " so every configured thread can run concurrently.");
-        }
-
-        System.out.println();
-        System.out.println("[RUNNING] Executing benchmark simulation on sandbox seats...");
-        SimulationResult res;
-        try {
-            res = this.adminController.runConcurrencyBenchmark(mech, threads, reqs);
-        } catch (IllegalStateException e) {
-            System.out.println("[FAILED] Benchmark could not complete: " + e.getMessage());
-            return;
-        }
-        if (res != null) {
-            System.out.println("+-------------------------------------------------------------------------+");
-            System.out.println("|                       BENCHMARK EXECUTION RESULT                        |");
-            System.out.println("+-------------------------------------------------------------------------+");
-            System.out.printf("| Result ID       : %-53s |%n", res.getResultId());
-            System.out.printf("| Mechanism       : %-53s |%n", res.getMechanism().name());
-            System.out.printf("| Concurrency     : %-53s |%n", res.getThreadCount() + " threads");
-            System.out.printf("| Total Requests  : %-53s |%n", res.getTotalRequests() + " requests");
-            System.out.printf("| Success Count   : %-53s |%n", String.valueOf(res.getSuccessCount()));
-            System.out.printf("| Failed Count    : %-53s |%n", String.valueOf(res.getFailedCount()));
-            System.out.printf("| Double Bookings : %-53s |%n", res.getDoubleBookingCount() + " (" + res.getDoubleBookingRate() + "%)");
-            System.out.printf("| Execution Time  : %-53s |%n", res.getExecutionTimeMs() + " ms");
-            System.out.printf("| Throughput      : %-53s |%n", res.getThroughput() + " reqs/sec");
-            System.out.println("+-------------------------------------------------------------------------+");
-            System.out.println("[SUCCESS] Benchmark result saved to data/simulation_results.csv successfully!");
-        } else {
-            System.out.println("[FAILED] Benchmark execution failed.");
         }
     }
 

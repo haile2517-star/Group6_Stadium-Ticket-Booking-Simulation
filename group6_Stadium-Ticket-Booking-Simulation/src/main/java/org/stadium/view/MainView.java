@@ -156,12 +156,11 @@ public class MainView {
         System.out.println("  1. Manage Fan (Approve, Search, Delete)");
         System.out.println("  2. Manage Organizer (Approve, Search, Delete)");
         System.out.println("  3. Manage Seat (Create, Update, Search, Delete)");
-        System.out.println("  4. Benchmark (Run Concurrency Benchmark, View Reports)");
-        System.out.println("  5. View Profile");
-        System.out.println("  6. Change Password");
+        System.out.println("  4. View Profile");
+        System.out.println("  5. Change Password");
         System.out.println("  0. Logout");
         System.out.println("+-------------------------------------------------------------------------+");
-        System.out.print("Please choose an option (0-6): ");
+        System.out.print("Please choose an option (0-5): ");
         if (!this.scanner.hasNextLine()) {
             if (this.mainController != null) {
                 this.mainController.setRunning(false);

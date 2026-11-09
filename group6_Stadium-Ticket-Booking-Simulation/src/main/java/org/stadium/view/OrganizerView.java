@@ -1,6 +1,7 @@
 package org.stadium.view;
 
 import org.stadium.controller.TicketController;
+import org.stadium.model.Match;
 
 import java.util.Map;
 import java.util.Scanner;
@@ -9,10 +10,26 @@ public class OrganizerView {
 
     private Scanner scanner;
     private TicketController ticketController;
+    private String currentOrgId;
 
     public OrganizerView(Scanner scanner, TicketController ticketController) {
         this.scanner = scanner;
         this.ticketController = ticketController;
+    }
+
+    public void setCurrentOrgId(String currentOrgId) {
+        this.currentOrgId = currentOrgId;
+    }
+
+    private boolean hasPermission(String matchId) {
+        if (this.currentOrgId == null || this.ticketController.getMatchRepository() == null) {
+            return true;
+        }
+        Match match = this.ticketController.getMatchRepository().findById(matchId);
+        if (match == null) {
+            return true;
+        }
+        return match.getOrganizerId().equalsIgnoreCase(this.currentOrgId);
     }
 
     public void displayPricingConfigForm() {
@@ -31,6 +48,10 @@ public class OrganizerView {
             System.out.println("[FAILED] Match ID and Section ID are required.");
             return;
         }
+        if (!this.hasPermission(matchId)) {
+            System.out.println("[FAILED] You do not have permission to configure pricing for this match.");
+            return;
+        }
         double price;
         try {
             price = Double.parseDouble(priceInput);
@@ -38,13 +59,14 @@ public class OrganizerView {
             System.out.println("[FAILED] Price must be a valid number.");
             return;
         }
-        if (price <= 0) {
+        if (price <= 0 || Double.isNaN(price) || Double.isInfinite(price)) {
             System.out.println("[FAILED] Price must be greater than 0.");
             return;
         }
         boolean success = this.ticketController.configureTicketPricing(matchId, sectionId, price);
         if (success) {
             System.out.printf("[SUCCESS] Price of %,.0f VND set for section %s in match %s.%n", price, sectionId, matchId);
+            System.out.println("[INFO] Price automatically applied to all available (unbooked) tickets in this section.");
         } else {
             System.out.println("[FAILED] Could not configure pricing. Check Match ID and Section ID.");
         }
@@ -62,9 +84,21 @@ public class OrganizerView {
             System.out.println("[FAILED] Match ID is required.");
             return;
         }
+        if (!this.hasPermission(matchId)) {
+            System.out.println("[FAILED] You do not have permission to generate tickets for this match.");
+            return;
+        }
+        Map<String, Object> sales = this.ticketController.viewTicketSalesReport(matchId);
+        int totalTickets = 0;
+        if (sales != null && sales.containsKey("Total tickets")) {
+            totalTickets = (int) sales.get("Total tickets");
+        }
         int count = this.ticketController.generateTickets(matchId);
         if (count > 0) {
-            System.out.println("[SUCCESS] Generated " + count + " tickets for match " + matchId + ".");
+            System.out.println("[SUCCESS] Generated " + count + " new tickets for match " + matchId + ".");
+        } else if (totalTickets > 0) {
+            System.out.println("[INFO] All tickets for match " + matchId + " have already been generated ("
+                    + totalTickets + " tickets exist). No duplicate tickets created.");
         } else {
             System.out.println("[FAILED] No tickets were generated for match " + matchId + ". Ensure pricing is configured.");
         }
@@ -80,6 +114,10 @@ public class OrganizerView {
         String matchId = this.scanner.nextLine().trim();
         if (matchId.isEmpty()) {
             System.out.println("[FAILED] Match ID is required.");
+            return;
+        }
+        if (!this.hasPermission(matchId)) {
+            System.out.println("[FAILED] You do not have permission to cancel tickets for this match.");
             return;
         }
         boolean success = this.ticketController.cancelTickets(matchId);

@@ -6,6 +6,7 @@ import org.stadium.model.Seat;
 import org.stadium.model.SeatSection;
 import org.stadium.model.Ticket;
 import org.stadium.model.TicketPricing;
+import org.stadium.model.enums.MatchStatus;
 import org.stadium.model.enums.SeatStatus;
 import org.stadium.model.enums.TicketStatus;
 import org.stadium.model.enums.TransactionStatus;
@@ -73,7 +74,8 @@ public class TicketController {
     }
 
     public boolean configureTicketPricing(String matchId, String sectionId, double price) {
-        if (matchId == null || matchId.isEmpty() || sectionId == null || sectionId.isEmpty() || price <= 0) {
+        if (matchId == null || matchId.isEmpty() || sectionId == null || sectionId.isEmpty()
+                || price <= 0 || Double.isNaN(price) || Double.isInfinite(price)) {
             return false;
         }
 
@@ -88,10 +90,24 @@ public class TicketController {
         if (pricing != null) {
             pricing.setPrice(price);
             this.ticketPricingRepository.saveToFile();
-            return true;
+        } else {
+            this.ticketPricingRepository.save(
+                    new TicketPricing("PRC_" + matchId + "_" + sectionId, matchId, sectionId, price));
         }
-        return this.ticketPricingRepository.save(
-                new TicketPricing("PRC_" + matchId + "_" + sectionId, matchId, sectionId, price));
+
+        boolean updated = false;
+        for (Seat seat : this.seatRepository.findBySectionId(sectionId)) {
+            Ticket ticket = this.ticketRepository.findBySeatAndMatch(seat.getSeatId(), matchId);
+            if (ticket != null && ticket.getStatus() == TicketStatus.AVAILABLE) {
+                ticket.setPrice(price);
+                updated = true;
+            }
+        }
+        if (updated) {
+            this.ticketRepository.saveToFile();
+        }
+
+        return true;
     }
 
     public int generateTickets(String matchId) {
@@ -99,7 +115,7 @@ public class TicketController {
             return 0;
         }
         Match match = this.matchRepository.findById(matchId);
-        if (match == null) {
+        if (match == null || match.getStatus() == MatchStatus.CANCELLED) {
             return 0;
         }
 
@@ -109,7 +125,7 @@ public class TicketController {
         }
 
         List<Ticket> newTickets = new ArrayList<>();
-        int generatedCount = 0;
+        boolean updatedExisting = false;
 
         for (SeatSection section : this.sectionRepository.findByStadiumId(match.getStadiumId())) {
             TicketPricing pricing = this.ticketPricingRepository.findByMatchAndSection(matchId,
@@ -120,32 +136,29 @@ public class TicketController {
             for (Seat seat : this.seatRepository.findBySectionId(section.getSectionId())) {
                 Ticket existing = existingTicketsBySeat.get(seat.getSeatId());
                 if (existing != null) {
-                    if (existing.getStatus() == TicketStatus.BOOKED) {
+                    if (existing.getStatus() == TicketStatus.BOOKED || existing.getStatus() == TicketStatus.CANCELLED) {
                         continue;
                     }
-                    existing.setPrice(pricing.getPrice());
-                    existing.setStatus(TicketStatus.AVAILABLE);
-                    existing.setFanId("");
-                    existing.setTransactionId("");
-                    existing.setBookingDate("");
-                    generatedCount++;
+                    if (existing.getPrice() != pricing.getPrice()) {
+                        existing.setPrice(pricing.getPrice());
+                        updatedExisting = true;
+                    }
                 } else {
                     String nextTicketId = this.ticketRepository.generateNextTicketId();
                     Ticket ticket = new Ticket(nextTicketId, matchId, seat.getSeatId(),
                             "", "", pricing.getPrice(), "", TicketStatus.AVAILABLE);
                     newTickets.add(ticket);
                     existingTicketsBySeat.put(seat.getSeatId(), ticket);
-                    generatedCount++;
                 }
             }
         }
 
         if (!newTickets.isEmpty()) {
             this.ticketRepository.saveAll(newTickets);
-        } else if (generatedCount > 0) {
+        } else if (updatedExisting) {
             this.ticketRepository.saveToFile();
         }
-        return generatedCount;
+        return newTickets.size();
     }
 
     public List<Seat> getAvailableSeatsForMatch(String matchId, String sectionId) {
@@ -254,6 +267,14 @@ public class TicketController {
         report.put("Total revenue", revenue);
         report.put("Sold rate (%)", tickets.isEmpty() ? 0.0 : sold * 100.0 / tickets.size());
         return report;
+    }
+
+    public TicketRepository getTicketRepository() {
+        return this.ticketRepository;
+    }
+
+    public MatchRepository getMatchRepository() {
+        return this.matchRepository;
     }
 }
 

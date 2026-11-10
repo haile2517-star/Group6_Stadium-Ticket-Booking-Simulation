@@ -330,6 +330,10 @@ public class MainController {
     }
 
     public void handleOrganizerChoice(String choice) {
+        if (this.currentUser != null) {
+            this.organizerView.setCurrentOrgId(this.currentUser.getId());
+            this.matchView.setCurrentOrgId(this.currentUser.getId());
+        }
         if ("1".equals(choice)) {
             this.matchView.displayMatches(this.matchController.viewAllMatches());
         } else if ("2".equals(choice)) {
@@ -339,6 +343,21 @@ public class MainController {
         } else if ("4".equals(choice)) {
             System.out.print("Enter match ID to delete: ");
             String matchId = this.scanner.nextLine().trim();
+            Match match = null;
+            for (Match m : this.matchController.viewAllMatches()) {
+                if (m.getMatchId().equalsIgnoreCase(matchId)) {
+                    match = m;
+                    break;
+                }
+            }
+            if (match == null) {
+                System.out.println("[FAILED] Failed to delete match. Match ID does not exist.");
+                return;
+            }
+            if (this.currentUser != null && !match.getOrganizerId().equalsIgnoreCase(this.currentUser.getId())) {
+                System.out.println("[FAILED] You do not have permission to delete this match.");
+                return;
+            }
             this.ticketController.cancelTickets(matchId);
             boolean ok = this.matchController.deleteMatch(matchId);
             if (ok) {
@@ -355,6 +374,21 @@ public class MainController {
         } else if ("8".equals(choice)) {
             System.out.print("Enter match ID to view sales report (e.g., MTH01): ");
             String matchId = this.scanner.nextLine().trim();
+            Match match = null;
+            for (Match m : this.matchController.viewAllMatches()) {
+                if (m.getMatchId().equalsIgnoreCase(matchId)) {
+                    match = m;
+                    break;
+                }
+            }
+            if (match == null) {
+                System.out.println("[FAILED] Match ID does not exist.");
+                return;
+            }
+            if (this.currentUser != null && !match.getOrganizerId().equalsIgnoreCase(this.currentUser.getId())) {
+                System.out.println("[FAILED] You do not have permission to view sales report for this match.");
+                return;
+            }
             Map<String, Object> sales = this.ticketController.viewTicketSalesReport(matchId);
             this.organizerView.displaySalesReport(sales);
         } else if ("9".equals(choice)) {

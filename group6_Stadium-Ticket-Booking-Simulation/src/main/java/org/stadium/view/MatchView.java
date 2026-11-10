@@ -12,6 +12,11 @@ public class MatchView {
 
     private Scanner scanner;
     private MatchController matchController;
+    private String currentOrgId;
+
+    public void setCurrentOrgId(String currentOrgId) {
+        this.currentOrgId = currentOrgId;
+    }
 
     public MatchView(Scanner scanner, MatchController matchController) {
         this.scanner = scanner;
@@ -118,6 +123,11 @@ public class MatchView {
             return;
         }
 
+        if (this.currentOrgId != null && !orgId.equalsIgnoreCase(this.currentOrgId)) {
+            System.out.println("[FAILED] You can only create matches for your own organization (" + this.currentOrgId + ").");
+            return;
+        }
+
         boolean success = this.matchController.createMatch(title, teamA, teamB, stadiumId, start, end, orgId);
         if (success) {
             System.out.println("[SUCCESS] New match created successfully!");
@@ -135,6 +145,22 @@ public class MatchView {
         String matchId = this.scanner.nextLine().trim();
         if (matchId.isEmpty()) {
             System.out.println("[FAILED] Match ID cannot be empty!");
+            return;
+        }
+
+        Match targetMatch = null;
+        for (Match m : this.matchController.viewAllMatches()) {
+            if (m.getMatchId().equalsIgnoreCase(matchId)) {
+                targetMatch = m;
+                break;
+            }
+        }
+        if (targetMatch == null) {
+            System.out.println("[FAILED] Match ID does not exist.");
+            return;
+        }
+        if (this.currentOrgId != null && !targetMatch.getOrganizerId().equalsIgnoreCase(this.currentOrgId)) {
+            System.out.println("[FAILED] You do not have permission to update this match.");
             return;
         }
 

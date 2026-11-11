@@ -1,8 +1,6 @@
 package org.stadium.view;
 
 import org.stadium.controller.TicketController;
-import org.stadium.model.Match;
-
 import java.util.Map;
 import java.util.Scanner;
 
@@ -22,14 +20,10 @@ public class OrganizerView {
     }
 
     private boolean hasPermission(String matchId) {
-        if (this.currentOrgId == null || this.ticketController.getMatchRepository() == null) {
+        if (this.currentOrgId == null) {
             return true;
         }
-        Match match = this.ticketController.getMatchRepository().findById(matchId);
-        if (match == null) {
-            return true;
-        }
-        return match.getOrganizerId().equalsIgnoreCase(this.currentOrgId);
+        return this.ticketController.isMatchOwnedByOrganizer(matchId, this.currentOrgId);
     }
 
     public void displayPricingConfigForm() {

@@ -269,12 +269,12 @@ public class TicketController {
         return report;
     }
 
-    public TicketRepository getTicketRepository() {
-        return this.ticketRepository;
-    }
-
-    public MatchRepository getMatchRepository() {
-        return this.matchRepository;
+    public boolean isMatchOwnedByOrganizer(String matchId, String organizerId) {
+        if (organizerId == null || matchId == null) {
+            return false;
+        }
+        Match match = this.matchRepository.findById(matchId.trim());
+        return match != null && organizerId.equalsIgnoreCase(match.getOrganizerId());
     }
 }
 

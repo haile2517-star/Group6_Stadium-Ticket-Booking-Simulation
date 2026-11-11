@@ -195,6 +195,7 @@ classDiagram
         +getAvailableSeatsForMatch(matchId: String, sectionId: String) List~Seat~
         +cancelTickets(matchId: String) boolean
         +viewTicketSalesReport(matchId: String) Map
+        +isMatchOwnedByOrganizer(matchId: String, organizerId: String): boolean
     }
 
     class AdminController {
